@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Betaportal Adgrabber 2.0 — Airtable Schema Documentation</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 14px;
+        color: #1a1a2e;
+        background: #f8f9fa;
+        line-height: 1.6;
+      }
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 48px;
+        background: #fff;
+      }
+      h1 {
+        font-size: 26px;
+        color: #0f3460;
+        border-bottom: 3px solid #0f3460;
+        padding-bottom: 12px;
+        margin-bottom: 8px;
+      }
+      h2 {
+        font-size: 19px;
+        color: #16213e;
+        margin: 36px 0 14px 0;
+        border-left: 5px solid #0f3460;
+        padding-left: 12px;
+      }
+      h3 {
+        font-size: 15px;
+        color: #0f3460;
+        margin: 24px 0 10px 0;
+      }
+      .subtitle {
+        color: #666;
+        font-size: 13px;
+        margin-bottom: 32px;
+      }
+      p {
+        margin-bottom: 10px;
+      }
+
+      /* Table styles */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0 24px 0;
+        font-size: 13px;
+      }
+      th {
+        background: #0f3460;
+        color: #fff;
+        text-align: left;
+        padding: 9px 12px;
+        font-weight: 600;
+      }
+      td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: top;
+      }
+      tr:nth-child(even) td {
+        background: #f8f9fa;
+      }
+      tr:hover td {
+        background: #eef2ff;
+      }
+
+      /* Code / pre blocks */
+      pre {
+        background: #1a1a2e;
+        color: #e2e8f0;
+        padding: 18px 20px;
+        border-radius: 6px;
+        font-size: 12.5px;
+        font-family: "Consolas", "Courier New", monospace;
+        overflow-x: auto;
+        margin: 14px 0 20px 0;
+        line-height: 1.7;
+        white-space: pre;
+      }
+
+      /* Badges */
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-right: 4px;
+      }
+      .badge-blue {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-green {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .badge-red {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-gray {
+        background: #f1f5f9;
+        color: #475569;
+      }
+      .badge-orange {
+        background: #ffedd5;
+        color: #9a3412;
+      }
+
+      /* Info box */
+      .info-box {
+        background: #eff6ff;
+        border-left: 4px solid #3b82f6;
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin: 16px 0;
+        font-size: 13px;
+      }
+      .warn-box {
+        background: #fefce8;
+        border-left: 4px solid #eab308;
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin: 16px 0;
+        font-size: 13px;
+      }
+
+      /* Section divider */
+      hr {
+        border: none;
+        border-top: 1px solid #e2e8f0;
+        margin: 32px 0;
+      }
+
+      /* Print styles */
+      @media print {
+        body {
+          background: #fff;
+          font-size: 12px;
+        }
+        .page {
+          padding: 20px;
+          max-width: 100%;
+        }
+        h2 {
+          page-break-before: auto;
+        }
+        pre {
+          font-size: 11px;
+        }
+        table {
+          font-size: 11px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1>Betaportal Adgrabber 2.0 — Airtable Schema Documentation</h1>
+      <p class="subtitle">
+        Base:
+        <strong>DEV. Betaportal Adgrabber 2.0 (Feb 2026)</strong> &nbsp;|&nbsp;
+        Base ID: <code>app01yDjf98U6ejKs</code> &nbsp;|&nbsp; Generated:
+        2026-03-13
+      </p>
+
+      <div class="info-box">
+        <strong>Note on duplicate bases:</strong> Two bases share the name "DEV.
+        Betaportal Adgrabber 2.0 (Feb 2026)" with
+        <strong>identical table IDs</strong> — they are synced mirrors of each
+        other (one is the sandbox copy).
+      </div>
+
+      <!-- ===== SECTION 1: OVERVIEW ===== -->
+      <h2>1. Database Overview</h2>
+      <p>
+        The base contains <strong>50+ tables</strong> organized into functional
+        groups:
+      </p>
+
+      <table>
+        <tr>
+          <th>Group</th>
+          <th>Tables</th>
+          <th>Purpose</th>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">Core Business</span></td>
+          <td>Kunder, Kampanjer, Media/Prod New</td>
+          <td>Customers, campaigns, and line-item media/production work</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">Budgeting</span></td>
+          <td>Yearly Budgets, Areas, Budget Requests</td>
+          <td>Annual budget allocation per customer, split by area</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-orange">Fortnox Integration</span></td>
+          <td>
+            FortnoxCustomer, FortnoxSupplier, FortnoxSupplierInvoice,
+            FortnoxOrder, Fortnox OrderRow, FortnoxInvoice, FortnoxInvoiceRow,
+            FortnoxArticle
+          </td>
+          <td>Bidirectional sync with Fortnox accounting system via n8n</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gray">System / Mapping</span></td>
+          <td>
+            sys.fakturamapping, sys.orderallocationmapping, sys.users,
+            sys.salesPerson, sys.mediatyp, sys.workingmapping,
+            sys.fakturamapping
+          </td>
+          <td>Internal lookups, allocation logic, accruals</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="badge badge-gray">Agreements &amp; Contracts</span>
+          </td>
+          <td>Agreements, SUPPLIER, supplier names</td>
+          <td>Customer contracts, margin rules per media channel</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-red">Legacy / Archive</span></td>
+          <td>
+            OLD Legacy Kunder, OLD Legacy Kampanjer, OLD Produktion copy, etc.
+          </td>
+          <td>Historical data from previous versions (v2.0–v4.1)</td>
+        </tr>
+      </table>
+
+      <!-- ===== SECTION 2: CORE BUSINESS TABLES ===== -->
+      <h2>2. Core Business Tables &amp; Connections</h2>
+
+      <pre>
+  ┌─────────────────────────────────────────────────────────────┐
+  │                         KUNDER                              │
+  │  (Customers — category A/B/C, kundansvarig, salesPerson)    │
+  └──┬──────────────┬───────────────┬──────────────┬────────────┘
+     │              │               │              │
+     ▼              ▼               ▼              ▼
+  KAMPANJER    YEARLY BUDGETS   AGREEMENTS   BUDGET REQUESTS
+  (Campaigns)  (per year/cust)  (contracts)  (workflow to
+     │              │               │          create budgets)
+     │              ▼               │
+     │            AREAS             │
+     │          (budget split       │
+     │           per area)          │
+     │              │               │
+     └──────────────┘               │
+     │  (Area links back to         │
+     │   Kampanjer via rollup)      │
+     ▼                              │
+  MEDIA / PROD NEW  ◄───────────────┘
+  (Line items for media buys         (Agreements → FortnoxOrder)
+   and production work)
+     │
+     ├──► sys.orderallocationmapping  (budget allocation per order line)
+     ├──► sys.fakturamapping          (supplier invoice matching)
+     ├──► FortnoxOrder / OrderRow     (accounting orders)
+     ├──► sys.workingmapping          (internal working hours)
+     ├──► Time Logs                   (actual hours logged)
+     ├──► sys.mediatyp                (media type lookup)
+     ├──► supplier names              (SUPPLIER reference)
+     ├──► Automation Upplupna         (accruals automation)
+     └──► SEO Studio                  (SEO project link)
+  </pre
+      >
+
+      <table>
+        <tr>
+          <th>Table</th>
+          <th>Purpose</th>
+          <th>Key Links to</th>
+        </tr>
+        <tr>
+          <td><strong>Kunder</strong></td>
+          <td>Customers. Category A/B/C, account owners, sales person</td>
+          <td>
+            Kampanjer, Yearly Budgets, sys.users, sys.salesPerson, Agreements
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Kampanjer</strong></td>
+          <td>Campaign briefs with budget, dates, targets, financial KPIs</td>
+          <td>
+            Kunder, Media/Prod New (×2: media + prod), Areas, Fortnox OrderRow,
+            SEO Studio
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Media / Prod New</strong></td>
+          <td>
+            Individual media buy or production line items (~180 fields). Central
+            operational table.
+          </td>
+          <td>
+            Kampanjer, sys.orderallocationmapping, sys.fakturamapping,
+            FortnoxOrder, Time Logs, sys.workingmapping, sys.mediatyp, Supplier,
+            Automation Upplupna, SEO Studio
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Yearly Budgets</strong></td>
+          <td>
+            Annual marketing budget per customer. Budget distributed across
+            Areas.
+          </td>
+          <td>Kunder, Areas, Budget Requests</td>
+        </tr>
+        <tr>
+          <td><strong>Areas</strong></td>
+          <td>
+            Budget split within a yearly budget (e.g. Social, Search). Tracks
+            over-allocation.
+          </td>
+          <td>Yearly Budgets, Kampanjer</td>
+        </tr>
+        <tr>
+          <td><strong>Budget Requests</strong></td>
+          <td>
+            Workflow table — staff submit requests, automation creates Yearly
+            Budgets on approval
+          </td>
+          <td>Kunder, Yearly Budgets</td>
+        </tr>
+        <tr>
+          <td><strong>Agreements</strong></td>
+          <td>
+            Customer contracts: terms, margin % per media channel, payment
+            rules, Facebook/LinkedIn/Programmatic settings
+          </td>
+          <td>Kunder, FortnoxOrder</td>
+        </tr>
+      </table>
+
+      <h3>Budget Flow</h3>
+      <pre>
+  Customer (Kunder)
+    └──► Yearly Budget (per year)
+           └──► Areas (Social, Search, etc. — each with its own SEK budget)
+                  └──► Kampanjer (campaigns consume area budget via rollup)
+                         └──► Media / Prod New (line items with allocations)
+  </pre
+      >
+
+      <!-- ===== SECTION 3: FORTNOX INTEGRATION ===== -->
+      <h2>3. Fortnox Integration</h2>
+
+      <div class="info-box">
+        <strong>How it works:</strong> n8n (or equivalent) polls the Fortnox
+        REST API and syncs data into dedicated Airtable tables. Each table has a
+        <code>*_Sync</code> view that n8n uses as a filter, and control fields
+        like <code>Internal Status</code> (Do not sync / Sync) to enable/disable
+        sync per supplier.
+      </div>
+
+      <h3>3.1 Direction of data flow</h3>
+
+      <table>
+        <tr>
+          <th>Table</th>
+          <th>Direction</th>
+          <th>Trigger / Control</th>
+        </tr>
+        <tr>
+          <td><strong>FortnoxCustomer</strong></td>
+          <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+          <td>n8n sync via <code>FortnoxCustomer_Sync</code> view</td>
+        </tr>
+        <tr>
+          <td><strong>FortnoxSupplier</strong></td>
+          <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+          <td>
+            <code>Internal Status</code> field: "Do not sync" / "Sync" —
+            controls per-supplier
+          </td>
+        </tr>
+        <tr>
+          <td><strong>FortnoxSupplierInvoice</strong></td>
+          <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+          <td>
+            Only pulled for suppliers where <code>Internal Status = Sync</code>.
+            Also: "Platform - Not Fortnox" records from ad platform CSV imports.
+          </td>
+        </tr>
+        <tr>
+          <td><strong>FortnoxOrder</strong></td>
+          <td>
+            <span class="badge badge-orange">Airtable → Fortnox</span>
+            (bidirectional)
+          </td>
+          <td>
+            Drafted in Airtable → <code>Sync Fortnox = "To sync"</code> triggers
+            n8n to create in Fortnox → Fortnox writes back
+            <code>DocumentNumber</code>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Fortnox OrderRow</strong></td>
+          <td><span class="badge badge-orange">Both</span></td>
+          <td><code>LineItem Source</code> = "Fortnox" or "Airtable users"</td>
+        </tr>
+        <tr>
+          <td><strong>FortnoxInvoice</strong></td>
+          <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+          <td>n8n sync, linked to FortnoxOrder by DocumentNumber</td>
+        </tr>
+        <tr>
+          <td><strong>FortnoxInvoiceRow</strong></td>
+          <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+          <td>Rows per invoice, linked to FortnoxInvoice and FortnoxArticle</td>
+        </tr>
+        <tr>
+          <td><strong>FortnoxArticle</strong></td>
+          <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+          <td>
+            Product/article catalog. Linked to sys.mediatyp for media channel
+            classification
+          </td>
+        </tr>
+      </table>
+
+      <h3>3.2 Full integration architecture</h3>
+      <pre>
+  FORTNOX API
+      │
+      ├──(n8n sync)──► FortnoxCustomer        ──► Kunder (linked)
+      │
+      ├──(n8n sync)──► FortnoxSupplier        ──► sys.orderallocationmapping
+      │   [Internal Status = Sync]            ──► sys.mediatyp
+      │
+      ├──(n8n sync)──► FortnoxSupplierInvoice ──► FortnoxSupplier (linked)
+      │   [only Sync suppliers]               ──► sys.fakturamapping (mapped by staff)
+      │                                       ──► Platform Import Files (alt. source)
+      │                                       ──► Kunder (direct link)
+      │
+      ├──(n8n sync)──► FortnoxInvoice         ──► FortnoxOrder (linked back)
+      │                                       ──► FortnoxInvoiceRow (has rows)
+      │                                       ──► FortnoxCustomer (linked)
+      │
+      ◄──(n8n push)──  FortnoxOrder           ──► Fortnox OrderRow (line items)
+      │   [Sync Fortnox = To sync]            ──► FortnoxInvoice (after invoicing)
+      │                                       ──► FortnoxCustomer (linked)
+      │                                       ──► Kunder (linked)
+      │                                       ──► Agreements (linked)
+      │                                       ──► Media/Prod New (linked)
+      │
+      ├──(n8n sync)──► FortnoxArticle         ──► Fortnox OrderRow (linked)
+                                              ──► FortnoxInvoiceRow (linked)
+                                              ──► sys.mediatyp (linked)
+  </pre
+      >
+
+      <h3>3.3 FortnoxSupplierInvoice — detailed field breakdown</h3>
+
+      <table>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Notes</th>
+        </tr>
+        <tr>
+          <td>GivenNumber</td>
+          <td>Text</td>
+          <td>Fortnox document number (primary key from Fortnox)</td>
+        </tr>
+        <tr>
+          <td>InvoiceDate</td>
+          <td>Text / Date</td>
+          <td>Raw from Fortnox API</td>
+        </tr>
+        <tr>
+          <td>DueDate</td>
+          <td>Text</td>
+          <td>Raw from Fortnox API</td>
+        </tr>
+        <tr>
+          <td>Total</td>
+          <td>Number</td>
+          <td>Total amount incl. VAT</td>
+        </tr>
+        <tr>
+          <td>VAT</td>
+          <td>Number</td>
+          <td>VAT amount</td>
+        </tr>
+        <tr>
+          <td>Total Excl VAT in SEK</td>
+          <td>Formula</td>
+          <td>Calculated, handles currency rate conversion</td>
+        </tr>
+        <tr>
+          <td>CurrencyRate</td>
+          <td>Text / Formula</td>
+          <td>For foreign currency invoices</td>
+        </tr>
+        <tr>
+          <td>FortnoxSupplier</td>
+          <td>Link</td>
+          <td>→ FortnoxSupplier table</td>
+        </tr>
+        <tr>
+          <td>Kund</td>
+          <td>Link</td>
+          <td>→ Kunder table (direct customer link)</td>
+        </tr>
+        <tr>
+          <td>sys.fakturamapping</td>
+          <td>Link</td>
+          <td>→ sys.fakturamapping (one invoice, many M/P mappings)</td>
+        </tr>
+        <tr>
+          <td>Platform Import File</td>
+          <td>Link</td>
+          <td>→ Platform Import Files (for non-Fortnox ad platform imports)</td>
+        </tr>
+        <tr>
+          <td>Invoice PDF / Invoice PDF URL</td>
+          <td>Attachment / URL</td>
+          <td>n8n downloads and attaches the PDF</td>
+        </tr>
+        <tr>
+          <td>Sync</td>
+          <td>Lookup</td>
+          <td>Inherited from FortnoxSupplier.Internal Status</td>
+        </tr>
+        <tr>
+          <td>Suppliertype</td>
+          <td>Lookup</td>
+          <td>"Platform - Not Fortnox" vs regular Fortnox supplier</td>
+        </tr>
+        <tr>
+          <td>Invoice fully mapped?</td>
+          <td>Formula</td>
+          <td>
+            🟢 / 🔴 / ⚪ / ⚠️ — checks if total allocated cost ≈ invoice total
+            (±100 SEK)
+          </td>
+        </tr>
+        <tr>
+          <td>Attest Status</td>
+          <td>Select</td>
+          <td>"Ok att betala" / "Ska inte betalas" / "För åtgärd"</td>
+        </tr>
+        <tr>
+          <td>old or new record</td>
+          <td>Select</td>
+          <td>n8n marks "new" on creation</td>
+        </tr>
+        <tr>
+          <td>Booked / Cancelled / Credit</td>
+          <td>Checkbox/Select</td>
+          <td>Status flags from Fortnox</td>
+        </tr>
+      </table>
+
+      <h3>3.4 FortnoxOrder — lifecycle states</h3>
+
+      <table>
+        <tr>
+          <th>Order Status</th>
+          <th>Meaning</th>
+        </tr>
+        <tr>
+          <td>Airtable Draft</td>
+          <td>Created in Airtable, not yet in Fortnox</td>
+        </tr>
+        <tr>
+          <td>Copy to Fortnox</td>
+          <td>Staff requests sync → n8n picks up and pushes to Fortnox</td>
+        </tr>
+        <tr>
+          <td>Fortnox Order</td>
+          <td>Successfully created in Fortnox, DocumentNumber written back</td>
+        </tr>
+        <tr>
+          <td>Order Ready To Invoice</td>
+          <td>Work completed, ready to generate customer invoice</td>
+        </tr>
+        <tr>
+          <td>Order Invoiced</td>
+          <td>Customer invoice created in Fortnox</td>
+        </tr>
+        <tr>
+          <td>Order Linked To Kampanj</td>
+          <td>Order is linked to a campaign record</td>
+        </tr>
+      </table>
+
+      <!-- ===== SECTION 4: SUPPLIER INVOICE MAPPING FLOW ===== -->
+      <h2>4. Supplier Invoice Mapping &amp; Accruals (Upplupna)</h2>
+
+      <p>
+        This is the critical financial reconciliation workflow connecting
+        incoming supplier invoices to campaign line items.
+      </p>
+
+      <pre>
+  STEP 1: Supplier invoice arrives in Fortnox
+     ↓
+  STEP 2: n8n syncs it to FortnoxSupplierInvoice (if supplier has Sync=enabled)
+     ↓
+  STEP 3: Staff creates sys.fakturamapping record(s):
+          FortnoxSupplierInvoice ──► Media/Prod New line item(s)
+          with field: Belopp ex moms (SEK amount allocated to this M/P)
+     ↓
+  STEP 4: Media/Prod New rolls up the costs:
+          - Ek. utfall. Externkostnad = actual supplier cost received
+          - UPPLUPNA = allocated spend (budgeted) minus actual invoiced cost
+          - Emoji formula shows mapping status: 🟢 🔴 ⚪ ⚠️
+     ↓
+  STEP 5: Automation Upplupna table
+          - n8n automation runs monthly accrual calculations
+          - Stores: Upplupna Automation Found Allocations Invoiced,
+            Found Mapping Cost, Run Date, Modified Date
+  </pre
+      >
+
+      <table>
+        <tr>
+          <th>Table</th>
+          <th>Role in accruals</th>
+        </tr>
+        <tr>
+          <td><strong>sys.fakturamapping</strong></td>
+          <td>
+            Bridge table: links one FortnoxSupplierInvoice to one or many
+            Media/Prod New records. Staff manually links these. Tracks: Belopp
+            ex moms, Allocated External Costs (V5), Variance (±100 SEK
+            tolerance).
+          </td>
+        </tr>
+        <tr>
+          <td><strong>FortnoxSupplierInvoice</strong></td>
+          <td>
+            Source: actual supplier cost. Rollup from fakturamapping shows "Ek.
+            utfall. Externkostnad". Formula "Invoice fully mapped?" shows
+            reconciliation status.
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Media / Prod New</strong></td>
+          <td>
+            Destination: actual costs surface here as rollups. UPPLUPNA =
+            budgeted spend − invoiced cost. Automation Upplupna records track
+            monthly automation runs.
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Automation Upplupna</strong></td>
+          <td>
+            Stores results of automated accrual processing runs. Fields: run
+            date, found allocations invoiced, mapping cost, supplier GBG
+            amounts.
+          </td>
+        </tr>
+      </table>
+
+      <h3>Platform invoices (non-Fortnox path)</h3>
+      <div class="warn-box">
+        Some suppliers (Google, Facebook/Meta, LinkedIn etc.) are marked
+        <strong>Supplier type = "Platform - Not Fortnox"</strong> in
+        FortnoxSupplier. Their cost data comes from
+        <strong>Platform Import Files</strong> (CSV/report uploads) rather than
+        Fortnox API. FortnoxSupplierInvoice records are created for these too,
+        but sourced from the platform file, not Fortnox. The rest of the mapping
+        flow (sys.fakturamapping → Media/Prod New) is identical.
+      </div>
+
+      <!-- ===== SECTION 5: ALLOCATION FLOW ===== -->
+      <h2>5. Order Allocation Flow (sys.orderallocationmapping)</h2>
+
+      <pre>
+  FortnoxOrder
+      └──► Fortnox OrderRow (line items)
+               └──► sys.orderallocationmapping (allocation table)
+                        ├──► Media/Prod New [Media]       (what media buy it covers)
+                        ├──► Media/Prod New [Production]  (what production work it covers)
+                        └──► FortnoxSupplier              (which supplier is being paid)
+  </pre
+      >
+
+      <p>
+        Each order row can be allocated across multiple Media/Prod New records.
+        Fields track:
+      </p>
+      <ul style="margin: 8px 0 16px 24px">
+        <li>ALLOCATED Budget (how much of the order row budget is assigned)</li>
+        <li>ALLOCATED to Spend (how much the supplier will be paid)</li>
+        <li>Outstanding (Not Allocated) Order budget</li>
+        <li>Type of allocation (from sys.Type of allocation lookup)</li>
+        <li>Upplupna flag — whether this allocation is an accrual</li>
+      </ul>
+
+      <!-- ===== SECTION 6: COMPLETE TABLE LIST ===== -->
+      <h2>6. Complete Table List</h2>
+
+      <table>
+        <tr>
+          <th>Table Name</th>
+          <th>Table ID</th>
+          <th>Category</th>
+        </tr>
+        <tr>
+          <td>Kunder</td>
+          <td>tbl8RNJ9wRkv3rg7A</td>
+          <td><span class="badge badge-blue">Core Business</span></td>
+        </tr>
+        <tr>
+          <td>Kampanjer</td>
+          <td>tblIjif3TvPC5ZNZr</td>
+          <td><span class="badge badge-blue">Core Business</span></td>
+        </tr>
+        <tr>
+          <td>Media / Prod New</td>
+          <td>tblTf9sNLy464khq5</td>
+          <td><span class="badge badge-blue">Core Business</span></td>
+        </tr>
+        <tr>
+          <td>Yearly Budgets</td>
+          <td>tblo4u0M43clNmQeY</td>
+          <td><span class="badge badge-green">Budgeting</span></td>
+        </tr>
+        <tr>
+          <td>Budget Requests</td>
+          <td>tblSAf4Pn3hslWl9s</td>
+          <td><span class="badge badge-green">Budgeting</span></td>
+        </tr>
+        <tr>
+          <td>Areas</td>
+          <td>tblVu4scY5oesHP0r</td>
+          <td><span class="badge badge-green">Budgeting</span></td>
+        </tr>
+        <tr>
+          <td>Agreements</td>
+          <td>tblkoyWBzyha45HCy</td>
+          <td><span class="badge badge-blue">Core Business</span></td>
+        </tr>
+        <tr>
+          <td>FortnoxCustomer</td>
+          <td>tblDF3Ff0KJ3pN6aG</td>
+          <td><span class="badge badge-orange">Fortnox</span></td>
+        </tr>
+        <tr>
+          <td>FortnoxSupplier</td>
+          <td>tblSFdN7U9Bri8zwr</td>
+          <td><span class="badge badge-orange">Fortnox</span></td>
+        </tr>
+        <tr>
+          <td>FortnoxSupplierInvoice</td>
+          <td>tblYERBn2P6wrHEzl</td>
+          <td><span class="badge badge-orange">Fortnox</span></td>
+        </tr>
+        <tr>
+          <td>FortnoxOrder</td>
+          <td>tblhNdAzxbWeNgEgW</td>
+          <td><span class="badge badge-orange">Fortnox</span></td>
+        </tr>
+        <tr>
+          <td>Fortnox OrderRow</td>
+          <td>tbl4kQjfGdqF1TWkS</td>
+          <td><span class="badge badge-orange">Fortnox</span></td>
+        </tr>
+        <tr>
+          <td>FortnoxInvoice</td>
+          <td>tblOLaZyIaVJP6h6V</td>
+          <td><span class="badge badge-orange">Fortnox</span></td>
+        </tr>
+        <tr>
+          <td>FortnoxInvoiceRow</td>
+          <td>tblDkNRTKMTpMTLK3</td>
+          <td><span class="badge badge-orange">Fortnox</span></td>
+        </tr>
+        <tr>
+          <td>FortnoxArticle</td>
+          <td>tbllLCePTMAsMqF3A</td>
+          <td><span class="badge badge-orange">Fortnox</span></td>
+        </tr>
+        <tr>
+          <td>sys.fakturamapping</td>
+          <td>tblRXZqzj79Vd3iC6</td>
+          <td><span class="badge badge-gray">System</span></td>
+        </tr>
+        <tr>
+          <td>sys.orderallocationmapping</td>
+          <td>tblvru6tOgpB5yVQG</td>
+          <td><span class="badge badge-gray">System</span></td>
+        </tr>
+        <tr>
+          <td>sys.users</td>
+          <td>tblQlPltrGgx4MafH</td>
+          <td><span class="badge badge-gray">System</span></td>
+        </tr>
+        <tr>
+          <td>sys.salesPerson</td>
+          <td>tbl4gIpYnlfKzqpqP</td>
+          <td><span class="badge badge-gray">System</span></td>
+        </tr>
+        <tr>
+          <td>sys.login-history</td>
+          <td>tblsgLlpbDmjMVJjT</td>
+          <td><span class="badge badge-gray">System</span></td>
+        </tr>
+        <tr>
+          <td>sys.workingmapping</td>
+          <td>tblGRtM5LBoNbz4Yz</td>
+          <td><span class="badge badge-gray">System</span></td>
+        </tr>
+        <tr>
+          <td>sys.mediatyp</td>
+          <td>tblxLag0MUeQSdJb4</td>
+          <td><span class="badge badge-gray">System</span></td>
+        </tr>
+        <tr>
+          <td>sys.fakturamapping</td>
+          <td>tblRXZqzj79Vd3iC6</td>
+          <td><span class="badge badge-gray">System</span></td>
+        </tr>
+        <tr>
+          <td>SUPPLIER</td>
+          <td>tbl73CnwVuOVtgxO8</td>
+          <td><span class="badge badge-gray">Reference</span></td>
+        </tr>
+        <tr>
+          <td>supplier names</td>
+          <td>tblm0zewhqlV0e2uQ</td>
+          <td><span class="badge badge-gray">Reference</span></td>
+        </tr>
+        <tr>
+          <td>Automation Upplupna</td>
+          <td>tbl36schHwKFPc1lu</td>
+          <td><span class="badge badge-gray">Automation</span></td>
+        </tr>
+        <tr>
+          <td>Time Logs</td>
+          <td>tblnjcmpeYRzzVthj</td>
+          <td><span class="badge badge-gray">System</span></td>
+        </tr>
+        <tr>
+          <td>Year-Month</td>
+          <td>tblxCMI3pnkjJuCtP</td>
+          <td><span class="badge badge-gray">Reference</span></td>
+        </tr>
+        <tr>
+          <td>Month-Employee</td>
+          <td>tblzNdJeJtFBgo3Oz</td>
+          <td><span class="badge badge-gray">Reference</span></td>
+        </tr>
+        <tr>
+          <td>New Users</td>
+          <td>tblT2eKszTGmXh7hz</td>
+          <td><span class="badge badge-gray">System</span></td>
+        </tr>
+        <tr>
+          <td>Charge Type</td>
+          <td>tbl4F5dXKOTpnzsSn</td>
+          <td><span class="badge badge-gray">Reference</span></td>
+        </tr>
+        <tr>
+          <td>Type of allocation</td>
+          <td>tblffJ9MW9APARiUS</td>
+          <td><span class="badge badge-gray">Reference</span></td>
+        </tr>
+        <tr>
+          <td>Platform Import Files</td>
+          <td>tbl922EeY899adWVD</td>
+          <td><span class="badge badge-orange">Fortnox / Platform</span></td>
+        </tr>
+        <tr>
+          <td>Settings</td>
+          <td>tblPFPEG2Iu3M00FF</td>
+          <td><span class="badge badge-gray">Config</span></td>
+        </tr>
+        <tr>
+          <td>Config n8n</td>
+          <td>tblvbn4MVXHktqt62</td>
+          <td><span class="badge badge-gray">Config</span></td>
+        </tr>
+        <tr>
+          <td>SEO Studio</td>
+          <td>tblyYNFC26dqDTdPY</td>
+          <td><span class="badge badge-blue">Core Business</span></td>
+        </tr>
+        <tr>
+          <td>Tutorials</td>
+          <td>tblVwdyWZk1dfcwc8</td>
+          <td><span class="badge badge-gray">Other</span></td>
+        </tr>
+        <tr>
+          <td>Upphandlingar</td>
+          <td>tbl1UvjB4PsXIfiZ4</td>
+          <td><span class="badge badge-gray">Other</span></td>
+        </tr>
+        <tr>
+          <td>Offert</td>
+          <td>tblhwJ3rh85CYhGuc</td>
+          <td><span class="badge badge-gray">Other</span></td>
+        </tr>
+        <tr>
+          <td>Nya plattformar</td>
+          <td>tblpfDRd1tcKeCV0F</td>
+          <td><span class="badge badge-gray">Other</span></td>
+        </tr>
+        <tr>
+          <td>Onboarding</td>
+          <td>tblfDfv7ehTgDEOUS</td>
+          <td><span class="badge badge-gray">Other</span></td>
+        </tr>
+        <tr>
+          <td>OLD Legacy Kunder</td>
+          <td>tblQ5NKbpa9dZnqCw</td>
+          <td><span class="badge badge-red">Legacy</span></td>
+        </tr>
+        <tr>
+          <td>OLD Legacy Kampanjer</td>
+          <td>tblmqPUcPCDJkpkcq</td>
+          <td><span class="badge badge-red">Legacy</span></td>
+        </tr>
+        <tr>
+          <td>OLD Mediaköp / Production Legacy</td>
+          <td>tblmHFelJTFs8ypyT</td>
+          <td><span class="badge badge-red">Legacy</span></td>
+        </tr>
+        <tr>
+          <td>OLD Legacy Mediaköp / Production copy</td>
+          <td>tblYlKjLPn4hHXM1G</td>
+          <td><span class="badge badge-red">Legacy</span></td>
+        </tr>
+        <tr>
+          <td>OLD legacy Mediakop/Production</td>
+          <td>tblQDJujT3qdmpJAH</td>
+          <td><span class="badge badge-red">Legacy</span></td>
+        </tr>
+        <tr>
+          <td>OLD Produktion copy</td>
+          <td>tbljuj3gxnyf6t66e</td>
+          <td><span class="badge badge-red">Legacy</span></td>
+        </tr>
+        <tr>
+          <td>OLD Hubstaff Members</td>
+          <td>tbl7dOBa0RjE9w9l8</td>
+          <td><span class="badge badge-red">Legacy</span></td>
+        </tr>
+      </table>
+
+      <hr />
+      <p style="color: #888; font-size: 12px; text-align: center">
+        Generated by Claude Code — Adgrabber n8n project — 2026-03-12
+      </p>
+    </div>
+  </body>
+</html>

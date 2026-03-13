@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortnox Integration Research — Adgrabber AB</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.6; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  h2 { font-size: 19px; color: #16213e; margin: 36px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 24px 0 10px 0; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 32px; }
+  p { margin-bottom: 10px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 24px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  tr:hover td { background: #eef2ff; }
+
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 18px 20px; border-radius: 6px; font-size: 12.5px; font-family: 'Consolas', 'Courier New', monospace; overflow-x: auto; margin: 14px 0 20px 0; line-height: 1.7; white-space: pre; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12.5px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-gray   { background: #f1f5f9; color: #475569; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 13px; }
+  .warn-box  { background: #fefce8; border-left: 4px solid #eab308; padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 13px; }
+  .ok-box    { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 13px; }
+
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 32px 0; }
+  ul { margin: 8px 0 16px 24px; }
+  li { margin-bottom: 4px; }
+
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Fortnox Integration Research — Adgrabber AB</h1>
+  <p class="subtitle">
+    Company: <strong>Adgrabber AB</strong> &nbsp;|&nbsp;
+    Fortnox account: <strong>Oleksandr Boiko</strong> &nbsp;|&nbsp;
+    n8n host: <strong>automation.offertizer.com</strong> &nbsp;|&nbsp;
+    Researched: 2026-03-12
+  </p>
+
+  <div class="info-box">
+    <strong>Purpose:</strong> This document captures everything collected from the Fortnox side of the Adgrabber integration. It is a companion to <code>airtable_schema_documentation.html</code> which covers the Airtable side. Together they describe the full Fortnox ↔ n8n ↔ Airtable architecture.
+  </div>
+
+  <!-- ===== SECTION 1: OVERVIEW ===== -->
+  <h2>1. System Overview</h2>
+
+  <pre>
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │                        FORTNOX (api.fortnox.se/3)                   │
+  │  Customers · Suppliers · Supplier Invoices · Orders · Invoices      │
+  │  Articles · Payments · Accounting                                    │
+  └────────────────────────────┬────────────────────────────────────────┘
+                               │  OAuth2 (Client ID: y9FK6cDsK8N1)
+                               │  Service Account mode
+                               ▼
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │                n8n  (automation.offertizer.com)                      │
+  │  Workflows poll Fortnox API and push/pull data via REST              │
+  │  Credential: integration-adgrabber OAuth2 app                       │
+  └────────────────────────────┬────────────────────────────────────────┘
+                               │  Airtable API
+                               ▼
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │           AIRTABLE  (app01yDjf98U6ejKs)                             │
+  │  DEV. Betaportal Adgrabber 2.0 (Feb 2026)                           │
+  │  FortnoxCustomer · FortnoxSupplier · FortnoxSupplierInvoice         │
+  │  FortnoxOrder · Fortnox OrderRow · FortnoxInvoice                   │
+  │  FortnoxInvoiceRow · FortnoxArticle                                 │
+  └─────────────────────────────────────────────────────────────────────┘
+  </pre>
+
+  <!-- ===== SECTION 2: FORTNOX ACCOUNT ===== -->
+  <h2>2. Fortnox Account Details</h2>
+
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Company</td><td>Adgrabber AB</td></tr>
+    <tr><td>Login user</td><td>Oleksandr Boiko</td></tr>
+    <tr><td>App URL</td><td><code>https://apps2.fortnox.se/app/2d74fe2fbacf476ca7aaf34175832a47/</code></td></tr>
+    <tr><td>Tenant hash</td><td><code>2d74fe2fbacf476ca7aaf34175832a47</code></td></tr>
+    <tr><td>Financial year</td><td>2025 / 2026</td></tr>
+    <tr><td>API base URL</td><td><code>https://api.fortnox.se/3/</code></td></tr>
+    <tr><td>Old API URL (deprecated)</td><td><code>https://apps.fortnox.se/3/</code> — redirects to above since Feb 9, 2026</td></tr>
+  </table>
+
+  <!-- ===== SECTION 3: REGISTERED OAUTH APPS ===== -->
+  <h2>3. Registered OAuth Applications</h2>
+
+  <p>5 OAuth apps are registered in the Fortnox Developer Portal under Adgrabber AB. All are <em>Unpublished</em> (private/internal use). Only <strong>integration-adgrabber</strong> appears in "My Integrations" as the production integration.</p>
+
+  <table>
+    <tr><th>Name</th><th>Client ID</th><th>Integration ID</th><th>Service Account</th><th>Scope Set</th><th>Role</th></tr>
+    <tr>
+      <td><strong>integration-adgrabber</strong></td>
+      <td><code>y9FK6cDsK8N1</code></td>
+      <td>30271</td>
+      <td><span class="badge badge-green">Enabled</span></td>
+      <td><span class="badge badge-red">Full (29 scopes)</span></td>
+      <td>Main production integration</td>
+    </tr>
+    <tr>
+      <td><strong>adgrabber-websocket2</strong></td>
+      <td><code>Se51mVCpQjKI</code></td>
+      <td>28374</td>
+      <td><span class="badge badge-green">Enabled</span></td>
+      <td><span class="badge badge-orange">Limited (9 scopes)</span></td>
+      <td>Likely event/webhook variant</td>
+    </tr>
+    <tr>
+      <td><strong>adgrabber-websocket3</strong></td>
+      <td><code>iMFXZXh92p9J</code></td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-gray">Not inspected</span></td>
+      <td>Likely event/webhook variant</td>
+    </tr>
+    <tr>
+      <td><strong>integration-adgrabber-aaron</strong></td>
+      <td><code>YlnUeWjlVoNY</code></td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-gray">Not inspected</span></td>
+      <td>Personal/dev integration (team member)</td>
+    </tr>
+    <tr>
+      <td><strong>test_integration</strong></td>
+      <td><code>OZU5fYYq7Am0</code></td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-gray">Not inspected</span></td>
+      <td>Development/testing only</td>
+    </tr>
+  </table>
+
+  <div class="warn-box">
+    <strong>Integration currently inactive:</strong> As of 2026-03-12, <code>integration-adgrabber</code> is listed under <em>Inactive integrations</em> in Fortnox "My Integrations" — it has not been used for 45+ days. Despite this, the Developer Portal token exchange chart shows recent activity (Mar 2–11, 2026), suggesting the n8n credential is still valid but Fortnox considers the user-facing integration stale. Re-activation button is available in Fortnox if needed.
+  </div>
+
+  <!-- ===== SECTION 4: INTEGRATION-ADGRABBER FULL DETAILS ===== -->
+  <h2>4. integration-adgrabber — Full Details</h2>
+
+  <h3>4.1 OAuth Configuration</h3>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td>integration-adgrabber</td></tr>
+    <tr><td>Integration ID</td><td>30271</td></tr>
+    <tr><td>Client ID</td><td><code>y9FK6cDsK8N1</code></td></tr>
+    <tr><td>Client Secret</td><td><em>Hidden — stored in n8n credential vault</em></td></tr>
+    <tr><td>Redirect URI</td><td><code>https://automation.offertizer.com/rest/oauth2-credential/callback</code></td></tr>
+    <tr><td>Service Account mode</td><td><span class="badge badge-green">Enabled</span> — server-to-server, events not linked to individual users</td></tr>
+    <tr><td>Publication status</td><td>Unpublished (private, not listed in Fortnox marketplace)</td></tr>
+    <tr><td>Category</td><td>CRM</td></tr>
+    <tr><td>Start page URL</td><td><code>https://www.adgrabber.io</code></td></tr>
+    <tr><td>Activation page URL</td><td><code>https://www.adgrabber.io</code></td></tr>
+  </table>
+
+  <h3>4.2 Granted Permissions (all 29 Fortnox scopes enabled)</h3>
+  <table>
+    <tr><th>Scope (Swedish)</th><th>English</th><th>Used for</th></tr>
+    <tr><td>Artikel</td><td>Article / Product catalog</td><td>FortnoxArticle sync</td></tr>
+    <tr><td>Kund</td><td>Customer</td><td>FortnoxCustomer sync</td></tr>
+    <tr><td>Leverantör</td><td>Supplier</td><td>FortnoxSupplier sync</td></tr>
+    <tr><td>Leverantörsfaktura</td><td>Supplier invoice</td><td>FortnoxSupplierInvoice sync</td></tr>
+    <tr><td>Order</td><td>Sales order</td><td>FortnoxOrder push &amp; pull</td></tr>
+    <tr><td>Faktura</td><td>Customer invoice</td><td>FortnoxInvoice sync</td></tr>
+    <tr><td>Koppla filer</td><td>Attach files</td><td>PDF attachment on supplier invoices</td></tr>
+    <tr><td>Utskrift</td><td>Print / PDF export</td><td>Download invoice PDFs</td></tr>
+    <tr><td>Valuta</td><td>Currency</td><td>CurrencyRate on supplier invoices</td></tr>
+    <tr><td>Betalningar</td><td>Payments</td><td>Payment status tracking</td></tr>
+    <tr><td>Bokföring</td><td>Accounting / Vouchers</td><td>Accounting entries</td></tr>
+    <tr><td>Offert</td><td>Quote</td><td>Quotes (Offert table in Airtable)</td></tr>
+    <tr><td>Projekt</td><td>Project</td><td>Project tracking</td></tr>
+    <tr><td>Pris</td><td>Price list</td><td>Pricing data</td></tr>
+    <tr><td>Lager</td><td>Warehouse / Inventory</td><td>Inventory management</td></tr>
+    <tr><td>Lagerdokument</td><td>Warehouse documents</td><td>Warehouse document handling</td></tr>
+    <tr><td>Faktura (Nox Finans)</td><td>Invoice financing</td><td>Invoice factoring via Nox Finans</td></tr>
+    <tr><td>Företagsinformation</td><td>Company information</td><td>Company details</td></tr>
+    <tr><td>Företagslogga</td><td>Company logo</td><td>Logo retrieval</td></tr>
+    <tr><td>Försäljnings-API</td><td>Sales API (advanced)</td><td>Extended sales operations</td></tr>
+    <tr><td>Inbox</td><td>Inbox / Notifications</td><td>Fortnox inbox messages</td></tr>
+    <tr><td>Inställningar</td><td>Settings</td><td>Account settings access</td></tr>
+    <tr><td>Kostnadsställe</td><td>Cost centre</td><td>Cost centre assignments</td></tr>
+    <tr><td>Lön</td><td>Salary / Payroll</td><td>Payroll data</td></tr>
+    <tr><td>Profil</td><td>User profile</td><td>User profile data</td></tr>
+    <tr><td>Ta bort verifikat</td><td>Delete vouchers</td><td>Voucher deletion</td></tr>
+    <tr><td>Tid</td><td>Time registration</td><td>Time entries</td></tr>
+    <tr><td>Utvecklar-API</td><td>Developer API</td><td>Advanced developer endpoints</td></tr>
+    <tr><td>Anläggningsregister</td><td>Asset register</td><td>Fixed assets</td></tr>
+    <tr><td>Arkivplats</td><td>Archive storage</td><td>Document archive</td></tr>
+  </table>
+
+  <!-- ===== SECTION 5: WEBSOCKET2 DETAILS ===== -->
+  <h2>5. adgrabber-websocket2 — Details</h2>
+
+  <h3>5.1 OAuth Configuration</h3>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Client ID</td><td><code>Se51mVCpQjKI</code></td></tr>
+    <tr><td>Integration ID</td><td>28374</td></tr>
+    <tr><td>Redirect URI</td><td><code>https://automation.offertizer.com/rest/oauth2-credential/callback</code></td></tr>
+    <tr><td>Service Account mode</td><td><span class="badge badge-green">Enabled</span></td></tr>
+    <tr><td>Publication status</td><td>Unpublished</td></tr>
+  </table>
+
+  <h3>5.2 Granted Permissions (9 scopes — read-focused subset)</h3>
+  <table>
+    <tr><th>Scope</th><th>English</th></tr>
+    <tr><td>Artikel</td><td>Article</td></tr>
+    <tr><td>Faktura</td><td>Invoice</td></tr>
+    <tr><td>Företagsinformation</td><td>Company information</td></tr>
+    <tr><td>Kund</td><td>Customer</td></tr>
+    <tr><td>Leverantör</td><td>Supplier</td></tr>
+    <tr><td>Leverantörsfaktura</td><td>Supplier invoice</td></tr>
+    <tr><td>Order</td><td>Order</td></tr>
+    <tr><td>Profil</td><td>Profile</td></tr>
+    <tr><td>Projekt</td><td>Project</td></tr>
+  </table>
+
+  <!-- ===== SECTION 6: AUTH FLOW ===== -->
+  <h2>6. Authentication Flow</h2>
+
+  <h3>6.1 Standard OAuth2 (Authorization Code)</h3>
+  <pre>
+  1. n8n (automation.offertizer.com) initiates OAuth2 Authorization Code flow
+  2. User / service account grants permission at id.fortnox.se
+  3. Fortnox redirects back to:
+       https://automation.offertizer.com/rest/oauth2-credential/callback
+     with ?code={authorization_code}
+  4. n8n exchanges code for access_token + refresh_token
+  5. n8n stores tokens in its credential store
+  6. API calls: GET/POST/PUT https://api.fortnox.se/3/{endpoint}
+       Header: Authorization: Bearer {access_token}
+  7. Access tokens expire after 1 hour — n8n auto-refreshes using refresh_token
+  </pre>
+
+  <h3>6.2 Service Account / Client Credentials (new, Dec 2025)</h3>
+  <pre>
+  Both integration-adgrabber and adgrabber-websocket2 have "Service Account" enabled.
+
+  New Client Credentials flow (available since Dec 3, 2025):
+  - No refresh tokens needed
+  - Suitable for server-to-server workflows with no human login
+  - POST https://api.fortnox.se/oauth-v1/token
+      grant_type=client_credentials
+      client_id=y9FK6cDsK8N1
+      client_secret={secret}
+  - Returns access_token directly
+  - Recommended migration path to simplify token management in n8n
+  </pre>
+
+  <!-- ===== SECTION 7: API ENDPOINTS IN USE ===== -->
+  <h2>7. Fortnox API Endpoints Used</h2>
+
+  <p>Based on the 8 Fortnox-related Airtable tables, the following API endpoints are actively consumed by n8n:</p>
+
+  <table>
+    <tr><th>Endpoint</th><th>Method(s)</th><th>Airtable Table</th><th>Sync Direction</th></tr>
+    <tr>
+      <td><code>/customers</code></td>
+      <td>GET</td>
+      <td>FortnoxCustomer</td>
+      <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+    </tr>
+    <tr>
+      <td><code>/suppliers</code></td>
+      <td>GET</td>
+      <td>FortnoxSupplier</td>
+      <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+    </tr>
+    <tr>
+      <td><code>/supplierinvoices</code></td>
+      <td>GET</td>
+      <td>FortnoxSupplierInvoice</td>
+      <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+    </tr>
+    <tr>
+      <td><code>/supplierinvoices/{id}/preview</code></td>
+      <td>GET</td>
+      <td>FortnoxSupplierInvoice (PDF field)</td>
+      <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+    </tr>
+    <tr>
+      <td><code>/orders</code></td>
+      <td>GET, POST, PUT</td>
+      <td>FortnoxOrder</td>
+      <td><span class="badge badge-orange">Bidirectional</span></td>
+    </tr>
+    <tr>
+      <td><code>/orders/{id}/orderrows</code></td>
+      <td>GET, POST</td>
+      <td>Fortnox OrderRow</td>
+      <td><span class="badge badge-orange">Bidirectional</span></td>
+    </tr>
+    <tr>
+      <td><code>/invoices</code></td>
+      <td>GET</td>
+      <td>FortnoxInvoice</td>
+      <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+    </tr>
+    <tr>
+      <td><code>/invoices/{id}/invoicerows</code></td>
+      <td>GET</td>
+      <td>FortnoxInvoiceRow</td>
+      <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+    </tr>
+    <tr>
+      <td><code>/articles</code></td>
+      <td>GET</td>
+      <td>FortnoxArticle</td>
+      <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    Full API documentation: <strong>https://apps.fortnox.se/apidocs</strong> (linked from Fortnox Developer Portal)
+  </div>
+
+  <!-- ===== SECTION 8: IMPORTANT NOTES ===== -->
+  <h2>8. Important Notes &amp; Action Items</h2>
+
+  <h3>8.1 API URL migration (completed Feb 9, 2026)</h3>
+  <div class="ok-box">
+    Fortnox deprecated <code>apps.fortnox.se/3</code> on Feb 9, 2026. All calls now redirect to <code>api.fortnox.se/3</code>. If any n8n nodes still use the old URL, they should be updated — though redirects are currently in place.
+  </div>
+
+  <h3>8.2 Integration inactive warning</h3>
+  <div class="warn-box">
+    <code>integration-adgrabber</code> is flagged as <strong>Inactive</strong> in Fortnox (45+ days unused as of 2026-03-12). If n8n workflows stop working, try the <strong>"Activate integration"</strong> button in Fortnox → Menu → Integrations → My integrations. The OAuth tokens themselves appear valid (token exchange chart shows recent Mar 2026 activity).
+  </div>
+
+  <h3>8.3 Client Credentials migration opportunity</h3>
+  <div class="info-box">
+    Both integrations have <strong>Service Account mode enabled</strong>. Fortnox now supports the <strong>Client Credentials</strong> OAuth2 grant type (released Dec 3, 2025) — this eliminates refresh token management. Consider migrating the n8n Fortnox credential to Client Credentials for simpler, more reliable auth.
+  </div>
+
+  <h3>8.4 Webhook support (new)</h3>
+  <div class="info-box">
+    Fortnox now supports webhooks for: integration purchase, rating/review, license expiry, and user invitations/deactivations. Currently not configured for Adgrabber. Could replace or supplement polling-based n8n workflows for near-real-time sync.
+  </div>
+
+  <hr>
+  <p style="color: #888; font-size: 12px; text-align: center;">
+    Fortnox Integration Research — Adgrabber AB &nbsp;|&nbsp; Collected via Playwright MCP from Fortnox Developer Portal &nbsp;|&nbsp; 2026-03-12
+  </p>
+
+</div>
+</body>
+</html>
