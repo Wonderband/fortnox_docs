@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortnox ↔ n8n ↔ Airtable — Sync Architecture Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.6; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  h2 { font-size: 19px; color: #16213e; margin: 36px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 32px; }
+  p { margin-bottom: 10px; }
+  ul { margin: 6px 0 14px 24px; }
+  li { margin-bottom: 4px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  tr:hover td { background: #eef2ff; }
+
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 18px 20px; border-radius: 6px; font-size: 12.5px; font-family: 'Consolas', 'Courier New', monospace; overflow-x: auto; margin: 12px 0 20px 0; line-height: 1.7; white-space: pre; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12.5px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-gray   { background: #f1f5f9; color: #475569; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+
+  .info-box  { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box  { background: #fefce8; border-left: 4px solid #eab308; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box    { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .inferred-section { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred-section h3 { color: #9a3412; margin-top: 14px; }
+  .inferred-section h3:first-child { margin-top: 0; }
+
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 32px 0; }
+
+  .toc { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 24px; margin: 20px 0 36px 0; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; color: #0f3460; }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 3px; }
+  .toc a { color: #0f3460; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Fortnox ↔ n8n ↔ Airtable — Sync Architecture Report</h1>
+  <p class="subtitle">
+    Company: <strong>Adgrabber AB</strong> &nbsp;|&nbsp;
+    n8n host: <strong>automation.offertizer.com</strong> &nbsp;|&nbsp;
+    Airtable base: <strong>app01yDjf98U6ejKs</strong> (DEV. Betaportal Adgrabber 2.0) &nbsp;|&nbsp;
+    Last updated: 2026-03-17
+  </p>
+
+  <div class="info-box">
+    <strong>How to read this report:</strong> Sections 1–5 contain only directly observed facts (Airtable MCP field inspection, Playwright browser inspection, and saved documentation files). Section 6 contains inferred architecture and is clearly marked as such. Do not treat anything in Section 6 as a confirmed fact.
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">Fortnox OAuth Applications (confirmed)</a></li>
+      <li><a href="#s2">Airtable Tables — Names, IDs, Sync Views (confirmed)</a></li>
+      <li><a href="#s3">Sync-Relevant Fields Per Table (confirmed)</a></li>
+      <li><a href="#s4">Key Field Details — Types and Option Values (confirmed)</a></li>
+      <li><a href="#s5">Fortnox API — Confirmed Documentation Facts</a></li>
+      <li><a href="#s6">Inferred Architecture (not confirmed — n8n workflows not inspected)</a></li>
+      <li><a href="#s7">Open Questions</a></li>
+    </ol>
+  </div>
+
+  <!-- ===== SECTION 1 ===== -->
+  <h2 id="s1">1. Fortnox OAuth Applications</h2>
+
+  <div class="source-box">
+    <strong>Source:</strong> <code>fortnox_integration_documentation.html</code> — Fortnox Developer Portal and "My Integrations" page observed via Playwright on 2026-03-12.
+  </div>
+
+  <table>
+    <tr><th>App Name</th><th>Client ID</th><th>In "My Integrations"?</th><th>Scope count</th><th>Notes</th></tr>
+    <tr>
+      <td><strong>integration-adgrabber</strong></td>
+      <td><code>y9FK6cDsK8N1</code></td>
+      <td><span class="badge badge-orange">Yes — listed as Inactive (45+ days)</span></td>
+      <td>29 scopes (read + write)</td>
+      <td>Only app authorized against the Adgrabber AB Fortnox account. Token exchange chart showed activity in March 2026 — workflows are running despite "inactive" label.</td>
+    </tr>
+    <tr>
+      <td><strong>adgrabber-websocket2</strong></td>
+      <td><code>Se51mVCpQjKI</code></td>
+      <td><span class="badge badge-red">No — Developer Portal only</span></td>
+      <td>9 scopes (read only)</td>
+      <td>Registered but never authorized against the Adgrabber AB account. No active OAuth tokens. Service Account mode enabled.</td>
+    </tr>
+    <tr>
+      <td><strong>adgrabber-websocket3</strong></td>
+      <td><code>iMFXZXh92p9J</code></td>
+      <td><span class="badge badge-red">No — Developer Portal only</span></td>
+      <td>—</td>
+      <td>Registered but never authorized.</td>
+    </tr>
+    <tr>
+      <td><strong>integration-adgrabber-aaron</strong></td>
+      <td><code>YlnUeWjlVoNY</code></td>
+      <td><span class="badge badge-red">No</span></td>
+      <td>—</td>
+      <td>Personal dev credential for team member Aaron.</td>
+    </tr>
+    <tr>
+      <td><strong>test_integration</strong></td>
+      <td><code>OZU5fYYq7Am0</code></td>
+      <td><span class="badge badge-red">No</span></td>
+      <td>—</td>
+      <td>Testing only.</td>
+    </tr>
+  </table>
+
+  <div class="warn-box">
+    <code>integration-adgrabber</code> is listed as <strong>"Inactive"</strong> in Fortnox (no user-facing activity for 45+ days). However, the Developer Portal token exchange chart showed activity in early March 2026, confirming the n8n workflows still hold valid tokens and are running. If sync breaks, try clicking "Activate integration" in Fortnox → My Integrations.
+  </div>
+
+  <!-- ===== SECTION 2 ===== -->
+  <h2 id="s2">2. Airtable Tables — Names, IDs, Sync Views</h2>
+
+  <div class="source-box">
+    <strong>Source:</strong> Airtable MCP <code>describe_table</code> (identifiersOnly) on all 8 tables in base <code>app01yDjf98U6ejKs</code>, 2026-03-17.
+  </div>
+
+  <table>
+    <tr><th>Table Name</th><th>Table ID</th><th>Sync-Named Views (confirmed present)</th><th>Other notable views</th></tr>
+    <tr>
+      <td><strong>FortnoxOrder</strong></td>
+      <td><code>tblhNdAzxbWeNgEgW</code></td>
+      <td><code>FortnoxOrder_Sync</code> (<code>viwvi9hZ9LGwvToA7</code>)</td>
+      <td>All, Grid view, Lan checking, Ida to check, Orders/Dev Troubleshooting, Aaron View, No Kunder, Upplupna, Dev</td>
+    </tr>
+    <tr>
+      <td><strong>Fortnox OrderRow</strong></td>
+      <td><code>tbl4kQjfGdqF1TWkS</code></td>
+      <td>
+        <code>Fortnox_OrderrowSync</code> (<code>viwvckXL7m6mGjtDg</code>)<br>
+        <code>CHANGED/DELETED TODAY IN FORTNOX</code> (<code>viwQBDZAqM9B4TqxE</code>)<br>
+        <code>sync view</code> (<code>viwPhQOKDEEyxnIQv</code>)
+      </td>
+      <td>All, Dev view, When order with alloc is deleted, When order with alloc is changed, Not Fully Allocated, No articles, Deleted But Allocated, Modified Time</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxSupplier</strong></td>
+      <td><code>tblSFdN7U9Bri8zwr</code></td>
+      <td><code>FortnoxSupplier_Sync</code> (<code>viw2TGof48VWPWcN9</code>)</td>
+      <td>All, platforms, Platforms (Not Fortnox), Dev-sync, Actuals and Budgeted</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxCustomer</strong></td>
+      <td><code>tblDF3Ff0KJ3pN6aG</code></td>
+      <td><code>FortnoxCustomer_Sync</code> (<code>viwETZqkcd83l07Ti</code>)</td>
+      <td>Grid view, Dev, Dev M, Unpaid Invoices</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxSupplierInvoice</strong></td>
+      <td><code>tblYERBn2P6wrHEzl</code></td>
+      <td><code>FortnoxSupplierInvoice_Sync</code> (<code>viw7DuGU10PXdN1NR</code>)</td>
+      <td>All, Platform, Platform copy, Lan, Offertizer tracking, Dev, Dev|Check Daily, Google Ads</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxInvoice</strong></td>
+      <td><code>tblOLaZyIaVJP6h6V</code></td>
+      <td><code>FortnoxInvoice_Sync</code> (<code>viwpinefLB6kkZURy</code>)</td>
+      <td>All, Dev, Dev Sync</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxInvoiceRow</strong></td>
+      <td><code>tblDkNRTKMTpMTLK3</code></td>
+      <td><code>FortnoxInvoiceRow_Sync</code> (<code>viwyuGdBqSkDwHZGY</code>)</td>
+      <td>All, Grid view copy</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxArticle</strong></td>
+      <td><code>tbllLCePTMAsMqF3A</code></td>
+      <td><code>FortnoxArticle_Sync</code> (<code>viw78ILD2ZJJVnNrw</code>)</td>
+      <td>All, Interface view</td>
+    </tr>
+  </table>
+
+  <p>All 8 tables have exactly one <code>*_Sync</code> named view. Fortnox OrderRow additionally has two more sync-named views (<code>CHANGED/DELETED TODAY IN FORTNOX</code> and <code>sync view</code>).</p>
+
+  <!-- ===== SECTION 3 ===== -->
+  <h2 id="s3">3. Sync-Relevant Fields Per Table</h2>
+
+  <div class="source-box">
+    <strong>Source:</strong> Airtable MCP <code>describe_table</code> (identifiersOnly) on all 8 tables, 2026-03-17. Field IDs are exact.
+  </div>
+
+  <h3>3.1 @url Field (Fortnox REST URL stored per record)</h3>
+  <p>Present on 7 of 8 tables. Absent only on <strong>FortnoxInvoiceRow</strong> — consistent with the Fortnox REST API not exposing individual invoice row URLs.</p>
+  <table>
+    <tr><th>Table</th><th>@url field ID</th></tr>
+    <tr><td>FortnoxOrder</td><td><code>fldtR0mLqKMcMUuEb</code></td></tr>
+    <tr><td>FortnoxSupplier</td><td><code>fldakyi70OZDQQCWG</code></td></tr>
+    <tr><td>FortnoxCustomer</td><td><code>fldG9l81CELdYm9Yq</code></td></tr>
+    <tr><td>FortnoxSupplierInvoice</td><td><code>fldXEitnLyFSDIgLu</code></td></tr>
+    <tr><td>FortnoxInvoice</td><td><code>fldh69hzGmJ865icr</code></td></tr>
+    <tr><td>FortnoxArticle</td><td><code>fldQnIhF9PguBGUBh</code></td></tr>
+    <tr><td>Fortnox OrderRow</td><td><em>absent</em></td></tr>
+    <tr><td>FortnoxInvoiceRow</td><td><em>absent</em></td></tr>
+  </table>
+
+  <h3>3.2 Last Modified Time Field (Airtable native — tracks when record was last changed)</h3>
+  <p>Present on all 8 tables.</p>
+  <table>
+    <tr><th>Table</th><th>Last Modified Time field ID</th></tr>
+    <tr><td>FortnoxOrder</td><td><code>fldJVHUL4NUQwtN8d</code></td></tr>
+    <tr><td>Fortnox OrderRow</td><td><code>fldsOFOXme8JHsPcl</code></td></tr>
+    <tr><td>FortnoxSupplier</td><td><code>flduJAvEqDmaLzOOE</code></td></tr>
+    <tr><td>FortnoxCustomer</td><td><code>fldulguW8Lu73NQvM</code></td></tr>
+    <tr><td>FortnoxSupplierInvoice</td><td><code>fldwgUzOPRalYsqNA</code></td></tr>
+    <tr><td>FortnoxInvoice</td><td><code>fldsVEZVh5W5UoYhR</code></td></tr>
+    <tr><td>FortnoxInvoiceRow</td><td><code>fldYCV9JYerwJ8wTe</code></td></tr>
+    <tr><td>FortnoxArticle</td><td><code>fldgLM8JIg4U2HXtT</code></td></tr>
+  </table>
+
+  <h3>3.3 Other Sync-Relevant Fields Per Table</h3>
+  <table>
+    <tr><th>Table</th><th>Field Name</th><th>Field ID</th><th>Notes</th></tr>
+    <tr>
+      <td rowspan="4"><strong>FortnoxOrder</strong></td>
+      <td><code>Sync Fortnox</code></td><td><code>fldndcQ18GNYvCX5W</code></td><td>singleSelect — write-queue flag. Options: see Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>Order Status</code></td><td><code>fldKsozBAGse0eIye</code></td><td>singleSelect — order lifecycle. Options: see Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>Fortnox Status</code></td><td><code>fldKNVSXlDR1BvAwP</code></td><td>singleSelect — status from Fortnox side. Options: see Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified</code></td><td><code>fldUALMqvlkTk084O</code></td><td>Scoped LMT — watches only <code>Lan/Dev checking</code> field. See Section 4.</td>
+    </tr>
+    <tr>
+      <td rowspan="10"><strong>Fortnox OrderRow</strong></td>
+      <td><code>LineItem Source</code></td><td><code>fld9LnfgJFuHATduq</code></td><td>singleSelect — origin of row. Options: see Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>Deleted/Changed in fortnox</code></td><td><code>fldmJ0KDVjFFc4X8m</code></td><td>singleSelect — flags Fortnox-side events. Options: see Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>When is it changed/deleted in fortnox</code></td><td><code>fldtt6aQz60fECbEU</code></td><td>date field (manually entered)</td>
+    </tr>
+    <tr>
+      <td><code>is it changed/deleted today?</code></td><td><code>fld11HYHPx7r33lLf</code></td><td>formula: <code>{date field} = TODAY()</code> — drives the CHANGED/DELETED TODAY view</td>
+    </tr>
+    <tr>
+      <td><code>Deleted</code></td><td><code>fldsmN2J2CSDz2bsG</code></td><td>checkbox — soft-delete flag</td>
+    </tr>
+    <tr>
+      <td><code>Fortnox details modified date</code></td><td><code>fldvqfi6q0MQfDpUp</code></td><td>scoped LMT — watches Fortnox data fields. See Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified</code></td><td><code>fld2hLWBv9Xbyf1Fz</code></td><td>scoped LMT — watches <code>Total</code> only. See Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified 2</code></td><td><code>fldDr5FW9C7DX6jKT</code></td><td>scoped LMT — watches <code>Line Item Allocation</code> link only. See Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified 3</code></td><td><code>fldNfzAn3bWHthZED</code></td><td>scoped LMT — watches <code>Deleted</code> checkbox only. See Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified 4</code></td><td><code>fldK6fWbV5MbDWzgm</code></td><td>scoped LMT — watches ALL fields. See Section 4.</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><strong>FortnoxSupplier</strong></td>
+      <td><code>Internal Status</code></td><td><code>fldrplbj7CWQ4v4qK</code></td><td>singleSelect — sync gate per supplier. Options: see Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified Time</code></td><td><code>flduJAvEqDmaLzOOE</code></td><td>Airtable native LMT (scope not yet confirmed).</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><strong>FortnoxCustomer</strong></td>
+      <td><code>Fortnox Customer ID</code></td><td><code>fldFOMOXxwQ3lp7ao</code></td><td>text — stores the Fortnox-side customer number</td>
+    </tr>
+    <tr>
+      <td><code>Fortnox API URL</code></td><td><code>fldEGxYMWvbah6drF</code></td><td>separate URL field alongside <code>@url</code></td>
+    </tr>
+    <tr>
+      <td><code>Fortnox status</code></td><td><code>fld0QMuIG19GOSKtd</code></td><td>singleSelect — option values not yet confirmed</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><strong>FortnoxSupplierInvoice</strong></td>
+      <td><code>Sync</code></td><td><code>fldTSfERJEsU4O6rn</code></td><td>multipleLookupValues — pulls <code>Internal Status</code> from linked FortnoxSupplier. Not a standalone field. See Section 4.</td>
+    </tr>
+    <tr>
+      <td><code>Invoice PDF</code></td><td><code>flddfQgb2IOie2tzp</code></td><td>multipleAttachments — binary PDF stored in Airtable</td>
+    </tr>
+    <tr>
+      <td><code>Invoice PDF URL</code></td><td><code>fldpZ1TptTqeGBXGw</code></td><td>url — direct link to PDF</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxInvoiceRow</strong></td>
+      <td><code>RowId</code></td><td><code>fldawUrI6gPlHkTS4</code></td><td>Fortnox REST API row identifier. No @url field on this table.</td>
+    </tr>
+    <tr>
+      <td><strong>Fortnox OrderRow</strong></td>
+      <td><code>RowId</code></td><td><code>fldgNVOdjmAuAS5xl</code></td><td>Fortnox REST API row identifier.</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><strong>FortnoxArticle</strong></td>
+      <td><code>Last Modified</code></td><td><code>fldzZV5GwyDpoHfw0</code></td><td>scoped LMT — scope not yet confirmed</td>
+    </tr>
+    <tr>
+      <td><code>ArticleNumber</code></td><td><code>fldJ3xeXrcVh8Py8Y</code></td><td>stores the Fortnox article number</td>
+    </tr>
+  </table>
+
+  <!-- ===== SECTION 4 ===== -->
+  <h2 id="s4">4. Key Field Details — Types and Option Values</h2>
+
+  <div class="source-box">
+    <strong>Source:</strong> Airtable MCP <code>describe_table</code> at <strong>full</strong> detail level on FortnoxOrder, Fortnox OrderRow, FortnoxSupplier, FortnoxSupplierInvoice. 2026-03-17. FortnoxOrder_Sync view filter confirmed via Playwright, same date.
+  </div>
+
+  <h3>4.1 SingleSelect Option Values (confirmed exact strings)</h3>
+
+  <table>
+    <tr><th>Table</th><th>Field</th><th>Confirmed Options</th></tr>
+    <tr>
+      <td>FortnoxOrder</td>
+      <td><code>Sync Fortnox</code></td>
+      <td><strong>"To sync"</strong> / <strong>"In progress"</strong></td>
+    </tr>
+    <tr>
+      <td>FortnoxOrder</td>
+      <td><code>Order Status</code></td>
+      <td><strong>"Airtable Draft"</strong> → <strong>"Copy to Fortnox"</strong> → <strong>"Fortnox Order"</strong> → <strong>"Order Ready To Invoice"</strong> → <strong>"Order Invoiced"</strong> → <strong>"Order Linked To Kampanj"</strong></td>
+    </tr>
+    <tr>
+      <td>FortnoxOrder</td>
+      <td><code>Fortnox Status</code></td>
+      <td><strong>"Pending"</strong> / <strong>"Complete"</strong> / <strong>"Incomplete"</strong></td>
+    </tr>
+    <tr>
+      <td>Fortnox OrderRow</td>
+      <td><code>LineItem Source</code></td>
+      <td><strong>"Fortnox"</strong> / <strong>"Airtable users"</strong></td>
+    </tr>
+    <tr>
+      <td>Fortnox OrderRow</td>
+      <td><code>Deleted/Changed in fortnox</code></td>
+      <td><strong>"Deleted"</strong> / <strong>"Changed"</strong></td>
+    </tr>
+    <tr>
+      <td>FortnoxSupplier</td>
+      <td><code>Internal Status</code></td>
+      <td><strong>"Do not sync"</strong> / <strong>"Sync"</strong></td>
+    </tr>
+  </table>
+
+  <h3>4.2 FortnoxSupplierInvoice — Sync Field Is a Lookup</h3>
+  <p>The <code>Sync</code> field (<code>fldTSfERJEsU4O6rn</code>) on FortnoxSupplierInvoice is type <code>multipleLookupValues</code>. It pulls <code>Internal Status</code> from the linked FortnoxSupplier record. It is not an independent field — it reflects whatever sync gate value the parent supplier has.</p>
+  <p>The table additionally has <code>Supplier Internal Status</code> (<code>fldi8XVUB7Ik48CDi</code>) and <code>Supplier Internal Status String</code> (<code>fldTeeLyx67EtZpeo</code>) — also lookups from the parent supplier.</p>
+
+  <h3>4.3 FortnoxOrder_Sync View — Confirmed Filter</h3>
+  <div class="warn-box">
+    Inspected via Playwright on 2026-03-17. The view filter is <strong>"Created is within the past month"</strong> (time window on the record creation date). It is <strong>not</strong> filtered by <code>Sync Fortnox</code> field value. The view is a <strong>personal view</strong> (not collaborative — visible but not configurable by other users). It showed 0 records at time of inspection.
+  </div>
+
+  <h3>4.4 Last Modified Time Scope Map — Fortnox OrderRow</h3>
+  <p>Six LMT-type fields exist on Fortnox OrderRow, each watching a different column subset. Confirmed via full detail describe_table.</p>
+
+  <table>
+    <tr><th>Field Name</th><th>Field ID</th><th>Columns Watched</th></tr>
+    <tr>
+      <td><code>Last Modified Time</code></td>
+      <td><code>fldsOFOXme8JHsPcl</code></td>
+      <td>44 specific fields — all Fortnox data fields + LineItem Source + Deleted/Changed</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified</code></td>
+      <td><code>fld2hLWBv9Xbyf1Fz</code></td>
+      <td><code>Total</code> (<code>fld4AHQzVP3pcYM7r</code>) only</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified 2</code></td>
+      <td><code>fldDr5FW9C7DX6jKT</code></td>
+      <td><code>Line Item Allocation</code> link (<code>fldcGl9Dg0iXTZa5Y</code>) only</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified 3</code></td>
+      <td><code>fldNfzAn3bWHthZED</code></td>
+      <td><code>Deleted</code> checkbox (<code>fldsmN2J2CSDz2bsG</code>) only</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified 4</code></td>
+      <td><code>fldK6fWbV5MbDWzgm</code></td>
+      <td>ALL fields (<code>referencedFieldIds: []</code>)</td>
+    </tr>
+    <tr>
+      <td><code>Fortnox details modified date</code></td>
+      <td><code>fldvqfi6q0MQfDpUp</code></td>
+      <td>~39 Fortnox-specific data fields (excludes allocation, internal, and derived fields)</td>
+    </tr>
+    <tr>
+      <td><code>When deleted</code></td>
+      <td><code>fldZwXFFyY11FZcQp</code></td>
+      <td><code>Deleted</code> checkbox (<code>fldsmN2J2CSDz2bsG</code>) only — same scope as Last Modified 3</td>
+    </tr>
+  </table>
+
+  <h3>4.5 Last Modified Time Scope — FortnoxOrder</h3>
+  <table>
+    <tr><th>Field Name</th><th>Field ID</th><th>Columns Watched</th></tr>
+    <tr>
+      <td><code>Last Modified Time</code></td>
+      <td><code>fldJVHUL4NUQwtN8d</code></td>
+      <td>ALL fields (<code>referencedFieldIds: []</code>)</td>
+    </tr>
+    <tr>
+      <td><code>Last Modified</code></td>
+      <td><code>fldUALMqvlkTk084O</code></td>
+      <td><code>Lan/Dev checking</code> (<code>fldRauZ8kejGSMn2g</code>) only — a team-internal field, not a sync field</td>
+    </tr>
+  </table>
+
+  <!-- ===== SECTION 5 ===== -->
+  <h2 id="s5">5. Fortnox API — Confirmed Documentation Facts</h2>
+
+  <div class="source-box">
+    <strong>Source:</strong> <code>fortnox_developer_docs.html</code> (saved Fortnox developer documentation), observed 2026-03-12.
+  </div>
+
+  <table>
+    <tr><th>Fact</th><th>Value / Detail</th></tr>
+    <tr>
+      <td>Current REST API base URL</td>
+      <td><code>https://api.fortnox.se/3/</code></td>
+    </tr>
+    <tr>
+      <td>Previous URL (migrated away from)</td>
+      <td><code>apps.fortnox.se/3</code> — migrated to <code>api.fortnox.se/3</code> on <strong>February 9, 2026</strong>. Redirects in place but may be removed.</td>
+    </tr>
+    <tr>
+      <td>REST API rate limit</td>
+      <td>4 requests/second per integration per tenant (sliding window)</td>
+    </tr>
+    <tr>
+      <td>WebSocket endpoint</td>
+      <td><code>wss://ws.fortnox.se/topics-v1</code></td>
+    </tr>
+    <tr>
+      <td>WebSocket backend</td>
+      <td>Apache Kafka</td>
+    </tr>
+    <tr>
+      <td>WebSocket auth</td>
+      <td>OAuth2 access token in subscribe command</td>
+    </tr>
+    <tr>
+      <td>WebSocket subscribe command</td>
+      <td><code>{"command": "add-tenants-v1", "includeChildTenants": true, "clientSecret": "...", "accessTokens": ["Bearer ..."]}</code></td>
+    </tr>
+    <tr>
+      <td>Client Credentials grant type</td>
+      <td>Available since December 3, 2025. Eliminates refresh token rotation. Requires <code>TenantId</code> header per request.</td>
+    </tr>
+    <tr>
+      <td>Fortnox recommendation</td>
+      <td>Documentation explicitly states: <em>"Use WebSockets for real-time data instead of polling."</em></td>
+    </tr>
+  </table>
+
+  <div class="warn-box">
+    <strong>Verify n8n base URL:</strong> All n8n Fortnox nodes should use <code>api.fortnox.se/3</code>, not the old <code>apps.fortnox.se/3</code>. Redirects currently exist but could be removed at any time.
+  </div>
+
+  <!-- ===== SECTION 6 ===== -->
+  <h2 id="s6">6. Inferred Architecture</h2>
+
+  <div class="inferred-section">
+    <p><strong>Everything in this section is inferred.</strong> The actual n8n workflows on <code>automation.offertizer.com</code> were not inspected. The conclusions below are the most plausible interpretations of the confirmed field evidence but are not proven.</p>
+
+    <h3>6.1 What Mechanism Is Currently Active</h3>
+    <p>Only <code>integration-adgrabber</code> has active OAuth tokens (it is the only app in "My Integrations"). The <code>adgrabber-websocket2</code> and <code>adgrabber-websocket3</code> apps exist in the Developer Portal but have never been authorized — they have no tokens and cannot make API calls or open WebSocket connections. It is therefore most likely that all current sync runs through <code>integration-adgrabber</code> using the REST API, triggered on a schedule (cron). The exact interval is not known.</p>
+
+    <h3>6.2 Fortnox → Airtable Direction</h3>
+    <p>The presence of <code>@url</code>, <code>Last Modified Time</code>, and <code>RowId</code> fields on all 8 tables is consistent with n8n periodically fetching data from Fortnox REST API endpoints and upserting Airtable records. The <code>Fortnox details modified date</code> LMT field on Fortnox OrderRow (which watches only Fortnox data fields) could be used to detect whether a row's Fortnox data has changed since last sync. Whether <code>?lastmodified</code> query params are used in the GET calls is not known.</p>
+
+    <h3>6.3 Airtable → Fortnox Direction</h3>
+    <p>FortnoxOrder is the only table with a dedicated write-queue flag: <code>Sync Fortnox</code> (options: "To sync" / "In progress"). This pattern — set to "To sync" to request a push, mark "In progress" while processing — is a common n8n pattern for preventing duplicate runs. FortnoxOrder also has the most complex LMT field setup (multiple scoped fields) which makes sense if n8n writes back to it and needs to avoid re-triggering its own reads.</p>
+    <p>The <code>LineItem Source</code> field ("Fortnox" / "Airtable users") on Fortnox OrderRow likely controls which rows are pushed to Fortnox: only "Airtable users" rows would be written, while "Fortnox" rows would be treated as read-only.</p>
+    <p>The <code>FortnoxOrder_Sync</code> view is confirmed to filter by "Created is within the past month" (not by <code>Sync Fortnox</code> value). Whether n8n applies an additional <code>Sync Fortnox = "To sync"</code> filter within the workflow node — or processes all recent orders unconditionally — is not known.</p>
+
+    <h3>6.4 The Deleted/Changed in Fortnox Cluster</h3>
+    <p>Fortnox OrderRow has a cluster of fields for tracking Fortnox-side deletion/change events: <code>Deleted/Changed in fortnox</code> (singleSelect: "Deleted" / "Changed"), <code>When is it changed/deleted in fortnox</code> (manual date), <code>is it changed/deleted today?</code> (formula comparing that date to today), and the <code>CHANGED/DELETED TODAY IN FORTNOX</code> view. Whether these flags are set automatically by n8n or entered manually is not confirmed.</p>
+
+    <h3>6.5 WebSocket Potential</h3>
+    <p>The <code>adgrabber-websocket2</code> app (9 read-only scopes) appears designed for WebSocket use. Activating it would require only the one-time OAuth authorization step in Fortnox. If deployed, it would replace scheduled polling for the Fortnox → Airtable direction with event-driven updates, reducing API call volume significantly given the 4 req/sec limit is shared across all operations.</p>
+  </div>
+
+  <!-- ===== SECTION 7 ===== -->
+  <h2 id="s7">7. Open Questions</h2>
+
+  <table>
+    <tr><th>Unknown</th><th>Why it matters</th></tr>
+    <tr>
+      <td>Actual n8n workflow structure — cron intervals, node configuration</td>
+      <td>Would confirm or replace all of Section 6. Only way to fully confirm is to inspect the workflows on <code>automation.offertizer.com</code>.</td>
+    </tr>
+    <tr>
+      <td>Whether n8n filters by <code>Sync Fortnox = "To sync"</code> in the workflow node, given the view filter is date-based not flag-based</td>
+      <td>If no flag filter exists in the workflow, all orders created in the past month would be pushed on every run — not just flagged ones.</td>
+    </tr>
+    <tr>
+      <td>Whether <code>Deleted/Changed in fortnox</code> is written by n8n automatically or set manually</td>
+      <td>Determines whether this is an automated detection mechanism or a manual ops workflow.</td>
+    </tr>
+    <tr>
+      <td>Whether <code>?lastmodified</code> filter is used in Fortnox → Airtable polling</td>
+      <td>Without it, every poll fetches the full dataset regardless of changes.</td>
+    </tr>
+    <tr>
+      <td>LMT column scopes for FortnoxSupplier, FortnoxCustomer, FortnoxInvoice, FortnoxInvoiceRow, FortnoxArticle LMT fields</td>
+      <td>These 5 tables were only inspected at identifiersOnly level. Full detail would confirm exact scopes.</td>
+    </tr>
+    <tr>
+      <td>Option values for <code>Fortnox status</code> on FortnoxCustomer</td>
+      <td>Not yet confirmed — needs full detail describe_table on FortnoxCustomer.</td>
+    </tr>
+    <tr>
+      <td>Why WebSocket apps were registered but never authorized in production</td>
+      <td>Understanding this helps assess whether activating them is a safe next step or was deliberately deferred for a reason.</td>
+    </tr>
+  </table>
+
+  <hr>
+  <p style="color: #888; font-size: 12px; text-align: center;">
+    Fortnox ↔ n8n ↔ Airtable Sync Architecture Report &nbsp;|&nbsp; Adgrabber AB &nbsp;|&nbsp;
+    Sources: Airtable MCP describe_table (all 8 tables in app01yDjf98U6ejKs, 2026-03-17) &nbsp;·&nbsp;
+    Playwright view inspection (FortnoxOrder_Sync, 2026-03-17) &nbsp;·&nbsp;
+    fortnox_developer_docs.html &nbsp;·&nbsp; fortnox_integration_documentation.html (observed 2026-03-12)
+  </p>
+
+</div>
+</body>
+</html>
