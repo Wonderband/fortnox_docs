@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaign–Area Budget Validation: Form vs. Record Detail Layout</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; color: #1a1a2e; background: #f5f6fa; line-height: 1.7; }
+  .page { max-width: 960px; margin: 0 auto; padding: 40px 32px 80px; }
+
+  h1 { font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+  h2 { font-size: 20px; font-weight: 700; color: #0f172a; margin: 44px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+  h3 { font-size: 16px; font-weight: 600; color: #334155; margin: 28px 0 10px; }
+  p  { margin: 10px 0; }
+
+  .subtitle { color: #64748b; font-size: 14px; margin-bottom: 36px; }
+
+  /* callout boxes */
+  .callout { border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+  .callout.info   { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .callout.warn   { background: #fff7ed; border-left: 4px solid #f97316; }
+  .callout.danger { background: #fef2f2; border-left: 4px solid #ef4444; }
+  .callout.green  { background: #f0fdf4; border-left: 4px solid #22c55e; }
+  .callout-title  { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; color: #475569; }
+
+  /* official quote */
+  blockquote {
+    background: #f8fafc;
+    border-left: 4px solid #6366f1;
+    margin: 18px 0;
+    padding: 14px 20px;
+    font-style: italic;
+    color: #334155;
+    border-radius: 0 6px 6px 0;
+  }
+  blockquote .source {
+    display: block;
+    font-style: normal;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 8px;
+  }
+
+  /* reference tags */
+  .tag { display: inline-block; background: #e0e7ff; color: #3730a3; font-size: 12px; font-weight: 600; border-radius: 4px; padding: 2px 8px; margin: 2px 2px 2px 0; }
+  .tag.table  { background: #dbeafe; color: #1e40af; }
+  .tag.iface  { background: #fce7f3; color: #9d174d; }
+  .tag.layout { background: #dcfce7; color: #166534; }
+  .tag.field  { background: #fef9c3; color: #854d0e; }
+  .tag.bad    { background: #fee2e2; color: #991b1b; }
+  .tag.good   { background: #dcfce7; color: #166534; }
+
+  /* comparison table */
+  table.compare { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+  table.compare th { background: #1e293b; color: #f1f5f9; padding: 12px 16px; text-align: left; }
+  table.compare td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  table.compare tr:nth-child(even) td { background: #f8fafc; }
+  table.compare .yes { color: #16a34a; font-weight: 600; }
+  table.compare .no  { color: #dc2626; font-weight: 600; }
+
+  /* flow diagram */
+  .flow { display: flex; align-items: stretch; gap: 0; margin: 20px 0; flex-wrap: wrap; }
+  .flow-step { flex: 1; min-width: 140px; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 14px 16px; font-size: 13px; position: relative; }
+  .flow-step:not(:last-child)::after { content: "→"; position: absolute; right: -16px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #94a3b8; z-index: 1; }
+  .flow-step .step-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; margin-bottom: 4px; }
+  .flow-step.bad-step { background: #fee2e2; border-color: #fca5a5; }
+  .flow-step.good-step { background: #dcfce7; border-color: #86efac; }
+  .flow-step.neutral-step { background: #eff6ff; border-color: #93c5fd; }
+
+  /* section number */
+  .sec-num { display: inline-block; background: #6366f1; color: white; border-radius: 50%; width: 28px; height: 28px; text-align: center; line-height: 28px; font-size: 13px; font-weight: 700; margin-right: 10px; }
+
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; color: #e11d48; }
+
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 36px 0; }
+
+  .rec-box { border: 1px solid #c7d2fe; background: #eef2ff; border-radius: 10px; padding: 20px 24px; margin: 16px 0; }
+  .rec-box h4 { color: #4338ca; font-size: 15px; margin-bottom: 8px; }
+
+  ul, ol { margin: 10px 0 10px 24px; }
+  li { margin: 5px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Campaign–Area Budget Validation:<br>Why Forms and Record Detail Layouts Behave Differently</h1>
+  <p class="subtitle">
+    Project: DEV. Betaportal Adgrabber 2.0 &nbsp;·&nbsp;
+    Interface: Admin (Dev 4.2) &nbsp;·&nbsp;
+    Date: 2026-03-17
+  </p>
+
+  <!-- ─── 1. CONTEXT ─── -->
+  <h2><span class="sec-num">1</span>Context &amp; Setup</h2>
+
+  <p>
+    The <span class="tag table">Kampanjer</span> table has a linked record field
+    <span class="tag field">Area</span> pointing to the <span class="tag table">Areas</span> table.
+    A <strong>conditional dynamic filter</strong> is applied to that field in the Interface Designer:
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">Filter rule on the Area field (Kampanjer table)</div>
+    <code>Area Remaining Budget  ≥  Brief. Ek. Kampanjbudget</code><br><br>
+    Intent: a user must not be allowed to link a Campaign to an Area whose remaining budget is less than the campaign's planned budget.
+  </div>
+
+  <p>There are two paths to create or edit a campaign inside the <span class="tag iface">Admin (Dev 4.2)</span> interface:</p>
+
+  <table class="compare">
+    <tr>
+      <th>Path</th>
+      <th>Interface / Layout</th>
+      <th>Validation on submit / save</th>
+    </tr>
+    <tr>
+      <td><strong>Path A — Form</strong><br>Budget &amp; Areas → "Add Campaign"</td>
+      <td>
+        <span class="tag iface">Budget &amp; Areas</span> interface<br>
+        Interface Form layout (Add Record form)
+      </td>
+      <td class="yes">✅ Full — blocks submit if condition broken</td>
+    </tr>
+    <tr>
+      <td><strong>Path B — Record Detail</strong><br>Kunder → Kunder Detail → Kampanjer row → Campaign Details</td>
+      <td>
+        <span class="tag layout">Kunder Detail (correct)</span><br>
+        → <span class="tag layout">Campaign Details (Correct)</span>
+      </td>
+      <td class="no">❌ Partial — filters picker, does not block save</td>
+    </tr>
+  </table>
+
+
+  <!-- ─── 2. WHAT THE CONDITIONAL FILTER ACTUALLY DOES ─── -->
+  <h2><span class="sec-num">2</span>What the Conditional Filter Actually Does</h2>
+
+  <p>
+    The "Filter record selection by a condition" setting is a <strong>picker display filter</strong>, not a database constraint.
+    Airtable's own documentation describes it exclusively in terms of what is shown in the selection UI:
+  </p>
+
+  <blockquote>
+    "Filters for record selection — Omit any records using static, dynamic, or both conditions."
+    <br><br>
+    "Dynamic filtering — Limits the available options based on the current record."
+    <span class="source">Source: support.airtable.com/docs/dynamic-filtering-in-linked-record-fields</span>
+  </blockquote>
+
+  <p>
+    Note the language: <em>"limits the available options"</em>, <em>"omit records"</em>.
+    There is no language such as "prevents saving", "blocks the record", or "enforces at commit time".
+    The filter controls <strong>what the user sees in the dropdown</strong>; it has no power over what gets written to the database.
+  </p>
+
+  <div class="callout warn">
+    <div class="callout-title">Key insight</div>
+    The conditional filter is a <strong>UI display filter</strong>, not a <strong>data validation rule</strong>.
+    Whether it feels like full validation depends entirely on whether the surrounding UI provides an escape path.
+  </div>
+
+
+  <!-- ─── 3. ARCHITECTURE: FORM VS. RECORD DETAIL ─── -->
+  <h2><span class="sec-num">3</span>The Core Architectural Difference</h2>
+
+  <h3>3.1 Interface Form — Atomic Submission</h3>
+
+  <p>
+    An Interface Form (Add Record) is a <strong>single transactional unit</strong>.
+    Every field the user fills in lives in an <em>in-memory draft</em> until the Submit button is pressed.
+    At that point, Airtable evaluates all field conditions against the current draft values <em>as a whole</em> before writing anything to the database.
+  </p>
+
+  <div class="flow">
+    <div class="flow-step neutral-step"><div class="step-label">1. Fill fields</div>All values held in memory (not saved yet)</div>
+    <div class="flow-step neutral-step"><div class="step-label">2. Select Area</div>Picker only shows Areas passing the filter vs. draft budget value</div>
+    <div class="flow-step neutral-step"><div class="step-label">3. Raise budget</div>Budget draft value increases; filter re-evaluates dynamically</div>
+    <div class="flow-step bad-step"><div class="step-label">4. Click Submit</div>Airtable re-checks all conditions — selected Area no longer passes → <strong>submission blocked</strong></div>
+  </div>
+
+  <p>The official documentation confirms this submit-gate behaviour:</p>
+
+  <blockquote>
+    "If any fields error out for form submitters, then they will be unable to submit the entry until the error is resolved."
+    <span class="source">Source: support.airtable.com/docs/building-and-sharing-forms-in-airtable</span>
+  </blockquote>
+
+  <p>
+    Additionally, forms explicitly <strong>do not allow creating new linked records inline</strong>:
+  </p>
+
+  <blockquote>
+    "Linked record fields included in an interface form will allow users to select existing linked records, but they won't be able to create new linked records. For that, users would need to create the linked record in another interface form first and then reload the interface page to select the newly created linked record."
+    <span class="source">Source: support.airtable.com/docs/airtable-interface-layout-form</span>
+  </blockquote>
+
+  <p>
+    This means both bypass paths are closed in a form:
+    <span class="tag bad">No "create new Area" button</span>
+    <span class="tag bad">Submit blocked if condition broken</span>
+  </p>
+
+  <hr>
+
+  <h3>3.2 Record Detail Layout — Per-Field Auto-Save</h3>
+
+  <p>
+    A Record Detail layout edits an <strong>already-existing record</strong> field by field.
+    There is no Submit button. <strong>Every field change is committed to the database immediately and independently</strong> the moment the user confirms that field's edit.
+    There is no moment where all fields are evaluated together.
+  </p>
+
+  <div class="flow">
+    <div class="flow-step good-step"><div class="step-label">1. Open record</div>Campaign record already exists in DB</div>
+    <div class="flow-step neutral-step"><div class="step-label">2. Link Area</div>Picker shows filtered Areas; user selects one → <strong>saved immediately</strong></div>
+    <div class="flow-step neutral-step"><div class="step-label">3. Edit budget</div>Budget field updated → <strong>saved immediately</strong> — no awareness of Area field</div>
+    <div class="flow-step bad-step"><div class="step-label">4. Nothing fires</div>No transaction boundary → the broken condition is never re-evaluated → DB now has inconsistent data</div>
+  </div>
+
+  <p>The record detail documentation describes fields as directly editable with no submission step:</p>
+
+  <blockquote>
+    "Link / unlink records — When this setting is toggled on, end users with editor permissions can: Link or unlink existing records in the record detail page."
+    <span class="source">Source: support.airtable.com/docs/airtable-interface-layout-record-detail</span>
+  </blockquote>
+
+  <blockquote>
+    "Add records through a form — Toggling on this option will allow end users with editor permissions to add a new linked record via an interface form layout."
+    <span class="source">Source: support.airtable.com/docs/airtable-interface-layout-record-detail</span>
+  </blockquote>
+
+  <p>
+    Notice: adding a new linked record from a record detail <em>routes through a separate form layout</em>
+    — it does not happen inline — confirming that the record detail itself has no submission/validation lifecycle.
+  </p>
+
+  <div class="callout danger">
+    <div class="callout-title">Root cause in Campaign Details (Correct)</div>
+    The <span class="tag layout">Campaign Details (Correct)</span> layout has an
+    <span class="tag field">Area</span> linked record element with
+    <strong>"Allow users to create new areas" toggled ON</strong>.
+    This makes the loophole doubly open:
+    <ol style="margin-top:10px;">
+      <li>A user can raise the campaign budget in <span class="tag field">Brief. Ek. Kampanjbudget</span> → saved instantly, no validation.</li>
+      <li>A user can create a brand-new Area record with an arbitrary budget directly from the picker → the new Area has no history, the condition is never tested against it.</li>
+    </ol>
+  </div>
+
+
+  <!-- ─── 4. WORKED EXAMPLES ─── -->
+  <h2><span class="sec-num">4</span>Worked Examples</h2>
+
+  <h3>Example A — Form path (Budget &amp; Areas interface) ✅</h3>
+
+  <table class="compare">
+    <tr><th>Step</th><th>What happens</th><th>Result</th></tr>
+    <tr>
+      <td>1. Open "Add Campaign"</td>
+      <td>Interface Form opens. All values are in-memory draft.</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2. Enter <code>Brief. Ek. Kampanjbudget = 80,000 SEK</code></td>
+      <td>Draft value stored. Filter <code>Area Remaining Budget ≥ 80,000</code> activates.</td>
+      <td>Picker shows only Areas with ≥ 80,000 remaining.</td>
+    </tr>
+    <tr>
+      <td>3. Select "Kongahälla Center Q2" (100,000 remaining)</td>
+      <td>Area linked in draft. Condition passes.</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>4. Increase budget to <code>120,000 SEK</code></td>
+      <td>Draft budget rises. Filter now <code>≥ 120,000</code>. "Kongahälla Center Q2" only has 100,000 remaining.</td>
+      <td>Form marks the Area field as invalid.</td>
+    </tr>
+    <tr>
+      <td>5. Click Submit</td>
+      <td>Airtable re-evaluates all conditions on the draft. Area fails.</td>
+      <td class="no">❌ Submit blocked. "This option is not available to select."</td>
+    </tr>
+    <tr>
+      <td>6. User must fix</td>
+      <td>Either reduce budget ≤ 100,000 or select a different Area with ≥ 120,000 remaining.</td>
+      <td class="yes">✅ Data integrity enforced.</td>
+    </tr>
+  </table>
+
+  <h3>Example B — Record Detail path (Campaign Details layout) ❌</h3>
+
+  <table class="compare">
+    <tr><th>Step</th><th>What happens</th><th>Result</th></tr>
+    <tr>
+      <td>1. "Create new Campaign" button</td>
+      <td>Automation creates a blank Kampanjer record. User navigates to <span class="tag layout">Campaign Details (Correct)</span>.</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2. Enter <code>Brief. Ek. Kampanjbudget = 80,000 SEK</code></td>
+      <td>Field saved to DB immediately. No cross-field check.</td>
+      <td>DB: budget = 80,000. Area = empty.</td>
+    </tr>
+    <tr>
+      <td>3. Open Area picker</td>
+      <td>Picker reads budget from DB (80,000). Shows Areas with ≥ 80,000 remaining. Filter is <strong>working correctly here</strong>.</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>4. Select "Kongahälla Center Q2" (100,000 remaining)</td>
+      <td>Area linked and <strong>saved immediately</strong> to DB.</td>
+      <td>DB: budget = 80,000, Area = Kongahälla (valid).</td>
+    </tr>
+    <tr>
+      <td>5. Increase budget to <code>120,000 SEK</code></td>
+      <td>Budget field saved immediately to DB. <strong>No validation fires</strong>. The already-linked Area is not re-checked.</td>
+      <td class="no">❌ DB: budget = 120,000, Area = Kongahälla (only 100,000 remaining). Inconsistent.</td>
+    </tr>
+    <tr>
+      <td>6. Create new Area with 1 SEK (loophole)</td>
+      <td>"Allow users to create new areas" is ON. User creates "Fake Area" with 1 SEK budget from within the picker. Immediately linked. Condition never evaluated against it.</td>
+      <td class="no">❌ DB: budget = 120,000 linked to Area with 1 SEK remaining. Severely inconsistent.</td>
+    </tr>
+  </table>
+
+
+  <!-- ─── 5. WHY THE DIFFERENCE EXISTS ─── -->
+  <h2><span class="sec-num">5</span>Why the Difference Exists — Summary</h2>
+
+  <table class="compare">
+    <tr>
+      <th>Aspect</th>
+      <th>Interface Form (Add Record)</th>
+      <th>Record Detail Layout</th>
+    </tr>
+    <tr>
+      <td><strong>Save model</strong></td>
+      <td>Atomic: one transaction on Submit</td>
+      <td>Per-field: each edit auto-saves independently</td>
+    </tr>
+    <tr>
+      <td><strong>Validation moment</strong></td>
+      <td>At submit — all fields evaluated together</td>
+      <td>None — no submit step exists</td>
+    </tr>
+    <tr>
+      <td><strong>Conditional filter scope</strong></td>
+      <td>Evaluated against <em>in-memory draft values</em> at submit</td>
+      <td>Evaluated against <em>saved DB value</em> only when picker is opened</td>
+    </tr>
+    <tr>
+      <td><strong>Cross-field re-evaluation</strong></td>
+      <td class="yes">✅ Yes — changing budget updates filter AND blocks submit if broken</td>
+      <td class="no">❌ No — changing budget has no effect on already-linked Area</td>
+    </tr>
+    <tr>
+      <td><strong>Create new linked record inline</strong></td>
+      <td class="yes">✅ Not possible (by design, per Airtable docs)</td>
+      <td class="no">❌ Possible — "Allow users to create new areas" toggle exists and is currently ON</td>
+    </tr>
+    <tr>
+      <td><strong>Net result for validation</strong></td>
+      <td class="yes">✅ Full budget validation enforced</td>
+      <td class="no">❌ Filter works on picker only; no protection after linking</td>
+    </tr>
+  </table>
+
+
+  <!-- ─── 6. RECOMMENDATIONS ─── -->
+  <h2><span class="sec-num">6</span>Recommendations (if Record Detail is kept)</h2>
+
+  <p>
+    If you choose to keep the <span class="tag layout">Campaign Details (Correct)</span> record detail layout
+    as the primary campaign editing path, the following measures are recommended in order of effectiveness:
+  </p>
+
+  <div class="rec-box">
+    <h4>Fix 1 — Disable "Allow users to create new areas" (Immediate, do this now)</h4>
+    <p>
+      In Interface Designer → <span class="tag iface">Admin (Dev 4.2)</span> →
+      <span class="tag layout">Kunder Detail (correct)</span> → click Kampanjer grid →
+      Customize "Campaign Details..." → click the <span class="tag field">Area</span> element →
+      right panel → <strong>Permissions → "Allow users to create new areas" → turn OFF</strong>.
+    </p>
+    <p>This closes the most egregious bypass (creating fake Areas with 1 SEK). The conditional filter on existing records will continue to work correctly.</p>
+  </div>
+
+  <div class="rec-box">
+    <h4>Fix 2 — Add a formula warning field (Visible safety net)</h4>
+    <p>
+      Create a formula field in <span class="tag table">Kampanjer</span>, e.g. <code>Budget Overrun Warning</code>:
+    </p>
+    <pre style="background:#f1f5f9; padding:12px; border-radius:6px; font-size:13px; margin:10px 0; overflow-x:auto;">IF(
+  AND(
+    {Area Remaining Budget} &lt; {Brief. Ek. Kampanjbudget},
+    {Area} != ""
+  ),
+  "⚠️ Area remaining budget (" &amp; {Area Remaining Budget} &amp; " SEK) is less than campaign budget (" &amp; {Brief. Ek. Kampanjbudget} &amp; " SEK)",
+  ""
+)</pre>
+    <p>Add this field to the <span class="tag layout">Campaign Details (Correct)</span> layout. Users will see a visible red warning whenever the budgets are inconsistent, even if saving is not blocked.</p>
+  </div>
+
+  <div class="rec-box">
+    <h4>Fix 3 — Automation validation (Enforce on any save)</h4>
+    <p>
+      Create an Airtable Automation:
+    </p>
+    <ul>
+      <li><strong>Trigger:</strong> When Kampanjer record is updated (watch fields: Area, Brief. Ek. Kampanjbudget)</li>
+      <li><strong>Condition:</strong> Area Remaining Budget &lt; Brief. Ek. Kampanjbudget AND Area is not empty</li>
+      <li><strong>Action:</strong> Send notification to MGMT Ansvarig, or update a status field to "Budget Overrun – Needs Review"</li>
+    </ul>
+    <p>This cannot prevent the save, but it creates an immediate alert so the problem is caught right away rather than discovered later.</p>
+  </div>
+
+  <div class="rec-box">
+    <h4>Fix 4 — Route Area selection through a form (Maximum enforcement)</h4>
+    <p>
+      Remove the <span class="tag field">Area</span> element from
+      <span class="tag layout">Campaign Details (Correct)</span> entirely.
+      Force users to set or change the Area only through the validated
+      <span class="tag iface">Budget &amp; Areas</span> Add Campaign form.
+      This is the most restrictive option but guarantees no bypass is possible.
+    </p>
+  </div>
+
+  <div class="callout green">
+    <div class="callout-title">Recommended minimum action</div>
+    Apply <strong>Fix 1</strong> (disable create new Areas) immediately — it requires no schema changes, no automations, and closes the biggest loophole in under 30 seconds.
+    Add <strong>Fix 2</strong> (formula warning) as a visible safety net for the remaining gap (editing budget after Area is already linked).
+  </div>
+
+
+  <!-- ─── FOOTER ─── -->
+  <hr>
+  <p style="font-size:13px; color:#94a3b8;">
+    Report generated 2026-03-17 &nbsp;·&nbsp; DEV. Betaportal Adgrabber 2.0 &nbsp;·&nbsp;
+    Sources: support.airtable.com/docs/dynamic-filtering-in-linked-record-fields,
+    /docs/building-and-sharing-forms-in-airtable,
+    /docs/airtable-interface-layout-form,
+    /docs/airtable-interface-layout-record-detail
+  </p>
+
+</div>
+</body>
+</html>
