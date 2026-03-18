@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Leads Flow — Session Report 2026-03-18</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1a1a1a; background: #f5f5f5; padding: 32px; }
+  .page { max-width: 860px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 48px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .meta { color: #888; font-size: 13px; margin-bottom: 36px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #555; margin: 32px 0 14px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+  h3 { font-size: 14px; font-weight: 600; margin: 18px 0 6px; }
+  p, li { font-size: 14px; line-height: 1.6; color: #333; }
+  ul { padding-left: 18px; }
+  li { margin-bottom: 4px; }
+  .steps { counter-reset: step; display: flex; flex-direction: column; gap: 12px; }
+  .step { display: flex; gap: 14px; align-items: flex-start; }
+  .step-num { counter-increment: step; min-width: 26px; height: 26px; border-radius: 50%; background: #1a1a1a; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; flex-shrink: 0; }
+  .step-body { font-size: 14px; line-height: 1.6; }
+  .step-body strong { display: block; font-weight: 600; margin-bottom: 2px; }
+
+  /* stats row */
+  .stats { display: flex; gap: 16px; margin: 16px 0; }
+  .stat { flex: 1; border-radius: 8px; padding: 16px 20px; text-align: center; }
+  .stat.hp { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .stat.bf { background: #eff6ff; border: 1px solid #bfdbfe; }
+  .stat.nf { background: #fafafa; border: 1px solid #e5e7eb; }
+  .stat .num { font-size: 32px; font-weight: 700; line-height: 1; }
+  .stat.hp .num { color: #16a34a; }
+  .stat.bf .num { color: #2563eb; }
+  .stat.nf .num { color: #6b7280; }
+  .stat .label { font-size: 12px; color: #666; margin-top: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+  th { text-align: left; font-weight: 600; color: #555; padding: 6px 10px; border-bottom: 2px solid #eee; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: top; line-height: 1.5; }
+  tr:last-child td { border-bottom: none; }
+
+  /* badges */
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+  .badge.red { background: #fee2e2; color: #dc2626; }
+  .badge.yellow { background: #fef9c3; color: #a16207; }
+  .badge.green { background: #dcfce7; color: #16a34a; }
+  .badge.gray { background: #f3f4f6; color: #6b7280; }
+
+  .note { background: #fffbeb; border-left: 3px solid #f59e0b; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 13px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Leads Filtering Flow — Session Report</h1>
+  <div class="meta">2026-03-18 &nbsp;·&nbsp; n8n AI Job Search Agent &nbsp;·&nbsp; Serper Integration</div>
+
+  <h2>Work Completed</h2>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Fixed JSON Schema crash on Job Search Output Parser</strong>Flow was rejecting with "array schema missing items". Fixed by providing a typed example with a real object inside the array.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Diagnosed & fixed empty Serper queries</strong>Serper was receiving <code>{"query": {}}</code> instead of a real search string. Root cause: known unfixed n8n bug in HTTP Request Tool — <code>$fromAI()</code> doesn't generate proper schema in body parameters.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Installed community Serper node</strong>Replaced the broken HTTP Request tool with <code>n8n-nodes-serper-search</code> (community package). Enabled community packages in Docker config for both local and production environments.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Redeployed production server</strong>Updated <code>docker-compose.prod.yml</code>, copied to server via SCP, restarted container. Installed community node in prod n8n UI. Imported updated flow.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Added Retry on Fail to all external API nodes</strong>Configured 3 retries with 5s wait on: AI Job Search Agent, Message a model ×3, HTTP Request ×2, Upload file ×3. Protects against transient OpenAI/Google API errors mid-batch.</div></div>
+  </div>
+
+  <h2>Test Run — 225 Leads</h2>
+
+  <div class="stats">
+    <div class="stat hp"><div class="num">78</div><div class="label">High Potential</div></div>
+    <div class="stat bf"><div class="num">132</div><div class="label">Base Fit</div></div>
+    <div class="stat nf"><div class="num">15</div><div class="label">Not Fit</div></div>
+  </div>
+  <p style="font-size:13px;color:#888;margin-top:6px;">✓ All 225 accounted for &nbsp;·&nbsp; ✓ No duplicates across buckets &nbsp;·&nbsp; ✓ No missing leads</p>
+
+  <h2>Classification Quality</h2>
+
+  <h3>Not Fit — 15 entries</h3>
+  <table>
+    <tr><th>Company</th><th>Verdict</th><th>Reason</th></tr>
+    <tr><td>好師傅 CoDECO</td><td><span class="badge green">Correct</span></td><td>Has hiring signal but fails tech gate — offline service provider</td></tr>
+    <tr><td>HelloSafe</td><td><span class="badge green">Correct</span></td><td>Travel insurance comparison — service, not a tech product</td></tr>
+    <tr><td>8B Education Investments</td><td><span class="badge green">Correct</span></td><td>Education/courses platform — not building software</td></tr>
+    <tr><td>Bluevella Mortgage</td><td><span class="badge green">Correct</span></td><td>Offline mortgage lender</td></tr>
+    <tr><td>Blacc Spot Media</td><td><span class="badge green">Correct</span></td><td>Digital transformation consultancy</td></tr>
+    <tr><td>Punchmark</td><td><span class="badge green">Correct</span></td><td>Marketing agency</td></tr>
+    <tr><td>Chowder</td><td><span class="badge green">Correct</span></td><td>Offline service provider</td></tr>
+    <tr><td>six2eight</td><td><span class="badge green">Correct</span></td><td>Design/dev agency</td></tr>
+    <tr><td>AppZoro Technologies</td><td><span class="badge green">Correct</span></td><td>Marketing/digital agency</td></tr>
+    <tr><td>JOURNEY</td><td><span class="badge green">Correct</span></td><td>Agency/consultancy</td></tr>
+    <tr><td>digitransform</td><td><span class="badge green">Correct</span></td><td>Digital transformation consultant</td></tr>
+    <tr><td><em>(empty row)</em></td><td><span class="badge gray">Data issue</span></td><td>Missing employee count in source CSV — not a flow bug</td></tr>
+    <tr><td>Tribu Health</td><td><span class="badge yellow">Borderline</span></td><td>Flagged as non-digital medical — but reason acknowledges "digital platform" evidence. May deserve base_fit</td></tr>
+    <tr><td>Tiller Digital</td><td><span class="badge yellow">Borderline</span></td><td>Has front-end hiring signal; rejection reason incomplete — no disqualifier stated</td></tr>
+    <tr><td>Bloom Care</td><td><span class="badge yellow">Borderline</span></td><td>Has Full Stack Developer signal; rejected as non-digital medical — likely a digital health company</td></tr>
+  </table>
+
+  <h3 style="margin-top:24px;">High Potential — Issues Found</h3>
+  <table>
+    <tr><th>Company</th><th>Issue</th><th>Detail</th></tr>
+    <tr><td>Steuerbot</td><td><span class="badge red">False positive</span></td><td>Job evidence is from <strong>Taxfix</strong> (a competitor) — Serper returned the wrong company's listing</td></tr>
+    <tr><td>Flatfile</td><td><span class="badge red">False positive</span></td><td>Job evidence is from <strong>Obviously AI</strong> — different company</td></tr>
+    <tr><td>Medesto Health</td><td><span class="badge red">False positive</span></td><td>Job evidence is from <strong>Perigon Health 360</strong> — different company</td></tr>
+    <tr><td>SaaS Capital</td><td><span class="badge red">Misclassified</span></td><td>It's a VC fund, not a SaaS product company — should be not_fit</td></tr>
+    <tr><td>Gearheart.io</td><td><span class="badge yellow">Borderline</span></td><td>"B2B SaaS Product Studio" — likely an agency</td></tr>
+    <tr><td>Mobility46</td><td><span class="badge yellow">Borderline</span></td><td>Hiring signal is Ruby on Rails dev — not in target roles (designer, PM, frontend, full stack)</td></tr>
+    <tr><td>All other 72 entries</td><td><span class="badge green">Valid</span></td><td>Correctly attributed hiring signals or legitimate 2025 funding events</td></tr>
+  </table>
+
+  <h3 style="margin-top:24px;">Base Fit — 132 entries</h3>
+  <p>All verified as tech/SaaS product companies with no current hiring signals. Reasoning is consistent throughout. Multiple contacts from the same company appear separately — expected behavior, not a bug. A handful of entries carry confidence 0.7 (vs standard 0.9) correctly flagged for thin data quality.</p>
+
+  <div class="note">
+    <strong>Root cause of false positives:</strong> Serper sometimes returns job listings from other companies (aggregator pages, "related jobs" sections). The AI doesn't always verify that the employer name matches the searched company.<br><br>
+    <strong>Recommended fix:</strong> Add to agent system prompt — <em>"Verify that the hiring company name in the job listing matches the company domain you searched for. Reject any listing where it does not match."</em>
+  </div>
+
+</div>
+</body>
+</html>
