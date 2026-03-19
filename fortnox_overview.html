@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortnox ↔ Airtable — Helicopter View</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 22px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 10px; margin-bottom: 6px; }
+  h2 { font-size: 15px; color: #16213e; margin: 28px 0 10px 0; border-left: 5px solid #0f3460; padding-left: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .subtitle { color: #888; font-size: 12px; margin-bottom: 26px; }
+  p { margin-bottom: 9px; }
+  ul { margin: 6px 0 12px 20px; }
+  li { margin-bottom: 4px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 20px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 8px 12px; font-weight: 600; }
+  td { padding: 7px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 14px 18px; border-radius: 6px; font-size: 12.5px; font-family: 'Consolas', monospace; overflow-x: auto; margin: 10px 0 18px 0; line-height: 1.7; }
+
+  .callout { border-left: 4px solid #0f3460; background: #eff6ff; padding: 11px 14px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .green   { border-left-color: #22c55e; background: #f0fdf4; }
+  .orange  { border-left-color: #f97316; background: #fff7ed; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 9px; font-size: 11px; font-weight: 600; }
+  .b-blue   { background: #dbeafe; color: #1e40af; }
+  .b-green  { background: #dcfce7; color: #166534; }
+  .b-orange { background: #ffedd5; color: #9a3412; }
+  .b-gray   { background: #f1f5f9; color: #475569; }
+
+  .flow { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 18px 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 10px; }
+  .step-num { background: #0f3460; color: #fff; border-radius: 50%; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .arrow { text-align: center; color: #94a3b8; font-size: 16px; padding-left: 4px; }
+
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 26px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Fortnox ↔ Airtable — Helicopter View</h1>
+  <p class="subtitle">3-minute overview &nbsp;|&nbsp; automation.offertizer.com &nbsp;|&nbsp; base app01yDjf98U6ejKs</p>
+
+  <div class="callout">
+    <strong>One sentence:</strong> n8n on <code>automation.offertizer.com</code> runs on a schedule, polling both Fortnox API and Airtable, keeping them in sync. No webhooks, no real-time — pure polling.
+  </div>
+
+  <!-- DIRECTIONS -->
+  <h2>The Two Directions</h2>
+
+  <table>
+    <tr>
+      <th style="width:50%">Fortnox → Airtable &nbsp;<span class="badge b-gray">6 of 8 tables</span></th>
+      <th>Airtable → Fortnox &nbsp;<span class="badge b-blue">Orders only</span></th>
+    </tr>
+    <tr>
+      <td>Customers, Suppliers, Supplier Invoices, Invoices, Invoice Rows, Articles.<br><br>
+      Fortnox is the source of truth. n8n fetches from the Fortnox REST API and upserts into Airtable. Staff can view and annotate, but Airtable changes to these records are <strong>overwritten on the next sync run</strong>.</td>
+      <td>Only Orders and Order Rows flow both ways. Orders are <strong>created in Airtable first</strong>, then pushed to Fortnox. Once Fortnox assigns a DocumentNumber, that ID is written back into Airtable.</td>
+    </tr>
+  </table>
+
+  <!-- ENTITY TABLE -->
+  <h2>How Each Entity Flows</h2>
+
+  <table>
+    <tr><th>Entity</th><th>Who creates it</th><th>Direction</th><th>Notes</th></tr>
+    <tr>
+      <td><strong>Orders</strong></td>
+      <td>Staff in Airtable</td>
+      <td><span class="badge b-blue">Airtable → Fortnox</span></td>
+      <td>Staff-initiated. Pushed on demand via <code>Sync Fortnox</code> flag.</td>
+    </tr>
+    <tr>
+      <td><strong>Order Rows</strong></td>
+      <td>Staff (or imported from Fortnox)</td>
+      <td><span class="badge b-blue">Airtable → Fortnox</span> or read-only</td>
+      <td><code>LineItem Source = "Airtable users"</code> → pushed to Fortnox.<br><code>LineItem Source = "Fortnox"</code> → read-only, overwritten on sync.</td>
+    </tr>
+    <tr>
+      <td><strong>Invoices</strong></td>
+      <td>Fortnox (from invoiced orders)</td>
+      <td><span class="badge b-gray">Fortnox → Airtable</span></td>
+      <td>Airtable is a mirror. Linked back to the originating FortnoxOrder.</td>
+    </tr>
+    <tr>
+      <td><strong>Supplier Invoices</strong></td>
+      <td>Fortnox</td>
+      <td><span class="badge b-gray">Fortnox → Airtable</span></td>
+      <td>Sync gated per supplier: <code>Internal Status = "Sync"</code> or <code>"Do not sync"</code> on FortnoxSupplier controls all invoices from that supplier.</td>
+    </tr>
+    <tr>
+      <td><strong>Customers</strong></td>
+      <td>Fortnox</td>
+      <td><span class="badge b-gray">Fortnox → Airtable</span></td>
+      <td>Linked to FortnoxOrders to supply customer number for API calls.</td>
+    </tr>
+    <tr>
+      <td><strong>Suppliers</strong></td>
+      <td>Fortnox</td>
+      <td><span class="badge b-gray">Fortnox → Airtable</span></td>
+      <td>Internal Status toggle controls whether their invoices sync.</td>
+    </tr>
+    <tr>
+      <td><strong>Articles</strong></td>
+      <td>Fortnox</td>
+      <td><span class="badge b-gray">Fortnox → Airtable</span></td>
+      <td>Must exist in Airtable before staff can add order rows — articles are picked from this imported list.</td>
+    </tr>
+  </table>
+
+  <!-- ORDER LIFECYCLE -->
+  <h2>Order Lifecycle — The Only Two-Way Flow</h2>
+
+  <div class="flow">
+    <div class="flow-step"><span class="step-num">1</span><div>Staff creates a FortnoxOrder record in Airtable. <code>Order Status = "Airtable Draft"</code>. ID is auto-generated (<code>Autonumber-CustomerName</code>) — no Fortnox number yet.</div></div>
+    <div class="flow-step"><span class="step-num">2</span><div>Staff adds line items (Fortnox OrderRow records), sets <code>LineItem Source = "Airtable users"</code> and links a FortnoxArticle to each row.</div></div>
+    <div class="flow-step"><span class="step-num">3</span><div>Staff sets <code>Order Status = "Copy to Fortnox"</code> and <code>Sync Fortnox = "To sync"</code>. This is the trigger signal.</div></div>
+    <div class="flow-step"><span class="step-num">4</span><div>n8n detects the flag → sets it to <code>"In progress"</code> → verifies customer number → POSTs the order + rows to <code>https://api.fortnox.se/3/orders</code>.</div></div>
+    <div class="flow-step"><span class="step-num">5</span><div>Fortnox returns a <code>DocumentNumber</code> and <code>RowId</code> values. n8n writes these back to Airtable. <code>Sync Fortnox</code> is cleared. <code>Order Status → "Fortnox Order"</code>. The ID field now shows the Fortnox DocumentNumber.</div></div>
+    <div class="flow-step"><span class="step-num">6</span><div>Order progresses in Fortnox through invoicing. n8n syncs the resulting FortnoxInvoice back into Airtable, linked to the originating order.</div></div>
+  </div>
+
+  <pre>Order Status progression:
+  Airtable Draft → Copy to Fortnox → Fortnox Order
+    → Order Ready To Invoice → Order Invoiced → Order Linked To Kampanj</pre>
+
+  <!-- SYNC TRIGGER -->
+  <h2>How Sync Is Triggered</h2>
+
+  <ul>
+    <li><strong>Schedule-based polling</strong> — no webhooks, no real-time events from either side.</li>
+    <li>n8n connects to Airtable as a service account (<code>integration.adgrabber@gmail.com</code>) which owns a personal view called <code>sync view</code> on Fortnox OrderRow — <strong>no filter, all 17,000+ rows</strong>. This is what n8n reads on every run.</li>
+    <li>For the Airtable → Fortnox direction, n8n queries FortnoxOrder for records where <code>Sync Fortnox = "To sync"</code>.</li>
+  </ul>
+
+  <!-- LOOP PREVENTION -->
+  <h2>What Keeps It From Looping</h2>
+
+  <div class="callout green">
+    When n8n writes Fortnox data back into Airtable, those writes bump a <strong>scoped Last Modified Time field</strong> (<code>Fortnox details modified date</code>) that watches only the ~39 Fortnox payload fields. On the next poll, n8n knows those are its own writes and does not re-process them. User-side changes (linking allocations, soft-deleting rows) bump <em>different</em> scoped LMT fields — n8n handles those separately or ignores them for Fortnox sync.
+  </div>
+
+  <p>Each Fortnox OrderRow has <strong>6 scoped LMT fields</strong>, each watching a different column subset:</p>
+  <ul>
+    <li><code>Last Modified Time</code> — 44 Fortnox data fields (the main sync change detector)</li>
+    <li><code>Fortnox details modified date</code> — ~39 pure Fortnox payload fields (what n8n itself writes)</li>
+    <li><code>Last Modified</code> — <code>Total</code> field only (financial change signal)</li>
+    <li><code>Last Modified 2</code> — <code>Line Item Allocation</code> link only (internal Airtable, never pushed to Fortnox)</li>
+    <li><code>Last Modified 3</code> / <code>When deleted</code> — <code>Deleted</code> checkbox only (soft-deletion detection)</li>
+    <li><code>Last Modified 4</code> — all fields (audit/monitoring only)</li>
+  </ul>
+
+  <!-- BOTTOM LINE -->
+  <hr>
+  <div class="callout orange">
+    <strong>Bottom line:</strong> Fortnox is the financial system of record for everything <em>except</em> new orders, which originate in Airtable. The integration is one-directional for most entities and bidirectional only for the sales order flow.
+  </div>
+
+</div>
+</body>
+</html>
