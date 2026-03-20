@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TABLE Media / Prod New — Reference</title>
+<style>
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:14px;color:#1e293b;max-width:980px;margin:0 auto;padding:24px 28px;}
+  h1{font-size:22px;font-weight:700;color:#0f3460;border-bottom:3px solid #0f3460;padding-bottom:8px;margin-top:0}
+  h2{font-size:17px;font-weight:700;color:#0f3460;margin-top:32px;border-bottom:1px solid #cbd5e1;padding-bottom:4px;}
+  h3{font-size:14px;font-weight:700;color:#334155;margin-top:20px;}
+  table{border-collapse:collapse;width:100%;margin:10px 0 16px 0;font-size:13px;}
+  th{background:#0f3460;color:#fff;padding:7px 10px;text-align:left;font-weight:600;}
+  td{padding:6px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top;}
+  tr:nth-child(even) td{background:#f8fafc;}
+  code{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:3px;padding:1px 5px;font-size:12px;font-family:Consolas,monospace;}
+  .callout{border-radius:5px;padding:10px 14px;margin:12px 0;font-size:13px;}
+  .callout.blue{background:#eff6ff;border-left:4px solid #3b82f6;}
+  .callout.green{background:#f0fdf4;border-left:4px solid #22c55e;}
+  .callout.orange{background:#fff7ed;border-left:4px solid #f97316;}
+  .callout.amber{background:#fef9c3;border-left:4px solid #ca8a04;}
+  .callout.red{background:#fef2f2;border-left:4px solid #ef4444;}
+  .badge{display:inline-block;border-radius:12px;padding:2px 9px;font-size:11px;font-weight:600;margin-left:6px;}
+  .badge.manual{background:#dcfce7;color:#166534;}
+  .badge.formula{background:#ede9fe;color:#5b21b6;}
+  .badge.rollup{background:#fef9c3;color:#854d0e;}
+  .badge.lookup{background:#e0f2fe;color:#075985;}
+  .badge.legacy{background:#f1f5f9;color:#64748b;}
+  .layer{border-left:4px solid #94a3b8;padding:8px 14px;margin:8px 0;background:#f8fafc;border-radius:0 5px 5px 0;}
+  .layer.l0{border-color:#22c55e;}
+  .layer.l1{border-color:#3b82f6;}
+  .layer.l2{border-color:#7c3aed;}
+  .layer.lx{border-color:#94a3b8;}
+  .flow-step{display:flex;gap:10px;align-items:flex-start;margin:6px 0;}
+  .flow-num{background:#0f3460;color:#fff;border-radius:50%;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;}
+  hr{border:none;border-top:1px solid #e2e8f0;margin:28px 0;}
+  .rec-card{border:1px solid #cbd5e1;border-radius:6px;padding:10px 14px;margin:10px 0;background:#f8fafc;font-size:13px;}
+  .rec-id{font-size:11px;color:#64748b;margin-bottom:6px;font-family:Consolas,monospace;}
+</style>
+</head>
+<body>
+
+<h1>TABLE Media / Prod New — The Campaign Line Item Join Point</h1>
+<p>Base: <code>app01yDjf98U6ejKs</code> (DEV. Betaportal Adgrabber 2.0 Feb 2026) &nbsp;·&nbsp; Table ID: <code>tblTf9sNLy464khq5</code></p>
+
+<div class="callout blue">
+  <strong>Role in the system.</strong> Each record in this table = one campaign line item — a specific media channel (or production task) for a specific campaign. It is the central join point between customer revenue (via <code>sys.orderallocationmapping</code>) and supplier cost (via <code>sys.fakturamapping</code>). All P&amp;L calculations for a campaign channel happen on or aggregate to this record.
+</div>
+
+<hr>
+
+<!-- RECORD TYPES -->
+<h2>Two Record Types: Mediakop vs Production</h2>
+<p>FIELD <code>Sync Source</code> (singleSelect) determines the type of line item. This controls which budget formula branches are active.</p>
+
+<table>
+  <tr><th>Sync Source value</th><th>What it represents</th><th>Revenue source</th></tr>
+  <tr>
+    <td><code>Dev Sync Mediakop</code></td>
+    <td>Media buy — Adgrabber places ads on behalf of the customer (Google Ads, Facebook, Programmatic, etc.)</td>
+    <td><code>Brief. Kundens mediabudget</code> — the customer order amount, manually set</td>
+  </tr>
+  <tr>
+    <td><code>Dev Sync Production</code></td>
+    <td>Production work — creative production, consulting, etc.</td>
+    <td><code>Ek. budget. Intäkt_Prod</code> — manually set production revenue budget</td>
+  </tr>
+</table>
+
+<hr>
+
+<!-- BUDGET FIELDS -->
+<h2>Budget Field Hierarchy — Full Classification</h2>
+
+<div class="callout amber">
+  <strong>None of the budget fields are written by any sys table.</strong> <code>sys.orderallocationmapping</code> and <code>sys.fakturamapping</code> both link TO this table; they read from it (via lookup fields) but never write back. All budget inputs originate here, set manually by staff at campaign setup.
+</div>
+
+<h3>Layer 0 — Raw Manual Inputs <span class="badge manual">manual</span></h3>
+
+<div class="layer l0">
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Set when</th><th>Value in M8347 example</th></tr>
+    <tr>
+      <td><code>Brief. Kundens mediabudget</code></td>
+      <td>currency</td>
+      <td>Campaign setup — what the customer agreed to pay for this media line. Matches the Fortnox order amount.</td>
+      <td>9,600 SEK</td>
+    </tr>
+    <tr>
+      <td><code>Brief. Budget mediaspend</code></td>
+      <td>currency</td>
+      <td>The amount the customer pays directly to the ad platform when using their own ad account (<code>Brief. Använder kundens konto? = true</code>). This is subtracted from <code>Brief. Kundens mediabudget</code> to arrive at Adgrabber's revenue — because Adgrabber only earns the management fee portion, not the platform spend the customer handles themselves. Only relevant and filled in when the customer uses their own account.</td>
+      <td><em>null for M8347 — Adgrabber manages the Google account, so this field does not apply</em></td>
+    </tr>
+    <tr>
+      <td><code>Ek. budget. Intäkt_Prod</code></td>
+      <td>currency</td>
+      <td>Production lines only — manually set revenue budget.</td>
+      <td>n/a (media line)</td>
+    </tr>
+    <tr>
+      <td><code>Ek. budget. Internkostnad</code></td>
+      <td><strong>multilineText (!)</strong></td>
+      <td>Internal labor cost notes. Text field — not cleanly usable in formulas despite appearing in some cost calculations.</td>
+      <td><em>null</em></td>
+    </tr>
+  </table>
+</div>
+
+<h3>Layer 1 — Type-Specific Revenue Derivation <span class="badge formula">formula</span></h3>
+
+<div class="layer l1">
+  <p><code>Ek. budget. Intäkt_Media</code></p>
+  <pre style="background:#f1f5f9;padding:8px 12px;border-radius:4px;font-size:12px;overflow-x:auto;">IF(Brief. Använder kundens konto? (Avser Google, FB/IG, LinkedIn),
+   Brief. Kundens mediabudget − Brief. Budget mediaspend,
+   Brief. Kundens mediabudget)</pre>
+  <p style="font-size:13px;color:#475569;">
+    <strong>Customer uses own account (true):</strong> customer pays <code>Brief. Budget mediaspend</code> directly to the platform — that amount is already gone from their budget. Adgrabber earns only the remainder (management fee). Result: <code>Ek. budget. Intäkt_Media = Brief. Kundens mediabudget − Brief. Budget mediaspend</code>.<br><br>
+    <strong>Adgrabber manages account (false, standard):</strong> <code>Brief. Budget mediaspend</code> does not apply. Adgrabber receives the full customer budget as revenue. For M8347: <code>Ek. budget. Intäkt_Media</code> = 9,600 SEK.
+  </p>
+</div>
+
+<h3>Layer 2 — Canonical Revenue Field <span class="badge formula">formula</span></h3>
+
+<div class="layer l2">
+  <p><code>Total Ek. budget. Intäkt</code> — <strong>THE authoritative revenue figure for all P&amp;L calculations.</strong></p>
+  <pre style="background:#f1f5f9;padding:8px 12px;border-radius:4px;font-size:12px;overflow-x:auto;">IF(Sync Source = "Dev Sync Mediakop",
+   Ek. budget. Intäkt_Media,
+   Ek. budget. Intäkt_Prod)</pre>
+  <p style="font-size:13px;color:#475569;">Selects the right revenue figure based on line type. All margin and budget check formulas reference this field. Value for M8347: <strong>9,600 SEK</strong>.</p>
+</div>
+
+<h3>Layer 2b — UI Display Field <span class="badge formula">formula</span></h3>
+
+<div class="layer" style="border-color:#f97316;">
+  <p><code>Budget</code> — shown in record detail views.</p>
+  <pre style="background:#f1f5f9;padding:8px 12px;border-radius:4px;font-size:12px;overflow-x:auto;">IF(Sync Source = "Dev Sync Mediakop",
+   Brief. Kundens mediabudget,
+   Total Ek. budget. Intäkt)</pre>
+  <p style="font-size:13px;color:#475569;">
+    For media lines: returns the <em>gross customer order amount</em> — the number the customer recognises as their spend commitment.<br>
+    For production lines: same as <code>Total Ek. budget. Intäkt</code>.<br>
+    Difference from <code>Total Ek. budget. Intäkt</code>: only when customer uses own account (then Budget = gross, Total Ek. = net management fee).<br>
+    <code>Sys. M Mediabudget or P Productionsbudget</code> is an exact duplicate of this formula — legacy field.
+  </p>
+</div>
+
+<h3>Derived Convenience Fields <span class="badge formula">formula</span> <span class="badge legacy">legacy</span></h3>
+<table>
+  <tr><th>Field</th><th>Formula / derivation</th></tr>
+  <tr><td><code>Budget divided by months</code></td><td><code>Total Ek. budget. Intäkt ÷ number of months</code> — equal monthly slice of planned revenue</td></tr>
+  <tr><td><code>Ek. budget. Externkostnad</code></td><td><code>IF(Brief. Använder kundens konto?, 0, Brief. Budget mediaspend)</code> — Adgrabber's planned platform cost. When customer uses own account: 0 (Adgrabber pays nothing to the platform). When Adgrabber manages: <code>Brief. Budget mediaspend</code> — but note this field is typically null in the standard case; the allocation records ("Pay for mediaköp" type) serve as the actual spend plan.</td></tr>
+  <tr><td><code>Legacy Ek. budget. Externkostnad</code></td><td>Old version of the above — superseded</td></tr>
+  <tr><td><code>Ek. budget. TB1</code></td><td><code>Total Ek. budget. Intäkt − Ek. budget. Externkostnad</code></td></tr>
+  <tr><td><code>Ek. budget. TB2</code></td><td><code>Total Ek. budget. Intäkt − Ek. budget. Total kostnad</code></td></tr>
+  <tr><td><code>Ek. budget. TG1 / TG2</code></td><td>Margin % versions of TB1 / TB2</td></tr>
+</table>
+
+<hr>
+
+<!-- WHERE DO VALUES COME FROM -->
+<h2>Where Budget Values Come From — Data Flow</h2>
+
+<div class="callout green">
+  Budget values flow <strong>into</strong> Media/Prod New from staff input, and <strong>out</strong> to the sys tables as lookups. The sys tables never write back. The allocation table <em>reads</em> <code>Brief. Kundens mediabudget</code> via a rollup field for display, but this is one-way.
+</div>
+
+<div class="flow-step">
+  <div class="flow-num">1</div>
+  <div><strong>Campaign agreement.</strong> Customer commits to paying e.g. 9,600 SEK for Google Ads Q4. Staff creates Media/Prod New record, sets <code>Brief. Kundens mediabudget</code> = 9,600 SEK manually. Formulas <code>Total Ek. budget. Intäkt</code> and <code>Budget</code> resolve immediately.</div>
+</div>
+
+<div class="flow-step">
+  <div class="flow-num">2</div>
+  <div><strong>Orders confirmed and synced.</strong> n8n syncs Fortnox orders as <code>FortnoxOrder</code> + <code>Fortnox OrderRow</code> records. The order row totals (3,200 + 3,072 + 3,072 = 9,344 SEK for M8347) may differ slightly from the planned budget — this is normal.</div>
+</div>
+
+<div class="flow-step">
+  <div class="flow-num">3</div>
+  <div><strong>Staff creates allocation records.</strong> For each order row staff manually creates two <code>sys.orderallocationmapping</code> records (one per allocation type), entering FIELD <code>ALLOCATION Brief. Customer Budget (How much we allocate)</code> — the SEK amount for that month and type. These amounts are derived from the order row total (not the planned budget). Media/Prod New then shows the sum as rollup fields (<code>ALLOCATED MEDIA BUDGET_Rollup</code>, <code>ALLOCATED to Spend on Mediakop</code>, etc.).</div>
+</div>
+
+<div class="flow-step">
+  <div class="flow-num">4</div>
+  <div><strong>Supplier invoices arrive.</strong> Staff creates <code>sys.fakturamapping</code> records entering <code>Belopp ex moms</code> — the actual invoiced cost. Media/Prod New shows the sum as <code>Ek. utfall. Externkostnad (Fakturamapping) (V5)</code>. This is actual cost tracking, not budget setting.</div>
+</div>
+
+<div class="flow-step">
+  <div class="flow-num">5</div>
+  <div><strong>Accrual check.</strong> The difference between allocated spend (<code>ALLOCATED to Spend on Mediakop</code> = 7,476 SEK) and actual cost (7,709 SEK) = <code>UPPLUPNA</code> = +233 SEK. This does NOT indicate a budget overrun — the revenue budget (<code>Total Ek. budget. Intäkt</code> = 9,600 SEK) is not exceeded.</div>
+</div>
+
+<hr>
+
+<!-- ALLOCATION INTEGRITY -->
+<h2>Allocation Integrity Fields</h2>
+<p>These fields check whether the planned budget has been fully allocated in the sys tables, and whether actual costs match the plan.</p>
+
+<table>
+  <tr><th>Field</th><th>Type</th><th>What it checks</th></tr>
+  <tr>
+    <td><code>ALLOCATED MEDIA BUDGET_Rollup</code></td>
+    <td><span class="badge rollup">rollup</span></td>
+    <td>Sum of ALL allocation amounts (both types) from sys.orderallocationmapping for this line. M8347: 9,344 SEK.</td>
+  </tr>
+  <tr>
+    <td><code>ALLOCATED to Spend on Mediakop</code></td>
+    <td><span class="badge rollup">rollup</span></td>
+    <td>Sum of "Pay for mediaköp" type allocations only — the pre-allocated platform spend. M8347: 7,476 SEK.</td>
+  </tr>
+  <tr>
+    <td><code>Tutti All Allocated_media</code></td>
+    <td><span class="badge rollup">rollup</span></td>
+    <td>Total allocated revenue for media lines. M8347: 9,344 SEK.</td>
+  </tr>
+  <tr>
+    <td><code>Brief. Kundens mediabudget Difference To Allocation</code></td>
+    <td><span class="badge formula">formula</span></td>
+    <td><code>Tutti All Allocated_media − Brief. Kundens mediabudget</code>. Negative = not all customer budget has been allocated. M8347: −256 SEK 🔴 (orders totalled 9,344 vs planned 9,600).</td>
+  </tr>
+  <tr>
+    <td><code>Ek. utfall. Externkostnad (Fakturamapping) (V5)</code></td>
+    <td><span class="badge rollup">rollup</span></td>
+    <td>Sum of <code>Belopp ex moms</code> from all linked sys.fakturamapping records. Actual supplier cost. M8347: 7,709 SEK.</td>
+  </tr>
+  <tr>
+    <td><code>UPPLUPNA (Supplier cost less Alloc Spend) (V5)</code></td>
+    <td><span class="badge formula">formula</span></td>
+    <td>Actual cost − Allocated spend. Positive = accrued cost exceeds planned spend estimate. M8347: +233 SEK.</td>
+  </tr>
+</table>
+
+<hr>
+
+<!-- LIVE EXAMPLE -->
+<h2>Live Example — M8347, Google Ads, Atteviks Bil SKODA Q4 2023</h2>
+
+<div class="rec-card">
+  <div class="rec-id">Record ID: rec5niwRVuSjM44uX</div>
+  <table>
+    <tr><th>FIELD</th><th>Value</th><th>Notes</th></tr>
+    <tr><td><code>Sync Source</code></td><td>Dev Sync Mediakop</td><td>Media line type</td></tr>
+    <tr><td><code>Brief. Kundens mediabudget</code></td><td><strong>9,600 SEK</strong></td><td>Manually set — customer order amount</td></tr>
+    <tr><td><code>Brief. Budget mediaspend</code></td><td><em>null</em></td><td>Not filled in for this record</td></tr>
+    <tr><td><code>Brief. Använder kundens konto?</code></td><td>false / not set</td><td>Adgrabber manages the Google account</td></tr>
+    <tr><td><code>Ek. budget. Intäkt_Media</code></td><td>9,600 SEK</td><td>= Brief. Kundens mediabudget (no own-account deduction)</td></tr>
+    <tr><td><code>Total Ek. budget. Intäkt</code></td><td><strong>9,600 SEK</strong></td><td>Canonical revenue figure</td></tr>
+    <tr><td><code>Budget</code></td><td>9,600 SEK</td><td>= Brief. Kundens mediabudget for media lines</td></tr>
+    <tr><td><code>Budget divided by months</code></td><td>3,200 SEK</td><td>9,600 ÷ 3 months</td></tr>
+    <tr><td><code>ALLOCATED MEDIA BUDGET_Rollup</code></td><td>9,344 SEK</td><td>Actual order rows sum (orders came in slightly under budget)</td></tr>
+    <tr><td><code>ALLOCATED to Spend on Mediakop</code></td><td>7,476 SEK</td><td>"Pay for mediaköp" allocations only (≈78% of 9,600)</td></tr>
+    <tr><td><code>Brief. Kundens mediabudget Difference To Allocation</code></td><td>−256 SEK 🔴</td><td>Budget not fully allocated (orders totalled 9,344 not 9,600)</td></tr>
+    <tr><td><code>Ek. utfall. Externkostnad (Fakturamapping) (V5)</code></td><td>7,709 SEK</td><td>Actual Google invoices sum</td></tr>
+    <tr><td><code>UPPLUPNA (Supplier cost less Alloc Spend) (V5)</code></td><td>+233 SEK</td><td>Actual cost 233 SEK above allocated spend estimate</td></tr>
+    <tr><td><code>Margin % From Agreement</code></td><td>20%</td><td>Agency margin: 20% kept, 80% goes to Google</td></tr>
+  </table>
+</div>
+
+<div class="callout amber">
+  <strong>Note on the 9,600 vs 9,344 gap.</strong> The planned budget (<code>Brief. Kundens mediabudget</code>) = 9,600 SEK was set when the campaign was agreed. The actual Fortnox order row totals came to 9,344 SEK (orders were slightly smaller). This creates a <code>Brief. Kundens mediabudget Difference To Allocation</code> = −256 SEK. The orders, not the planned budget, are what get allocated and invoiced.
+</div>
+
+<hr>
+
+<!-- LINKS TO OTHER TABLES -->
+<h2>Linked Tables</h2>
+<table>
+  <tr><th>Link field</th><th>Linked table</th><th>Direction</th><th>Purpose</th></tr>
+  <tr>
+    <td><code>Media_Allocate From Order Line Item_Production (Allocation Table)</code></td>
+    <td>sys.orderallocationmapping</td>
+    <td>← receives links from alloc records</td>
+    <td>Revenue split — how order row amounts are spread by month and type</td>
+  </tr>
+  <tr>
+    <td><code>sys.fakturamapping</code></td>
+    <td>sys.fakturamapping</td>
+    <td>← receives links from fakturamapping records</td>
+    <td>Cost attribution — actual supplier invoice amounts per campaign</td>
+  </tr>
+  <tr>
+    <td><code>Kampanjer_Media</code></td>
+    <td>Kampanjer</td>
+    <td>→ links to parent campaign</td>
+    <td>Parent campaign reference</td>
+  </tr>
+  <tr>
+    <td><code>Brief. Typ</code></td>
+    <td>FortnoxArticle</td>
+    <td>→ links to product type</td>
+    <td>Media channel type (Google Ads, Facebook, etc.)</td>
+  </tr>
+</table>
+
+</body>
+</html>
