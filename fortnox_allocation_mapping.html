@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Allocation Mapping — sys.orderallocationmapping & sys.fakturamapping</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 960px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 22px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 10px; margin-bottom: 6px; }
+  h2 { font-size: 15px; color: #16213e; margin: 32px 0 10px 0; border-left: 5px solid #0f3460; padding-left: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  h3 { font-size: 13px; color: #0f3460; margin: 20px 0 8px 0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+  .subtitle { color: #888; font-size: 12px; margin-bottom: 26px; }
+  p { margin-bottom: 9px; }
+  ul { margin: 6px 0 12px 20px; }
+  li { margin-bottom: 5px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 20px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 8px 12px; font-weight: 600; }
+  td { padding: 7px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 14px 18px; border-radius: 6px; font-size: 12px; font-family: 'Consolas', monospace; overflow-x: auto; margin: 10px 0 18px 0; line-height: 1.8; }
+
+  .callout { border-left: 4px solid #0f3460; background: #eff6ff; padding: 12px 15px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .green   { border-left-color: #22c55e; background: #f0fdf4; }
+  .orange  { border-left-color: #f97316; background: #fff7ed; }
+  .red     { border-left-color: #ef4444; background: #fef2f2; }
+  .purple  { border-left-color: #8b5cf6; background: #f5f3ff; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 9px; font-size: 11px; font-weight: 600; }
+  .b-blue   { background: #dbeafe; color: #1e40af; }
+  .b-green  { background: #dcfce7; color: #166534; }
+  .b-orange { background: #ffedd5; color: #9a3412; }
+  .b-red    { background: #fee2e2; color: #991b1b; }
+  .b-gray   { background: #f1f5f9; color: #475569; }
+  .b-purple { background: #ede9fe; color: #5b21b6; }
+
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+
+  .map-wrap { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px 20px 20px; margin: 20px 0; overflow-x: auto; }
+
+  .rec-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px; margin: 12px 0; font-size: 12.5px; }
+  .rec-card .rec-id { font-family: 'Consolas', monospace; font-size: 11px; color: #64748b; margin-bottom: 6px; }
+  .rec-card table { margin: 6px 0 0 0; font-size: 12px; }
+  .rec-card th { background: #e2e8f0; color: #1a1a2e; padding: 5px 10px; font-size: 11px; }
+  .rec-card td { padding: 4px 10px; }
+
+  .fin { display: flex; gap: 14px; margin: 14px 0; flex-wrap: wrap; }
+  .fin-box { flex: 1; min-width: 140px; border-radius: 8px; padding: 14px 16px; text-align: center; }
+  .fin-box .label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+  .fin-box .amount { font-size: 20px; font-weight: 700; }
+  .fin-blue   { background: #dbeafe; } .fin-blue .amount   { color: #1e40af; }
+  .fin-green  { background: #dcfce7; } .fin-green .amount  { color: #166534; }
+  .fin-orange { background: #ffedd5; } .fin-orange .amount { color: #9a3412; }
+  .fin-red    { background: #fee2e2; } .fin-red .amount    { color: #991b1b; }
+  .fin-purple { background: #ede9fe; } .fin-purple .amount { color: #5b21b6; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Allocation Mapping — Revenue & Cost Attribution</h1>
+  <p class="subtitle">sys.orderallocationmapping &nbsp;|&nbsp; sys.fakturamapping &nbsp;|&nbsp; base app01yDjf98U6ejKs</p>
+
+  <div class="callout">
+    <strong>The core problem these tables solve:</strong> Fortnox records revenue when an <em>invoice is issued</em> and records cost when a <em>supplier invoice arrives</em>. But Adgrabber sells ad campaigns that run across multiple months. A single order can span October–December; a single supplier invoice can cover costs for several campaigns. Airtable needs a way to split both revenue and cost into the right month <em>and</em> the right campaign. TABLE <code>sys.orderallocationmapping</code> does this for revenue; TABLE <code>sys.fakturamapping</code> does this for cost.
+  </div>
+
+  <!-- CONNECTION MAP -->
+  <h2>Connection Map — How The Tables Relate</h2>
+
+  <div class="map-wrap">
+    <svg viewBox="0 0 860 390" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:680px;font-family:'Segoe UI',Arial,sans-serif;">
+      <defs>
+        <marker id="a2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+        </marker>
+        <marker id="a2d" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+        </marker>
+      </defs>
+
+      <!-- ── Zone backgrounds ── -->
+      <!-- Revenue side (left) -->
+      <rect x="5" y="5" width="270" height="310" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+      <text x="20" y="22" font-size="10" font-weight="700" fill="#1e40af" font-family="'Segoe UI',Arial,sans-serif" letter-spacing="0.5">REVENUE SIDE</text>
+
+      <!-- Cost side (right) -->
+      <rect x="585" y="5" width="270" height="310" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
+      <text x="600" y="22" font-size="10" font-weight="700" fill="#9a3412" font-family="'Segoe UI',Arial,sans-serif" letter-spacing="0.5">COST SIDE</text>
+
+      <!-- ── ROW 1: Source documents ── -->
+      <!-- Fortnox OrderRow (revenue source) -->
+      <rect x="50" y="35" width="165" height="42" rx="5" fill="#1e40af"/>
+      <text x="132" y="57" text-anchor="middle" font-size="12" font-weight="600" fill="white" font-family="'Segoe UI',Arial,sans-serif">Fortnox OrderRow</text>
+      <text x="132" y="71" text-anchor="middle" font-size="10" fill="#bfdbfe" font-family="'Segoe UI',Arial,sans-serif">customer revenue</text>
+
+      <!-- FortnoxSupplierInvoice (cost source) -->
+      <rect x="645" y="35" width="175" height="42" rx="5" fill="#9a3412"/>
+      <text x="732" y="57" text-anchor="middle" font-size="12" font-weight="600" fill="white" font-family="'Segoe UI',Arial,sans-serif">FortnoxSupplierInvoice</text>
+      <text x="732" y="71" text-anchor="middle" font-size="10" fill="#fed7aa" font-family="'Segoe UI',Arial,sans-serif">supplier cost</text>
+
+      <!-- ── ROW 1 → ROW 2 vertical arrows ── -->
+      <!-- OrderRow ↓ sys.orderallocationmapping -->
+      <line x1="132" y1="78" x2="132" y2="166" stroke="#64748b" stroke-width="1.5" marker-end="url(#a2)"/>
+      <text x="144" y="127" font-size="9" fill="#64748b" font-family="'Segoe UI',Arial,sans-serif">FIELD Line Item</text>
+
+      <!-- SupplierInvoice ↓ sys.fakturamapping -->
+      <line x1="732" y1="78" x2="732" y2="166" stroke="#64748b" stroke-width="1.5" marker-end="url(#a2)"/>
+      <text x="600" y="127" font-size="9" fill="#64748b" font-family="'Segoe UI',Arial,sans-serif">FIELD Fortnox Supplierinvoice</text>
+
+      <!-- ── ROW 2: Mapping tables + join point ── -->
+      <!-- sys.orderallocationmapping -->
+      <rect x="20" y="170" width="220" height="42" rx="5" fill="#5b21b6"/>
+      <text x="130" y="188" text-anchor="middle" font-size="11" font-weight="600" fill="white" font-family="'Segoe UI',Arial,sans-serif">sys.orderallocationmapping</text>
+      <text x="130" y="203" text-anchor="middle" font-size="10" fill="#ddd6fe" font-family="'Segoe UI',Arial,sans-serif">monthly revenue split</text>
+
+      <!-- Media / Prod New (central join point) -->
+      <rect x="355" y="170" width="150" height="42" rx="5" fill="#b45309"/>
+      <text x="430" y="188" text-anchor="middle" font-size="12" font-weight="600" fill="white" font-family="'Segoe UI',Arial,sans-serif">Media / Prod New</text>
+      <text x="430" y="203" text-anchor="middle" font-size="10" fill="#fde68a" font-family="'Segoe UI',Arial,sans-serif">campaign line item</text>
+
+      <!-- sys.fakturamapping -->
+      <rect x="620" y="170" width="215" height="42" rx="5" fill="#5b21b6"/>
+      <text x="727" y="188" text-anchor="middle" font-size="11" font-weight="600" fill="white" font-family="'Segoe UI',Arial,sans-serif">sys.fakturamapping</text>
+      <text x="727" y="203" text-anchor="middle" font-size="10" fill="#ddd6fe" font-family="'Segoe UI',Arial,sans-serif">cost split per campaign</text>
+
+      <!-- ── ROW 2 horizontal arrows to Media/Prod New ── -->
+      <!-- sys.orderallocationmapping → Media/Prod New -->
+      <line x1="241" y1="191" x2="351" y2="191" stroke="#64748b" stroke-width="1.5" marker-end="url(#a2)"/>
+      <text x="296" y="183" text-anchor="middle" font-size="9" fill="#64748b" font-family="'Segoe UI',Arial,sans-serif">FIELD Mediakop</text>
+
+      <!-- sys.fakturamapping → Media/Prod New (points left) -->
+      <line x1="618" y1="191" x2="509" y2="191" stroke="#64748b" stroke-width="1.5" marker-end="url(#a2)"/>
+      <text x="563" y="183" text-anchor="middle" font-size="9" fill="#64748b" font-family="'Segoe UI',Arial,sans-serif">FIELD Mediakop/Production</text>
+
+      <!-- ── ROW 3: Kampanjer ── -->
+      <!-- Kampanjer -->
+      <rect x="370" y="300" width="120" height="42" rx="5" fill="#166534"/>
+      <text x="430" y="326" text-anchor="middle" font-size="12" font-weight="600" fill="white" font-family="'Segoe UI',Arial,sans-serif">Kampanjer</text>
+
+      <!-- ── ROW 2 → ROW 3 arrows to Kampanjer ── -->
+      <!-- Media/Prod New ↓ Kampanjer (straight down) -->
+      <line x1="430" y1="213" x2="430" y2="296" stroke="#64748b" stroke-width="1.5" marker-end="url(#a2)"/>
+      <text x="441" y="257" font-size="9" fill="#64748b" font-family="'Segoe UI',Arial,sans-serif">FIELD Kampanj</text>
+
+      <!-- sys.orderallocationmapping → Kampanjer (diagonal) -->
+      <line x1="160" y1="213" x2="373" y2="297" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#a2d)"/>
+      <text x="226" y="268" font-size="9" fill="#94a3b8" font-family="'Segoe UI',Arial,sans-serif" transform="rotate(-18, 226, 268)">FIELD Kampanj</text>
+
+      <!-- sys.fakturamapping → Kampanjer (diagonal) -->
+      <line x1="700" y1="213" x2="489" y2="297" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#a2d)"/>
+      <text x="638" y="267" font-size="9" fill="#94a3b8" font-family="'Segoe UI',Arial,sans-serif" transform="rotate(18, 638, 267)">FIELD Kampanj</text>
+
+      <!-- ── Legend ── -->
+      <rect x="5" y="358" width="12" height="12" rx="2" fill="#1e40af"/>
+      <text x="22" y="369" font-size="10" fill="#475569" font-family="'Segoe UI',Arial,sans-serif">Fortnox entity (synced)</text>
+      <rect x="170" y="358" width="12" height="12" rx="2" fill="#5b21b6"/>
+      <text x="187" y="369" font-size="10" fill="#475569" font-family="'Segoe UI',Arial,sans-serif">Internal mapping table</text>
+      <rect x="355" y="358" width="12" height="12" rx="2" fill="#b45309"/>
+      <text x="372" y="369" font-size="10" fill="#475569" font-family="'Segoe UI',Arial,sans-serif">Campaign line (join point)</text>
+      <rect x="560" y="358" width="12" height="12" rx="2" fill="#166534"/>
+      <text x="577" y="369" font-size="10" fill="#475569" font-family="'Segoe UI',Arial,sans-serif">Campaign (parent)</text>
+      <text x="720" y="369" font-size="10" fill="#94a3b8" font-family="'Segoe UI',Arial,sans-serif" font-style="italic">- - - also links to Kampanjer</text>
+    </svg>
+  </div>
+
+  <p><strong>TABLE <code>Media / Prod New</code></strong> is the central join point. It represents a single <em>campaign line item</em> — e.g. "Google Ads for Atteviks Bil, Oct–Dec 2023". Both mapping tables point to it, allowing Airtable to compute margin per campaign line: Revenue (from orderallocationmapping) minus Cost (from fakturamapping).</p>
+
+  <hr>
+
+  <!-- SYS.ORDERALLOCATIONMAPPING -->
+  <h2>TABLE sys.orderallocationmapping — Monthly Revenue Split</h2>
+
+  <h3>What it does</h3>
+  <p>A Fortnox order row has a single total (e.g. 9,600 SEK for a 3-month Google Ads campaign). That total needs to be split into monthly revenue — Oct: 3,200 SEK, Nov: 3,200 SEK, Dec: 3,200 SEK. TABLE <code>sys.orderallocationmapping</code> holds one record per month-slice. None of this data goes back to Fortnox — it is purely internal Airtable bookkeeping for campaign reporting.</p>
+
+  <h3>Key Fields</h3>
+  <table>
+    <tr><th>FIELD</th><th>Type</th><th>Purpose</th></tr>
+    <tr><td><code>Line Item</code></td><td>Linked record → TABLE Fortnox OrderRow</td><td>Which order row this allocation belongs to. One OrderRow can have many allocation records (one per month).</td></tr>
+    <tr><td><code>Mediakop</code></td><td>Linked record → TABLE Media / Prod New</td><td>Which campaign line item this revenue slice is counted against.</td></tr>
+    <tr><td><code>Kampanj</code></td><td>Linked record → TABLE Kampanjer</td><td>The parent campaign.</td></tr>
+    <tr><td><code>ALLOCATION Brief. Customer Budget (How much we allocate)</code></td><td>Currency</td><td>The SEK amount allocated to this month. Sum of all allocation records for one OrderRow = the OrderRow's total.</td></tr>
+    <tr><td><code>Delivery Date</code></td><td>Date (YYYY-MM-01)</td><td>Which accounting month this slice belongs to (set to the 1st of the month).</td></tr>
+    <tr><td><code>Name</code></td><td>Formula / Text</td><td>Human-readable label (e.g. "M8347 Oct 2023 — Google Ads").</td></tr>
+  </table>
+
+  <h3>Real Example — Campaign M8347, Orders 2945 / 2946 / 2947</h3>
+  <p>Campaign M8347 tracks the <strong>Google Ads</strong> spend for Atteviks Bil SKODA Q4 2023, running Oct–Dec 2023. Adgrabber raises three Fortnox orders for this campaign — one per month — each order covering <em>all media channels</em> for that month (Programmatic, Facebook, Google Ads, YouTube, etc.). Each order is synced into Airtable as multiple records in TABLE <code>Fortnox OrderRow</code>, one record per line item.</p>
+  <p>This example follows only the <strong>Google Ads line item</strong> across the three orders. The relevant TABLE <code>Fortnox OrderRow</code> records are:</p>
+  <ul>
+    <li>TABLE <code>FortnoxOrder</code> FIELD <code>DocumentNumber</code> = <strong>2945</strong> (October order, 6 line items total) → Google Ads row: TABLE <code>Fortnox OrderRow</code> record <code>receTuxgnR08ysjcd</code>, FIELD <code>RowId</code> = 66223, FIELD <code>Description</code> = "Google Ads", FIELD <code>Total excl. VAT</code> = <strong>3,200 SEK</strong></li>
+    <li>TABLE <code>FortnoxOrder</code> FIELD <code>DocumentNumber</code> = <strong>2946</strong> (November order, 4 active line items) → Google Ads row: record <code>rec1vIp3uuu6poKNg</code>, FIELD <code>RowId</code> = 66230, FIELD <code>Total excl. VAT</code> = <strong>3,072 SEK</strong></li>
+    <li>TABLE <code>FortnoxOrder</code> FIELD <code>DocumentNumber</code> = <strong>2947</strong> (December order, 4 active line items) → Google Ads row: record <code>recSs0n1GIaNzrzWA</code>, FIELD <code>RowId</code> = 66237, FIELD <code>Total excl. VAT</code> = <strong>3,072 SEK</strong></li>
+  </ul>
+  <p>Each of these three TABLE <code>Fortnox OrderRow</code> records is linked from <strong>2 records</strong> in TABLE <code>sys.orderallocationmapping</code> (via FIELD <code>Line Item</code>) — two different allocation types — giving <strong>6 allocation records total</strong> for the Google Ads line of M8347:</p>
+
+  <p style="font-weight:700;margin-top:16px;color:#0f3460;">October — Order 2945 (total 3,200 SEK)</p>
+  <div class="rec-card">
+    <div class="rec-id">Record ID: rec00KDcc41MqaYq9</div>
+    <table>
+      <tr><th>FIELD</th><th>Value</th></tr>
+      <tr><td>FIELD Delivery Date</td><td>2023-10-01</td></tr>
+      <tr><td>FIELD ALLOCATION Brief. Customer Budget (How much we allocate)</td><td>2,560 SEK</td></tr>
+      <tr><td>FIELD Line Item</td><td>→ <code>receTuxgnR08ysjcd</code> (Fortnox OrderRow, Order 2945)</td></tr>
+      <tr><td>FIELD Mediakop</td><td>→ <code>rec5niwRVuSjM44uX</code> (Media / Prod New, M8347)</td></tr>
+    </table>
+  </div>
+  <div class="rec-card">
+    <div class="rec-id">Record ID: recdBeYEy6nskTaNW</div>
+    <table>
+      <tr><th>FIELD</th><th>Value</th></tr>
+      <tr><td>FIELD Delivery Date</td><td>2023-10-01</td></tr>
+      <tr><td>FIELD ALLOCATION Brief. Customer Budget (How much we allocate)</td><td>640 SEK</td></tr>
+      <tr><td>FIELD Line Item</td><td>→ <code>receTuxgnR08ysjcd</code> (same OrderRow, different allocation type)</td></tr>
+      <tr><td>FIELD Mediakop</td><td>→ <code>rec5niwRVuSjM44uX</code> (Media / Prod New, M8347)</td></tr>
+    </table>
+  </div>
+
+  <p style="font-weight:700;margin-top:16px;color:#0f3460;">November — Order 2946 (total 3,072 SEK)</p>
+  <div class="rec-card">
+    <div class="rec-id">Record ID: rec5oePKTVmAisRF8</div>
+    <table>
+      <tr><th>FIELD</th><th>Value</th></tr>
+      <tr><td>FIELD Delivery Date</td><td>2023-11-01</td></tr>
+      <tr><td>FIELD ALLOCATION Brief. Customer Budget (How much we allocate)</td><td>2,458 SEK</td></tr>
+      <tr><td>FIELD Line Item</td><td>→ <code>rec1vIp3uuu6poKNg</code> (Fortnox OrderRow, Order 2946)</td></tr>
+      <tr><td>FIELD Mediakop</td><td>→ <code>rec5niwRVuSjM44uX</code> (Media / Prod New, M8347)</td></tr>
+    </table>
+  </div>
+  <div class="rec-card">
+    <div class="rec-id">Record ID: recjpm5kqWHJINcBc</div>
+    <table>
+      <tr><th>FIELD</th><th>Value</th></tr>
+      <tr><td>FIELD Delivery Date</td><td>2023-11-01</td></tr>
+      <tr><td>FIELD ALLOCATION Brief. Customer Budget (How much we allocate)</td><td>614 SEK</td></tr>
+      <tr><td>FIELD Line Item</td><td>→ <code>rec1vIp3uuu6poKNg</code> (same OrderRow, different allocation type)</td></tr>
+      <tr><td>FIELD Mediakop</td><td>→ <code>rec5niwRVuSjM44uX</code> (Media / Prod New, M8347)</td></tr>
+    </table>
+  </div>
+
+  <p style="font-weight:700;margin-top:16px;color:#0f3460;">December — Order 2947 (total 3,072 SEK)</p>
+  <div class="rec-card">
+    <div class="rec-id">Record ID: rec6Rmn8WDyu0jqod</div>
+    <table>
+      <tr><th>FIELD</th><th>Value</th></tr>
+      <tr><td>FIELD Delivery Date</td><td>2023-12-01</td></tr>
+      <tr><td>FIELD ALLOCATION Brief. Customer Budget (How much we allocate)</td><td>2,458 SEK</td></tr>
+      <tr><td>FIELD Line Item</td><td>→ <code>recSs0n1GIaNzrzWA</code> (Fortnox OrderRow, Order 2947)</td></tr>
+      <tr><td>FIELD Mediakop</td><td>→ <code>rec5niwRVuSjM44uX</code> (Media / Prod New, M8347)</td></tr>
+    </table>
+  </div>
+  <div class="rec-card">
+    <div class="rec-id">Record ID: recRaW4Bs2eB3atmh</div>
+    <table>
+      <tr><th>FIELD</th><th>Value</th></tr>
+      <tr><td>FIELD Delivery Date</td><td>2023-12-01</td></tr>
+      <tr><td>FIELD ALLOCATION Brief. Customer Budget (How much we allocate)</td><td>614 SEK</td></tr>
+      <tr><td>FIELD Line Item</td><td>→ <code>recSs0n1GIaNzrzWA</code> (same OrderRow, different allocation type)</td></tr>
+      <tr><td>FIELD Mediakop</td><td>→ <code>rec5niwRVuSjM44uX</code> (Media / Prod New, M8347)</td></tr>
+    </table>
+  </div>
+
+  <div class="callout" style="background:#eff6ff;border-left:4px solid #3b82f6;">
+    <strong>Why two allocation records per OrderRow?</strong> Each OrderRow total is split into two allocation types:<br><br>
+    <strong>1. "Pay for mediaköp"</strong> — the actual media spend Adgrabber pays out to the platform (Google, Facebook, etc.) on the customer's behalf. In the example: 2,560 SEK (Oct), 2,458 SEK (Nov/Dec).<br>
+    <strong>2. "Pure profit – no spend"</strong> — the agency margin on top, with no outgoing cost. In the example: 640 SEK (Oct), 614 SEK (Nov/Dec).<br><br>
+    The two amounts always sum to the OrderRow FIELD <code>Total excl. VAT</code>. This split lets Adgrabber track gross margin per campaign line: <em>Pure profit</em> records represent what the agency keeps; <em>Pay for mediaköp</em> records represent what flows out to the platform.
+  </div>
+  <div class="callout green" style="margin-top:10px;">
+    <strong>Staff creates these records manually.</strong> When a campaign is set up, staff open the TABLE <code>sys.orderallocationmapping</code> interface and create allocation records linking each month's OrderRow to the campaign line. No automation writes to this table.
+  </div>
+
+  <hr>
+
+  <!-- SYS.FAKTURAMAPPING -->
+  <h2>TABLE sys.fakturamapping — Cost Attribution Per Campaign</h2>
+
+  <h3>What it does</h3>
+  <p>A supplier invoice from Google or Facebook covers ad spend for multiple campaigns. TABLE <code>sys.fakturamapping</code> holds one record per campaign that was served by that invoice. It answers: "Of this 15,000 SEK Google invoice, how much belongs to campaign M8347 and how much to M8350?"</p>
+  <p>A second use: monthly cost split. If one invoice covers October–November spend, staff can create two fakturamapping records for the same invoice — one per month — to track cost by period. However the primary split is <em>per campaign</em>.</p>
+
+  <h3>Key Fields</h3>
+  <table>
+    <tr><th>FIELD</th><th>Type</th><th>Purpose</th></tr>
+    <tr><td><code>Fortnox Supplierinvoice</code></td><td>Linked record → TABLE FortnoxSupplierInvoice</td><td>Which supplier invoice this cost slice comes from. One invoice can have many fakturamapping records.</td></tr>
+    <tr><td><code>Mediakop/Production</code></td><td>Linked record → TABLE Media / Prod New</td><td>Which campaign line item bears this cost.</td></tr>
+    <tr><td><code>Kampanj</code></td><td>Linked record → TABLE Kampanjer</td><td>Parent campaign.</td></tr>
+    <tr><td><code>Belopp ex moms</code></td><td>Currency</td><td>The SEK cost (excl. VAT) attributed to this campaign from this invoice.</td></tr>
+    <tr><td><code>Platform Import File</code></td><td>Linked record → TABLE Platform Import Files</td><td>Optional link to the PDF billing file that was the source for this cost attribution.</td></tr>
+  </table>
+
+  <h3>Real Example — Campaign M8347, Three Supplier Invoices</h3>
+  <p>TABLE <code>Media / Prod New</code>, record <code>rec5niwRVuSjM44uX</code>: campaign line M8347, Atteviks Bil, Google Ads SKODA Q4 2023. FIELD <code>Total Ek. budget. Intäkt</code> (planned revenue) = <strong>9,600 SEK</strong>. FIELD <code>Brief. Kundens mediabudget</code> (customer order amount) = <strong>9,600 SEK</strong>. (For a media line where Adgrabber manages the ad account, these are equal.)</p>
+  <p>Three Google supplier invoices arrived (Google Ireland Limited), one per month. Staff created one TABLE <code>sys.fakturamapping</code> record per invoice:</p>
+
+  <div class="rec-card">
+    <div class="rec-id">Record ID: recCr40SJE2xCCxVq (ID 11695) — October cost</div>
+    <table>
+      <tr><th>FIELD</th><th>Value</th></tr>
+      <tr><td>FIELD Belopp ex moms</td><td>2,553 SEK</td></tr>
+      <tr><td>FIELD Fortnox Supplierinvoice</td><td>→ <code>recgFOEVwZOXCGmC0</code> (FortnoxSupplierInvoice, invoice date 2023-10-31)</td></tr>
+      <tr><td>FIELD Mediakop/Production</td><td>→ <code>rec5niwRVuSjM44uX</code> (Media / Prod New, M8347)</td></tr>
+    </table>
+  </div>
+
+  <div class="rec-card">
+    <div class="rec-id">Record ID: recA1pW0gbvEO7QEw (ID 11879) — November cost</div>
+    <table>
+      <tr><th>FIELD</th><th>Value</th></tr>
+      <tr><td>FIELD Belopp ex moms</td><td>2,554 SEK</td></tr>
+      <tr><td>FIELD Fortnox Supplierinvoice</td><td>→ <code>rec5HMCVFrMBOB3Q0</code> (FortnoxSupplierInvoice, invoice date 2023-11-30)</td></tr>
+      <tr><td>FIELD Mediakop/Production</td><td>→ <code>rec5niwRVuSjM44uX</code> (Media / Prod New, M8347)</td></tr>
+    </table>
+  </div>
+
+  <div class="rec-card">
+    <div class="rec-id">Record ID: recJAw5SyejbMSpE3 (ID 12036) — December cost</div>
+    <table>
+      <tr><th>FIELD</th><th>Value</th></tr>
+      <tr><td>FIELD Belopp ex moms</td><td>2,602 SEK</td></tr>
+      <tr><td>FIELD Fortnox Supplierinvoice</td><td>→ <code>rechimZeDFw30jwAf</code> (FortnoxSupplierInvoice, invoice date 2023-12-31)</td></tr>
+      <tr><td>FIELD Mediakop/Production</td><td>→ <code>rec5niwRVuSjM44uX</code> (Media / Prod New, M8347)</td></tr>
+    </table>
+  </div>
+
+  <div class="callout orange">
+    <strong>Why three invoices and not one?</strong> Google bills monthly. Each month's ad spend produces a separate supplier invoice in Fortnox. Staff imports the monthly Google billing PDF into TABLE <code>Platform Import Files</code>, then creates one fakturamapping record per invoice, per campaign that ran during that month. If five campaigns ran on Google in October, the October Google invoice gets five fakturamapping records — one per campaign, amounts summing to the invoice total.
+  </div>
+
+  <hr>
+
+  <!-- FINANCIAL RECONCILIATION -->
+  <h2>Financial Reconciliation — Campaign M8347 Full Picture</h2>
+  <p>TABLE <code>Media / Prod New</code>, record <code>rec5niwRVuSjM44uX</code> (M8347, Google Ads SKODA Q4, Atteviks Bil):</p>
+
+  <div class="fin">
+    <div class="fin-box fin-blue">
+      <div class="label">Revenue (3 OrderRows total)</div>
+      <div class="amount">9,344 SEK</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px">Orders 2945+2946+2947<br>3,200 + 3,072 + 3,072</div>
+    </div>
+    <div class="fin-box fin-green">
+      <div class="label">Revenue allocated (sum)</div>
+      <div class="amount">9,344 SEK</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px">6 records in<br>sys.orderallocationmapping</div>
+    </div>
+    <div class="fin-box fin-orange">
+      <div class="label">Cost (faktura sum)</div>
+      <div class="amount">7,709 SEK</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px">3 records in<br>sys.fakturamapping</div>
+    </div>
+    <div class="fin-box fin-purple">
+      <div class="label">Gross Margin</div>
+      <div class="amount">1,635 SEK</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px">Revenue − Cost<br>(17.5%)</div>
+    </div>
+  </div>
+
+  <div class="callout" style="background:#fef9c3;border-left:4px solid #ca8a04;">
+    <strong>Accrual (upplupna) flagged — not a budget overrun.</strong> FIELD <code>Total Ek. budget. Intäkt</code> = <strong>9,600 SEK</strong>. Actual cost (sum of fakturamapping FIELD <code>Belopp ex moms</code>) = <strong>7,709 SEK</strong> — well within budget.<br><br>
+    The <strong>+233 SEK</strong> discrepancy is between <em>allocated media spend</em> (FIELD <code>ALLOCATED to Spend on Mediakop</code> = 7,476 SEK, sum of "Pay for mediaköp" allocation type) and actual supplier cost (7,709 SEK). This is tracked as <em>upplupna</em> — accrued cost exceeding the pre-allocated spend estimate. Staff see this as <code>UPPLUPNA (Supplier cost less Alloc Spend)</code> = +233 SEK 🔴 on the record.
+  </div>
+
+  <pre>Campaign M8347 — month-by-month:
+
+Month      Revenue (alloc)   Cost (faktura)   Month margin
+Oct 2023      3,200 SEK         2,553 SEK      +647 SEK  ✓
+Nov 2023      3,072 SEK         2,554 SEK      +518 SEK  ✓
+Dec 2023      3,072 SEK         2,602 SEK      +470 SEK  ✓
+─────────────────────────────────────────────────────────
+Total         9,344 SEK         7,709 SEK     +1,635 SEK
+Revenue budget (Total Ek. budget. Intäkt)  9,600 SEK  ✓ cost within budget
+Allocated media spend (Pay for mediaköp)   7,476 SEK  🔴 +233 SEK upplupna</pre>
+
+  <hr>
+
+  <!-- HOW THEY DIFFER -->
+  <h2>sys.orderallocationmapping vs sys.fakturamapping — Key Differences</h2>
+
+  <table>
+    <tr><th>Aspect</th><th>sys.orderallocationmapping</th><th>sys.fakturamapping</th></tr>
+    <tr>
+      <td><strong>What it tracks</strong></td>
+      <td>Revenue — how much of a customer order row is recognised in each month</td>
+      <td>Cost — how much of a supplier invoice is attributed to each campaign</td>
+    </tr>
+    <tr>
+      <td><strong>Source document</strong></td>
+      <td>TABLE Fortnox OrderRow (customer side)</td>
+      <td>TABLE FortnoxSupplierInvoice (supplier side)</td>
+    </tr>
+    <tr>
+      <td><strong>Primary split axis</strong></td>
+      <td>Time (month-by-month revenue recognition)</td>
+      <td>Campaign (cost-per-campaign attribution)</td>
+    </tr>
+    <tr>
+      <td><strong>Who creates records</strong></td>
+      <td>Staff manually, when campaign is set up</td>
+      <td>Staff manually, after each monthly supplier invoice arrives</td>
+    </tr>
+    <tr>
+      <td><strong>Synced to Fortnox?</strong></td>
+      <td>No — purely internal Airtable</td>
+      <td>No — purely internal Airtable</td>
+    </tr>
+    <tr>
+      <td><strong>Integrity check</strong></td>
+      <td>Sum of FIELD ALLOCATION Brief. Customer Budget (How much we allocate) across all records for one OrderRow should equal OrderRow FIELD Total excl. VAT</td>
+      <td>Sum of FIELD Belopp ex moms across all records for one invoice should equal invoice FIELD Total</td>
+    </tr>
+    <tr>
+      <td><strong>Joint link</strong></td>
+      <td colspan="2">Both link to TABLE Media / Prod New — via FIELD <code>Mediakop</code> (orderallocationmapping) and FIELD <code>Mediakop/Production</code> (fakturamapping) — this is how Airtable computes margin per campaign</td>
+    </tr>
+  </table>
+
+  <hr>
+
+  <!-- ROLE OF MEDIA/PROD NEW -->
+  <h2>TABLE Media / Prod New — The Join Point</h2>
+
+  <p>This table holds one record per <em>campaign line item</em> — a specific media channel for a specific campaign. Think of it as the business unit of work: "Run Google Ads for Atteviks Bil during Q4 2023."</p>
+
+  <table>
+    <tr><th>FIELD</th><th>Purpose</th></tr>
+    <tr><td><code>Name / ID</code></td><td>Campaign line ID (e.g. M8347) — human identifier</td></tr>
+    <tr><td><code>Kampanj</code></td><td>Link to TABLE Kampanjer — the parent campaign</td></tr>
+    <tr><td><code>Total Ek. budget. Intäkt</code></td><td>Planned revenue for this line item. For media lines: equals <code>Brief. Kundens mediabudget</code> (customer order amount) when Adgrabber manages the ad account. This is the canonical revenue figure used in all P&amp;L calculations.</td></tr>
+    <tr><td><code>Budget</code></td><td>Formula: <code>IF(Sync Source="Dev Sync Mediakop", Brief. Kundens mediabudget, Total Ek. budget. Intäkt)</code>. For media lines returns the gross customer budget; for production lines equals <code>Total Ek. budget. Intäkt</code>.</td></tr>
+    <tr><td><code>Ek. utfall. Externkostnad (Fakturamapping) (V5)</code></td><td>Rollup — sum of FIELD <code>Belopp ex moms</code> from all linked sys.fakturamapping records. Actual supplier cost.</td></tr>
+    <tr><td><code>ALLOCATED to Spend on Mediakop</code></td><td>Sum of "Pay for mediaköp" allocation type records from sys.orderallocationmapping — the pre-allocated media spend estimate.</td></tr>
+    <tr><td><code>UPPLUPNA (Supplier cost less Alloc Spend) (V5)</code></td><td>Formula: Actual cost − Allocated spend. Positive = accrued cost exceeds estimate (upplupna).</td></tr>
+  </table>
+
+  <div class="rec-card">
+    <div class="rec-id">Record ID: rec5niwRVuSjM44uX — example campaign line</div>
+    <table>
+      <tr><th>FIELD</th><th>Value</th></tr>
+      <tr><td>FIELD Name</td><td>M8347</td></tr>
+      <tr><td>FIELD Kampanj</td><td>→ Atteviks Bil, Google Ads SKODA Q4 2023</td></tr>
+      <tr><td>FIELD ALLOCATION Brief. Customer Budget (How much we allocate)</td><td>7,476 SEK</td></tr>
+      <tr><td>FIELD Actual Cost (rollup)</td><td>7,709 SEK (3 fakturamapping records)</td></tr>
+      <tr><td>FIELD Revenue (rollup)</td><td>9,344 SEK (sum of 6 allocation records across 3 OrderRows)</td></tr>
+      <tr><td>FIELD Margin</td><td>1,891 SEK (19.7%)</td></tr>
+      <tr><td>FIELD ALLOCATION Brief. Customer Budget (How much we allocate) Overrun</td><td>+233 SEK 🔴</td></tr>
+    </table>
+  </div>
+
+  <hr>
+
+  <!-- WORKFLOW OVERVIEW -->
+  <h2>Typical Staff Workflow — From Campaign Setup to Monthly Close</h2>
+
+  <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0 20px 0;">
+
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <div style="background:#0f3460;color:#fff;border-radius:50%;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;">1</div>
+      <div><strong>Campaign setup.</strong> Staff creates a TABLE <code>Kampanjer</code> record and adds TABLE <code>Media / Prod New</code> line items — one per media channel. For each line item, staff manually sets FIELD <code>Brief. Kundens mediabudget</code> (the customer order amount, e.g. 9,600 SEK for a 3-month Google Ads line). FIELD <code>Total Ek. budget. Intäkt</code> and FIELD <code>Budget</code> are computed formulas — they resolve automatically from that manual input. Neither sys table writes to any budget field; all budget values originate here, at campaign setup.</div>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <div style="background:#0f3460;color:#fff;border-radius:50%;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;">2</div>
+      <div><strong>Order allocation.</strong> Staff links a Fortnox order row to the campaign in TABLE <code>sys.orderallocationmapping</code>, creating one record per month that the campaign runs and splitting the order row total across those months. Each record links to the order row AND the Media / Prod New line item.
+        <div style="margin-top:8px;background:#fff3cd;border-left:4px solid #e6a817;padding:8px 12px;border-radius:4px;font-size:13px;">
+          ⚠ <strong>Schema note:</strong> The schema includes a push path where staff creates order rows directly in Airtable with FIELD <code>LineItem Source = "Airtable users"</code>. In practice, all sampled <code>Fortnox OrderRow</code> records show <code>LineItem Source = "Fortnox"</code> — the rows arrive via the Fortnox→Airtable sync, not staff entry.
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <div style="background:#0f3460;color:#fff;border-radius:50%;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;">3</div>
+      <div><strong>Monthly close — supplier invoices arrive.</strong> At end of each month, Google, Facebook, etc. issue billing invoices. These arrive in Fortnox (as supplier invoices). n8n syncs them into TABLE <code>FortnoxSupplierInvoice</code>.</div>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <div style="background:#0f3460;color:#fff;border-radius:50%;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;">4</div>
+      <div><strong>Import & reconcile.</strong> Staff downloads the platform billing PDF and uploads it to TABLE <code>Platform Import Files</code>, links it to the TABLE <code>FortnoxSupplierInvoice</code> record. Then for each campaign that ran that month on that platform, staff creates a TABLE <code>sys.fakturamapping</code> record: link to the invoice, link to the Media / Prod New line item, enter the SEK amount for that campaign. The sum of all fakturamapping amounts for one invoice must equal the invoice total.</div>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <div style="background:#0f3460;color:#fff;border-radius:50%;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;">5</div>
+      <div><strong>Reporting.</strong> TABLE <code>Media / Prod New</code> FIELD <code>Margin</code> and FIELD <code>Budget Overrun</code> are now live. Management can see, per campaign line, the actual margin and whether costs exceeded plan. Nothing here goes back to Fortnox — Fortnox only sees the invoices themselves, not the internal campaign attribution.</div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <div class="callout purple">
+    <strong>Neither table syncs with Fortnox.</strong> TABLE <code>sys.orderallocationmapping</code> and TABLE <code>sys.fakturamapping</code> are purely internal Airtable records. They exist because Fortnox is a financial accounting tool — it records totals per invoice. It has no concept of "which part of this invoice belongs to campaign M8347 in October." That attribution layer lives entirely in Airtable and is maintained by Adgrabber staff.
+  </div>
+
+</div>
+</body>
+</html>
