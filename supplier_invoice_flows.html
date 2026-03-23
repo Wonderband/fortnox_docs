@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supplier Invoice Flows — Two Sources into FortnoxSupplierInvoice</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 22px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 10px; margin-bottom: 6px; }
+  h2 { font-size: 15px; color: #16213e; margin: 28px 0 10px 0; border-left: 5px solid #0f3460; padding-left: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  h3 { font-size: 13px; color: #0f3460; margin: 18px 0 8px 0; font-weight: 700; }
+  .subtitle { color: #888; font-size: 12px; margin-bottom: 26px; }
+  p { margin-bottom: 9px; }
+  ul { margin: 6px 0 12px 20px; }
+  li { margin-bottom: 4px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 20px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 8px 12px; font-weight: 600; }
+  td { padding: 7px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 14px 18px; border-radius: 6px; font-size: 12.5px; font-family: 'Consolas', monospace; overflow-x: auto; margin: 10px 0 18px 0; line-height: 1.7; }
+
+  .callout { border-left: 4px solid #0f3460; background: #eff6ff; padding: 11px 14px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .green   { border-left-color: #22c55e; background: #f0fdf4; }
+  .orange  { border-left-color: #f97316; background: #fff7ed; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 9px; font-size: 11px; font-weight: 600; }
+  .b-blue   { background: #dbeafe; color: #1e40af; }
+  .b-green  { background: #dcfce7; color: #166534; }
+  .b-orange { background: #ffedd5; color: #9a3412; }
+  .b-gray   { background: #f1f5f9; color: #475569; }
+  .b-purple { background: #f3e8ff; color: #6b21a8; }
+
+  .flow { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 18px 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 10px; }
+  .step-num { background: #0f3460; color: #fff; border-radius: 50%; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .step-num.plat { background: #9a3412; }
+  .arrow { text-align: center; color: #94a3b8; font-size: 16px; padding-left: 4px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 14px 0 20px 0; }
+  .flow-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px 18px; background: #fafbfc; }
+  .flow-card.fortnox { border-top: 4px solid #0f3460; }
+  .flow-card.platform { border-top: 4px solid #f97316; }
+  .flow-card h3 { margin-top: 0; }
+
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 26px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Supplier Invoice Flows — Two Sources into FortnoxSupplierInvoice</h1>
+  <p class="subtitle">Reference document &nbsp;|&nbsp; automation.offertizer.com &nbsp;|&nbsp; base app01yDjf98U6ejKs</p>
+
+  <div class="callout">
+    <strong>One sentence:</strong> TABLE <code>FortnoxSupplierInvoice</code> (<code>tblYERBn2P6wrHEzl</code>) receives records from two completely separate billing systems — standard supplier invoices synced automatically from Fortnox, and media platform billing imported manually from export files — but both flow downstream into <code>sys.fakturamapping</code> for identical cost attribution.
+  </div>
+
+  <!-- WHY TWO FLOWS -->
+  <h2>Why Two Flows Exist</h2>
+
+  <p>The agency handles two fundamentally different categories of supplier costs:</p>
+
+  <ul>
+    <li><strong>Standard suppliers</strong> (printing, production, freelancers, etc.) invoice through the normal B2B process: they send invoices to the agency, which registers them in <strong>Fortnox</strong> — the accounting system of record. These flow into Airtable automatically via n8n sync.</li>
+    <li><strong>Media buying platforms</strong> (Google Ads, Meta, DV360, etc.) don't send traditional invoices — they bill the agency directly through their own platform billing systems and generate periodic billing exports (PDFs or CSVs). These exports never enter Fortnox; instead, staff import them manually into Airtable.</li>
+  </ul>
+
+  <p>Despite their different origins, both types represent real supplier costs that must be attributed to specific campaigns for P&amp;L reporting. Keeping them in one table (<code>FortnoxSupplierInvoice</code>) means the downstream cost-attribution workflow (<code>sys.fakturamapping</code>) handles both with the same logic.</p>
+
+  <!-- SIDE-BY-SIDE FLOWS -->
+  <h2>The Two Flows at a Glance</h2>
+
+  <div class="two-col">
+    <div class="flow-card fortnox">
+      <h3>Flow 1 &nbsp;<span class="badge b-blue">Fortnox → n8n → Airtable</span></h3>
+      <p style="font-size:12px;color:#555;margin-bottom:10px;">Automated. Supplier invoices processed through accounting.</p>
+      <div class="flow">
+        <div class="flow-step"><span class="step-num">1</span><div>Supplier sends invoice; Fortnox staff registers it in the Fortnox app.</div></div>
+        <div class="flow-step"><span class="step-num">2</span><div>n8n checks FortnoxSupplier: <code>Internal Status = "Sync"</code> must be set. Suppliers marked "Do not sync" are skipped entirely.</div></div>
+        <div class="flow-step"><span class="step-num">3</span><div>n8n polls <code>GET /3/supplierinvoices</code> and upserts matching invoices into TABLE <code>FortnoxSupplierInvoice</code>.</div></div>
+        <div class="flow-step"><span class="step-num">4</span><div>Record ID = Fortnox <code>GivenNumber</code> (document number). Currency conversion applied if invoice is not in SEK.</div></div>
+      </div>
+    </div>
+
+    <div class="flow-card platform">
+      <h3>Flow 2 &nbsp;<span class="badge b-orange">Platform Export → Manual Import</span></h3>
+      <p style="font-size:12px;color:#555;margin-bottom:10px;">Manual. Platform billing that bypasses Fortnox entirely.</p>
+      <div class="flow">
+        <div class="flow-step"><span class="step-num plat">1</span><div>Media platform (Google, Meta, etc.) generates a billing export for the period.</div></div>
+        <div class="flow-step"><span class="step-num plat">2</span><div>Staff creates a record in TABLE <code>Platform Import Files</code> (<code>tbl922EeY899adWVD</code>) and attaches the export file with period metadata.</div></div>
+        <div class="flow-step"><span class="step-num plat">3</span><div>FortnoxSupplierInvoice records are created (manually or via automation) and linked back to that Platform Import File record.</div></div>
+        <div class="flow-step"><span class="step-num plat">4</span><div>Record ID = <code>ID from 4.2</code> (platform's own identifier). No currency conversion — platform billing is always in SEK.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE PLATFORM IMPORT FILES -->
+  <h2>TABLE Platform Import Files</h2>
+
+  <p>TABLE <code>Platform Import Files</code> (<code>tbl922EeY899adWVD</code>) acts as the entry point and audit trail for all platform billing. It holds one record per import batch (typically one per platform per billing period) and provides the link from which platform invoices trace their origin.</p>
+
+  <ul>
+    <li>Each record represents a single billing export file from a media platform.</li>
+    <li>Staff attach the actual export file (PDF/CSV) to the record and fill in period and supplier metadata.</li>
+    <li>Individual cost lines from the export are then created as <code>FortnoxSupplierInvoice</code> records, each linked back to the parent Platform Import File via FIELD <code>Platform Import File</code> (<code>fldAzxkHMaZWQYlt9</code>) on the invoice.</li>
+    <li>This link provides traceability: from any platform invoice record you can navigate back to the source file that was imported.</li>
+  </ul>
+
+  <div class="callout">
+    The <code>Platform Import File</code> link field is <strong>only populated on platform records</strong>. Fortnox-synced invoices leave it empty — they have no import file because they came from the Fortnox API directly.
+  </div>
+
+  <!-- THE FLAG -->
+  <h2>The Flag: Suppliertype Field</h2>
+
+  <p>FIELD <code>Suppliertype</code> (<code>fldF0nbSfvrOpiD0Q</code>) on <code>FortnoxSupplierInvoice</code> is a <strong>lookup from TABLE FortnoxSupplier</strong>. It carries the supplier type classification set on the supplier record — it is not set per invoice.</p>
+
+  <table>
+    <tr>
+      <th>Suppliertype value</th>
+      <th>Meaning</th>
+      <th>Who sets it</th>
+    </tr>
+    <tr>
+      <td><code>Platform - Not Fortnox</code></td>
+      <td>This supplier is a media platform. Its invoices are never in Fortnox — they come from manual platform billing imports.</td>
+      <td>Set once on the FortnoxSupplier record. All invoices from that supplier automatically carry this value via lookup.</td>
+    </tr>
+    <tr>
+      <td><em>(blank / other)</em></td>
+      <td>Standard supplier — invoices come from Fortnox via n8n sync.</td>
+      <td>Default; Fortnox-synced supplier records don't need this field set.</td>
+    </tr>
+  </table>
+
+  <div class="callout orange">
+    <strong>Important:</strong> <code>Suppliertype</code> is a <em>lookup</em>, not a field staff set directly on the invoice. To classify a supplier as a platform, the <code>Suppliertype</code> property must be set on their <strong>FortnoxSupplier</strong> record. Every invoice from that supplier then automatically inherits the value.
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <h2>Side-by-Side: All Differences</h2>
+
+  <table>
+    <tr>
+      <th style="width:28%">Aspect</th>
+      <th style="width:36%">Fortnox-Synced &nbsp;<span class="badge b-blue">Flow 1</span></th>
+      <th style="width:36%">Platform - Not Fortnox &nbsp;<span class="badge b-orange">Flow 2</span></th>
+    </tr>
+    <tr>
+      <td><strong>How record enters Airtable</strong></td>
+      <td>n8n polls Fortnox API (<code>GET /3/supplierinvoices</code>) on a schedule</td>
+      <td>Staff imports manually from platform billing export; linked to TABLE <code>Platform Import Files</code></td>
+    </tr>
+    <tr>
+      <td><strong>Sync gating</strong></td>
+      <td>FortnoxSupplier <code>Internal Status = "Sync"</code> required; "Do not sync" suppliers are skipped</td>
+      <td>No sync gating — not touched by n8n at all</td>
+    </tr>
+    <tr>
+      <td><strong>Record identifier</strong></td>
+      <td>Fortnox <code>GivenNumber</code> (document number assigned by Fortnox)</td>
+      <td>FIELD <code>ID from 4.2</code> (platform's own billing reference)</td>
+    </tr>
+    <tr>
+      <td><strong>Suppliertype flag</strong></td>
+      <td>Blank or standard value</td>
+      <td><code>Platform - Not Fortnox</code> (lookup from FortnoxSupplier)</td>
+    </tr>
+    <tr>
+      <td><strong>Internal Status / Sync field</strong></td>
+      <td>Lookup from FortnoxSupplier — "Sync" or "Do not sync"</td>
+      <td><strong>Empty</strong> — platform suppliers have no Internal Status set</td>
+    </tr>
+    <tr>
+      <td><strong>Currency conversion</strong></td>
+      <td>FIELD <code>Total Excl VAT in SEK</code> = <code>Total Excl VAT × CurrencyRate</code> (handles EUR, USD, etc.)</td>
+      <td>FIELD <code>Total Excl VAT in SEK</code> = <code>Total Excl VAT × 1</code> (always SEK — no conversion needed)</td>
+    </tr>
+    <tr>
+      <td><strong>Platform Import File link</strong></td>
+      <td>Empty</td>
+      <td>Populated — links back to the source record in TABLE <code>Platform Import Files</code></td>
+    </tr>
+    <tr>
+      <td><strong>Platform-specific fields</strong></td>
+      <td>Empty (<code>Platform Export Name</code>, <code>Platform Text 1</code>, <code>Platform Text 2</code>, <code>Ad Accountr</code>)</td>
+      <td>Populated with platform metadata from the billing export</td>
+    </tr>
+    <tr>
+      <td><strong>Sync back to Fortnox</strong></td>
+      <td>N/A — this is a read-only mirror of Fortnox data</td>
+      <td>Never synced to Fortnox — these costs exist only in Airtable</td>
+    </tr>
+  </table>
+
+  <!-- DOWNSTREAM TREATMENT -->
+  <h2>Downstream Treatment — What Is the Same</h2>
+
+  <div class="callout green">
+    <strong>Identical downstream:</strong> Both record types flow into TABLE <code>sys.fakturamapping</code> through the same FIELD <code>sys.fakturamapping</code> link (<code>fld2h78ru7NwwupNX</code>). Staff attribute invoice costs to specific campaigns using <code>fakturamapping</code> regardless of whether the invoice came from Fortnox or a platform billing import. The P&amp;L machinery treats them the same.
+  </div>
+
+  <p>The following features apply equally to both invoice types:</p>
+
+  <ul>
+    <li><strong>Invoice fully mapped?</strong> — formula checking whether total attributed cost equals invoice total. Works the same for both.</li>
+    <li><strong>Attest Status</strong> — singleSelect field ("Ok att betala", "Ska inte betalas", "För åtgärd") used for payment approval. Applies to both types.</li>
+    <li><strong>Cost attribution to campaigns</strong> — via <code>sys.fakturamapping</code>, both types split costs across campaigns using the same monthly allocation logic.</li>
+  </ul>
+
+  <hr>
+
+  <div class="callout orange">
+    <strong>Bottom line:</strong> The split exists because two different billing realities (B2B accounting via Fortnox vs. platform self-billing) need to be unified in one place for P&amp;L. The <code>Suppliertype = "Platform - Not Fortnox"</code> flag — inherited from FortnoxSupplier via lookup — is the single field that distinguishes the two types at a glance. All downstream cost attribution is identical.
+  </div>
+
+</div>
+</body>
+</html>
