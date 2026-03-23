@@ -215,14 +215,13 @@
             FortnoxOrder, Fortnox OrderRow, FortnoxInvoice, FortnoxInvoiceRow,
             FortnoxArticle
           </td>
-          <td>Bidirectional sync with Fortnox accounting system via n8n</td>
+          <td>Fortnox → Airtable sync via n8n (all 8 tables pull from Fortnox; Airtable→Fortnox push workflow exists in FortnoxOrder schema but is confirmed unused in live data)</td>
         </tr>
         <tr>
           <td><span class="badge badge-gray">System / Mapping</span></td>
           <td>
             sys.fakturamapping, sys.orderallocationmapping, sys.users,
-            sys.salesPerson, sys.mediatyp, sys.workingmapping,
-            sys.fakturamapping
+            sys.salesPerson, sys.mediatyp, sys.workingmapping
           </td>
           <td>Internal lookups, allocation logic, accruals</td>
         </tr>
@@ -400,19 +399,16 @@
         <tr>
           <td><strong>FortnoxOrder</strong></td>
           <td>
-            <span class="badge badge-orange">Airtable → Fortnox</span>
-            (bidirectional)
+            <span class="badge badge-blue">Fortnox → Airtable</span>
           </td>
           <td>
-            Drafted in Airtable → <code>Sync Fortnox = "To sync"</code> triggers
-            n8n to create in Fortnox → Fortnox writes back
-            <code>DocumentNumber</code>
+            n8n pulls orders from Fortnox API; all records have <code>DocumentNumber</code> pre-populated by Fortnox. Fields <code>Sync Fortnox</code> and <code>Order Status</code> exist in schema for a push workflow but are empty on all records — push is not active.
           </td>
         </tr>
         <tr>
           <td><strong>Fortnox OrderRow</strong></td>
-          <td><span class="badge badge-orange">Both</span></td>
-          <td><code>LineItem Source</code> = "Fortnox" or "Airtable users"</td>
+          <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
+          <td><code>LineItem Source = "Fortnox"</code> on all records in practice. A <code>"Airtable users"</code> option exists for a planned push path but appears unused.</td>
         </tr>
         <tr>
           <td><strong>FortnoxInvoice</strong></td>
@@ -452,8 +448,8 @@
       │                                       ──► FortnoxInvoiceRow (has rows)
       │                                       ──► FortnoxCustomer (linked)
       │
-      ◄──(n8n push)──  FortnoxOrder           ──► Fortnox OrderRow (line items)
-      │   [Sync Fortnox = To sync]            ──► FortnoxInvoice (after invoicing)
+      ├──(n8n sync)──► FortnoxOrder            ──► Fortnox OrderRow (line items)
+      │   [pull from Fortnox API]             ──► FortnoxInvoice (after invoicing)
       │                                       ──► FortnoxCustomer (linked)
       │                                       ──► Kunder (linked)
       │                                       ──► Agreements (linked)
@@ -568,7 +564,11 @@
         </tr>
       </table>
 
-      <h3>3.4 FortnoxOrder — lifecycle states</h3>
+      <h3>3.4 FortnoxOrder — lifecycle states (schema definition)</h3>
+
+      <div class="warn-box">
+        <strong>⚠ Schema vs. live data:</strong> These are the defined option values for FIELD <code>Order Status</code>. In live data this field is <strong>empty on all records</strong> — the lifecycle is defined in the schema but the push workflow that drives it is not active. Orders exist in Airtable only as Fortnox-pulled records (all have <code>DocumentNumber</code> pre-assigned by Fortnox).
+      </div>
 
       <table>
         <tr>
