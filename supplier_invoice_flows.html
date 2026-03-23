@@ -92,9 +92,9 @@
       <p style="font-size:12px;color:#555;margin-bottom:10px;">Manual. Platform billing that bypasses Fortnox entirely.</p>
       <div class="flow">
         <div class="flow-step"><span class="step-num plat">1</span><div>Media platform (Google, Meta, etc.) generates a billing export for the period.</div></div>
-        <div class="flow-step"><span class="step-num plat">2</span><div>Staff creates a record in TABLE <code>Platform Import Files</code> (<code>tbl922EeY899adWVD</code>) and attaches the export file with period metadata.</div></div>
-        <div class="flow-step"><span class="step-num plat">3</span><div>FortnoxSupplierInvoice records are created (manually or via automation) and linked back to that Platform Import File record.</div></div>
-        <div class="flow-step"><span class="step-num plat">4</span><div>Record ID = <code>ID from 4.2</code> (platform's own identifier). No currency conversion — platform billing is always in SEK.</div></div>
+        <div class="flow-step"><span class="step-num plat">2</span><div>Staff creates a record in TABLE <code>Platform Import Files</code> (<code>tbl922EeY899adWVD</code>) with platform name, date range, total, and description. In practice no file is attached — the <code>Pdf Url</code> and <code>Attachment</code> fields are empty on all 145 live records.</div></div>
+        <div class="flow-step"><span class="step-num plat">3</span><div>Staff manually creates one <code>FortnoxSupplierInvoice</code> record <strong>per client</strong> that ran campaigns on that platform during the period, splitting the platform's billing total across clients. Each invoice links back to the parent Platform Import File record. The <code>Importing Variance</code> formula on the import file verifies the split sums to zero.</div></div>
+        <div class="flow-step"><span class="step-num plat">4</span><div>No currency conversion — platform billing is always in SEK. No <code>FortnoxSupplier</code> link — platform is identified via FIELD <code>Platform Code</code> (links to platform names table <code>tblSFdN7U9Bri8zwr</code>).</div></div>
       </div>
     </div>
   </div>
@@ -102,44 +102,68 @@
   <!-- TABLE PLATFORM IMPORT FILES -->
   <h2>TABLE Platform Import Files</h2>
 
-  <p>TABLE <code>Platform Import Files</code> (<code>tbl922EeY899adWVD</code>) acts as the entry point and audit trail for all platform billing. It holds one record per import batch (typically one per platform per billing period) and provides the link from which platform invoices trace their origin.</p>
+  <p>TABLE <code>Platform Import Files</code> (<code>tbl922EeY899adWVD</code>) acts as the entry point and audit trail for all platform billing. It holds one record per platform per billing period (145 records in live data: Facebook, LinkedIn, Microsoft, Snapchat, TikTok, and others).</p>
 
   <ul>
-    <li>Each record represents a single billing export file from a media platform.</li>
-    <li>Staff attach the actual export file (PDF/CSV) to the record and fill in period and supplier metadata.</li>
-    <li>Individual cost lines from the export are then created as <code>FortnoxSupplierInvoice</code> records, each linked back to the parent Platform Import File via FIELD <code>Platform Import File</code> (<code>fldAzxkHMaZWQYlt9</code>) on the invoice.</li>
-    <li>This link provides traceability: from any platform invoice record you can navigate back to the source file that was imported.</li>
+    <li>Each record covers one platform's billing for one period. Key fields: <code>Platform Name</code> (link to platform names table), <code>Rapport Start</code> / <code>Rapport End</code> (period dates), <code>Total</code> (platform's billed amount in SEK), <code>Description</code> (free text, e.g. "Facebook Oktober 2025"), <code>Import Status</code> (singleSelect — "Received" → "Working on" → "Finished mapping"), <code>Import Assignee</code>.</li>
+    <li><code>Pdf Url</code> and <code>Attachtment if not Url</code> fields exist but are empty on every live record — no actual files are stored in Airtable.</li>
+    <li>The platform billing total is split into multiple <code>FortnoxSupplierInvoice</code> records — <strong>one per client</strong> that ran campaigns on that platform during the period. Facebook, which typically has more active clients, generates 8–26 invoice records per monthly import; Snapchat typically 1–2.</li>
+    <li>Each invoice links back to the parent import via FIELD <code>Platform Import File</code> (<code>fldAzxkHMaZWQYlt9</code>). The <code>Importing Variance</code> rollup on the import file confirms the split is complete (import total − sum of invoices = 0).</li>
   </ul>
 
+  <div class="callout green">
+    <strong>Validation chain built into the table:</strong> <code>Import remarks</code> checks that the import total matches the sum of linked invoices. <code>Mapping remarks</code> then checks that campaign costs equal allocated spend. Both must show ✅ for the import to be considered fully complete.
+  </div>
+
   <div class="callout">
-    The <code>Platform Import File</code> link field is <strong>only populated on platform records</strong>. Fortnox-synced invoices leave it empty — they have no import file because they came from the Fortnox API directly.
+    The <code>Platform Import File</code> link field is <strong>only populated on platform records</strong>. Fortnox-synced invoices leave it empty — they come from the Fortnox API, not from an import batch.
   </div>
 
   <!-- THE FLAG -->
-  <h2>The Flag: Suppliertype Field</h2>
+  <h2>How to Tell the Two Types Apart</h2>
 
-  <p>FIELD <code>Suppliertype</code> (<code>fldF0nbSfvrOpiD0Q</code>) on <code>FortnoxSupplierInvoice</code> is a <strong>lookup from TABLE FortnoxSupplier</strong>. It carries the supplier type classification set on the supplier record — it is not set per invoice.</p>
+  <p>Platform import records have <strong>no <code>FortnoxSupplier</code> link</strong> — they were created manually and were never part of a Fortnox sync. Because <code>Suppliertype</code> and <code>Internal Status</code> are lookups that derive from <code>FortnoxSupplier</code>, both fields are also empty on platform records. The actual distinguishing signals are structural, not a single flag field:</p>
 
   <table>
     <tr>
-      <th>Suppliertype value</th>
-      <th>Meaning</th>
-      <th>Who sets it</th>
+      <th style="width:32%">Field / signal</th>
+      <th style="width:34%">Fortnox-Synced record</th>
+      <th style="width:34%">Platform import record</th>
     </tr>
     <tr>
-      <td><code>Platform - Not Fortnox</code></td>
-      <td>This supplier is a media platform. Its invoices are never in Fortnox — they come from manual platform billing imports.</td>
-      <td>Set once on the FortnoxSupplier record. All invoices from that supplier automatically carry this value via lookup.</td>
+      <td><strong>FortnoxSupplier link</strong></td>
+      <td>Populated — linked to the supplier in TABLE FortnoxSupplier</td>
+      <td><strong>Empty</strong> — no supplier link at all</td>
     </tr>
     <tr>
-      <td><em>(blank / other)</em></td>
-      <td>Standard supplier — invoices come from Fortnox via n8n sync.</td>
-      <td>Default; Fortnox-synced supplier records don't need this field set.</td>
+      <td><strong>Platform Code</strong></td>
+      <td>Empty</td>
+      <td>Populated — links to TABLE <code>Platform Names</code> (<code>tblSFdN7U9Bri8zwr</code>), identifying the platform (Facebook, LinkedIn, etc.)</td>
+    </tr>
+    <tr>
+      <td><strong>Platform Import File link</strong></td>
+      <td>Empty</td>
+      <td>Populated — links back to the source TABLE <code>Platform Import Files</code> record</td>
+    </tr>
+    <tr>
+      <td><strong>Suppliertype</strong> (lookup via FortnoxSupplier)</td>
+      <td>Standard value or blank</td>
+      <td><strong>Empty</strong> — no FortnoxSupplier to look up from</td>
+    </tr>
+    <tr>
+      <td><strong>Internal Status / Sync</strong> (lookup via FortnoxSupplier)</td>
+      <td>"Sync" or "Do not sync"</td>
+      <td><strong>Empty</strong> — no FortnoxSupplier to look up from</td>
+    </tr>
+    <tr>
+      <td><strong>Kund (client) link</strong></td>
+      <td>May or may not be set</td>
+      <td>Always set — one invoice record per client, that's the whole point of the split</td>
     </tr>
   </table>
 
   <div class="callout orange">
-    <strong>Important:</strong> <code>Suppliertype</code> is a <em>lookup</em>, not a field staff set directly on the invoice. To classify a supplier as a platform, the <code>Suppliertype</code> property must be set on their <strong>FortnoxSupplier</strong> record. Every invoice from that supplier then automatically inherits the value.
+    <strong>Correction from earlier analysis:</strong> <code>Suppliertype = "Platform - Not Fortnox"</code> is a property on TABLE FortnoxSupplier — it marks supplier records that represent platform entities. It does <em>not</em> appear on the invoice records created via the manual import flow, because those records have no FortnoxSupplier link. The reliable way to identify a platform import invoice is: <code>Platform Code</code> is populated AND <code>Platform Import File</code> is populated AND <code>FortnoxSupplier</code> is empty.
   </div>
 
   <!-- COMPARISON TABLE -->
@@ -149,7 +173,7 @@
     <tr>
       <th style="width:28%">Aspect</th>
       <th style="width:36%">Fortnox-Synced &nbsp;<span class="badge b-blue">Flow 1</span></th>
-      <th style="width:36%">Platform - Not Fortnox &nbsp;<span class="badge b-orange">Flow 2</span></th>
+      <th style="width:36%">Platform Import &nbsp;<span class="badge b-orange">Flow 2</span></th>
     </tr>
     <tr>
       <td><strong>How record enters Airtable</strong></td>
@@ -164,17 +188,32 @@
     <tr>
       <td><strong>Record identifier</strong></td>
       <td>Fortnox <code>GivenNumber</code> (document number assigned by Fortnox)</td>
-      <td>FIELD <code>ID from 4.2</code> (platform's own billing reference)</td>
+      <td>Date-based formula ID; <code>ID from 4.2</code> field holds platform's own reference if applicable</td>
     </tr>
     <tr>
-      <td><strong>Suppliertype flag</strong></td>
-      <td>Blank or standard value</td>
-      <td><code>Platform - Not Fortnox</code> (lookup from FortnoxSupplier)</td>
+      <td><strong>FortnoxSupplier link</strong></td>
+      <td>Populated</td>
+      <td><strong>Empty</strong> — platform identified via <code>Platform Code</code> instead</td>
     </tr>
     <tr>
-      <td><strong>Internal Status / Sync field</strong></td>
-      <td>Lookup from FortnoxSupplier — "Sync" or "Do not sync"</td>
-      <td><strong>Empty</strong> — platform suppliers have no Internal Status set</td>
+      <td><strong>Platform Code</strong></td>
+      <td>Empty</td>
+      <td>Populated — links to TABLE Platform Names (<code>tblSFdN7U9Bri8zwr</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>Suppliertype</strong> (lookup via FortnoxSupplier)</td>
+      <td>Standard value or blank</td>
+      <td><strong>Empty</strong> — no FortnoxSupplier link to derive it from</td>
+    </tr>
+    <tr>
+      <td><strong>Internal Status / Sync</strong> (lookup via FortnoxSupplier)</td>
+      <td>"Sync" or "Do not sync"</td>
+      <td><strong>Empty</strong> — no FortnoxSupplier link to derive it from</td>
+    </tr>
+    <tr>
+      <td><strong>Invoices per billing period</strong></td>
+      <td>One invoice = one Fortnox document</td>
+      <td>One invoice per client active on that platform that month (1–34 in live data; typically 2–12)</td>
     </tr>
     <tr>
       <td><strong>Currency conversion</strong></td>
@@ -216,7 +255,7 @@
   <hr>
 
   <div class="callout orange">
-    <strong>Bottom line:</strong> The split exists because two different billing realities (B2B accounting via Fortnox vs. platform self-billing) need to be unified in one place for P&amp;L. The <code>Suppliertype = "Platform - Not Fortnox"</code> flag — inherited from FortnoxSupplier via lookup — is the single field that distinguishes the two types at a glance. All downstream cost attribution is identical.
+    <strong>Bottom line:</strong> The split exists because two different billing realities (B2B accounting via Fortnox vs. platform self-billing) need to be unified in one place for P&amp;L. Platform import records are identified structurally — <code>Platform Code</code> and <code>Platform Import File</code> populated, <code>FortnoxSupplier</code> empty — not by a single flag field. All downstream cost attribution via <code>sys.fakturamapping</code> is identical for both types.
   </div>
 
 </div>
