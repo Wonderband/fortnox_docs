@@ -402,13 +402,13 @@
             <span class="badge badge-blue">Fortnox → Airtable</span>
           </td>
           <td>
-            n8n pulls orders from Fortnox API; all records have <code>DocumentNumber</code> pre-populated by Fortnox. Fields <code>Sync Fortnox</code> and <code>Order Status</code> exist in schema for a push workflow but are empty on all records — push is not active.
+            n8n pulls orders from Fortnox API. <strong>Push workflow confirmed inactive</strong> from live data: (1) all records have <code>DocumentNumber</code> pre-populated by Fortnox, (2) FIELD <code>Sync Fortnox</code> and FIELD <code>Order Status</code> are empty on all records, (3) all OrderRow records have <code>LineItem Source = "Fortnox"</code>. Schema fields for push exist but have never been used. <em>User interview recommended to confirm definitively.</em>
           </td>
         </tr>
         <tr>
           <td><strong>Fortnox OrderRow</strong></td>
           <td><span class="badge badge-blue">Fortnox → Airtable</span></td>
-          <td><code>LineItem Source = "Fortnox"</code> on all records in practice. A <code>"Airtable users"</code> option exists for a planned push path but appears unused.</td>
+          <td><code>LineItem Source = "Fortnox"</code> on all records — confirmed from live data inspection. The <code>"Airtable users"</code> option for a staff-initiated push path is unused. This is one of three live-data proofs that the Airtable → Fortnox push workflow is not active.</td>
         </tr>
         <tr>
           <td><strong>FortnoxInvoice</strong></td>

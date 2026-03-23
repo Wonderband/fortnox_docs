@@ -56,13 +56,13 @@
 
   <table>
     <tr>
-      <th style="width:50%">Fortnox → Airtable &nbsp;<span class="badge b-gray">6 of 8 tables</span></th>
-      <th>Airtable → Fortnox &nbsp;<span class="badge b-blue">Orders only</span></th>
+      <th style="width:65%">Fortnox → Airtable &nbsp;<span class="badge b-gray">All 8 tables confirmed</span></th>
+      <th>Airtable → Fortnox &nbsp;<span class="badge b-orange">Schema only — not active</span></th>
     </tr>
     <tr>
-      <td>Customers, Suppliers, Supplier Invoices, Invoices, Invoice Rows, Articles.<br><br>
-      Fortnox is the source of truth. n8n fetches from the Fortnox REST API and upserts into Airtable. Staff can view and annotate, but Airtable changes to these records are <strong>overwritten on the next sync run</strong>.</td>
-      <td>Only Orders and Order Rows flow both ways. Orders are <strong>created in Airtable first</strong>, then pushed to Fortnox. Once Fortnox assigns a DocumentNumber, that ID is written back into Airtable.</td>
+      <td>Customers, Suppliers, Supplier Invoices, Orders, Order Rows, Invoices, Invoice Rows, Articles.<br><br>
+      Fortnox is the source of truth for all entities. n8n fetches from the Fortnox REST API and upserts into Airtable. Staff can view and annotate, but Airtable changes to these records are <strong>overwritten on the next sync run</strong>.</td>
+      <td>A push workflow (Airtable → Fortnox) was designed for Orders: <code>Order Status</code> and <code>Sync Fortnox</code> fields exist in the FortnoxOrder schema with the full planned lifecycle. <strong>This workflow is not active.</strong> All FortnoxOrder records have <code>DocumentNumber</code> pre-populated (assigned by Fortnox), confirming they are pulled from Fortnox, not created in Airtable. See the Orders &amp; Invoices document for details.</td>
     </tr>
   </table>
 
@@ -73,15 +73,15 @@
     <tr><th>Entity</th><th>Who creates it</th><th>Direction</th><th>Notes</th></tr>
     <tr>
       <td><strong>Orders</strong></td>
-      <td>Staff in Airtable</td>
-      <td><span class="badge b-blue">Airtable → Fortnox</span></td>
-      <td>Staff-initiated. Pushed on demand via <code>Sync Fortnox</code> flag.</td>
+      <td>Staff in Fortnox app</td>
+      <td><span class="badge b-gray">Fortnox → Airtable</span></td>
+      <td>n8n pulls orders from Fortnox API and mirrors them into Airtable. A push workflow is defined in the schema (<code>Order Status</code>, <code>Sync Fortnox</code> fields) but is unused — every record has <code>DocumentNumber</code> pre-populated by Fortnox.</td>
     </tr>
     <tr>
       <td><strong>Order Rows</strong></td>
-      <td>Staff (or imported from Fortnox)</td>
-      <td><span class="badge b-blue">Airtable → Fortnox</span> or read-only</td>
-      <td><code>LineItem Source = "Airtable users"</code> → pushed to Fortnox.<br><code>LineItem Source = "Fortnox"</code> → read-only, overwritten on sync.</td>
+      <td>Fortnox (via sync)</td>
+      <td><span class="badge b-gray">Fortnox → Airtable</span></td>
+      <td><code>LineItem Source = "Fortnox"</code> on all records in practice — rows are pulled embedded in order API responses. A <code>LineItem Source = "Airtable users"</code> choice exists in schema for a planned push path but appears unused.</td>
     </tr>
     <tr>
       <td><strong>Invoices</strong></td>
@@ -116,28 +116,28 @@
   </table>
 
   <!-- ORDER LIFECYCLE -->
-  <h2>Order Lifecycle — The Only Two-Way Flow</h2>
+  <h2>Order Lifecycle — Fortnox → Airtable</h2>
 
-  <div class="flow">
-    <div class="flow-step"><span class="step-num">1</span><div>Staff creates a FortnoxOrder record in Airtable. <code>Order Status = "Airtable Draft"</code>. ID is auto-generated (<code>Autonumber-CustomerName</code>) — no Fortnox number yet.</div></div>
-    <div class="flow-step"><span class="step-num">2</span><div>Staff adds line items (Fortnox OrderRow records), sets <code>LineItem Source = "Airtable users"</code> and links a FortnoxArticle to each row.</div></div>
-    <div class="flow-step"><span class="step-num">3</span><div>Staff sets <code>Order Status = "Copy to Fortnox"</code> and <code>Sync Fortnox = "To sync"</code>. This is the trigger signal.</div></div>
-    <div class="flow-step"><span class="step-num">4</span><div>n8n detects the flag → sets it to <code>"In progress"</code> → verifies customer number → POSTs the order + rows to <code>https://api.fortnox.se/3/orders</code>.</div></div>
-    <div class="flow-step"><span class="step-num">5</span><div>Fortnox returns a <code>DocumentNumber</code> and <code>RowId</code> values. n8n writes these back to Airtable. <code>Sync Fortnox</code> is cleared. <code>Order Status → "Fortnox Order"</code>. The ID field now shows the Fortnox DocumentNumber.</div></div>
-    <div class="flow-step"><span class="step-num">6</span><div>Order progresses in Fortnox through invoicing. n8n syncs the resulting FortnoxInvoice back into Airtable, linked to the originating order.</div></div>
+  <div class="callout orange">
+    <strong>⚠ Schema vs. reality:</strong> The FortnoxOrder table has FIELD <code>Order Status</code> with choices "Airtable Draft", "Copy to Fortnox", "Fortnox Order", etc., and FIELD <code>Sync Fortnox</code> with "To sync" / "In progress" — implying a push workflow where staff initiate orders in Airtable. <strong>This workflow is not active.</strong> Three proofs from live data confirm this: (1) every FortnoxOrder record has <code>DocumentNumber</code> pre-populated by Fortnox — records created in Airtable first would lack it until Fortnox assigned one; (2) FIELD <code>Order Status</code> and FIELD <code>Sync Fortnox</code> are empty on all records — no lifecycle stages have ever been written; (3) every Fortnox OrderRow record has <code>LineItem Source = "Fortnox"</code> — the <code>"Airtable users"</code> value intended for staff-created rows is unused across the entire table. <em>To be 100% certain, base users should be asked whether they have ever initiated an order from Airtable.</em>
   </div>
 
-  <pre>Order Status progression:
-  Airtable Draft → Copy to Fortnox → Fortnox Order
-    → Order Ready To Invoice → Order Invoiced → Order Linked To Kampanj</pre>
+  <div class="flow">
+    <div class="flow-step"><span class="step-num">1</span><div>Staff creates the order directly in the Fortnox web app. Fortnox assigns a <code>DocumentNumber</code> immediately.</div></div>
+    <div class="flow-step"><span class="step-num">2</span><div>n8n polls Fortnox via <code>GET /3/orders</code> and upserts the order into TABLE <code>FortnoxOrder</code>. FIELD <code>@url</code> is the upsert key. FIELD <code>ID</code> = <code>DocumentNumber</code> (the fallback to <code>Autonumber-CustomerName</code> in the formula never fires).</div></div>
+    <div class="flow-step"><span class="step-num">3</span><div>Order rows are upserted into TABLE <code>Fortnox OrderRow</code>, embedded in the order API response. Upsert key for rows is FIELD <code>RowId</code> (no <code>@url</code> field on OrderRow).</div></div>
+    <div class="flow-step"><span class="step-num">4</span><div>When Fortnox generates an invoice, n8n syncs it into TABLE <code>FortnoxInvoice</code>, linked to the originating order via FIELD <code>FortnoxOrder</code> (linked record) and FIELD <code>OrderReference</code> (text copy of DocumentNumber).</div></div>
+    <div class="flow-step"><span class="step-num">5</span><div>Staff allocates order row budget per month in TABLE <code>sys.orderallocationmapping</code>. See the Allocation Mapping document.</div></div>
+  </div>
 
   <!-- SYNC TRIGGER -->
   <h2>How Sync Is Triggered</h2>
 
   <ul>
     <li><strong>Schedule-based polling</strong> — no webhooks, no real-time events from either side.</li>
-    <li>n8n connects to Airtable as a service account (<code>integration.adgrabber@gmail.com</code>) which owns a personal view called <code>sync view</code> on Fortnox OrderRow — <strong>no filter, all 17,000+ rows</strong>. This is what n8n reads on every run.</li>
-    <li>For the Airtable → Fortnox direction, n8n queries FortnoxOrder for records where <code>Sync Fortnox = "To sync"</code>.</li>
+    <li>n8n connects to Airtable as a service account (<code>integration.adgrabber@gmail.com</code>) and reads per-table sync views to determine which records to process.</li>
+    <li>Each table has a named sync view (e.g. <code>FortnoxOrder_Sync</code>, <code>FortnoxArticle_Sync</code>). The view's filter defines the polling window (past week, past month, or unfiltered for small tables).</li>
+    <li>The <code>sync view</code> on Fortnox OrderRow has no filter — it exposes all 17,000+ rows for n8n's reconciliation and LMT checks.</li>
   </ul>
 
   <!-- LOOP PREVENTION -->
@@ -160,7 +160,7 @@
   <!-- BOTTOM LINE -->
   <hr>
   <div class="callout orange">
-    <strong>Bottom line:</strong> Fortnox is the financial system of record for everything <em>except</em> new orders, which originate in Airtable. The integration is one-directional for most entities and bidirectional only for the sales order flow.
+    <strong>Bottom line:</strong> Fortnox is the financial system of record for all entities. The integration is one-directional — <strong>Fortnox → Airtable</strong> — for all 8 tables confirmed from live data. An Airtable→Fortnox push workflow was planned (schema fields exist on FortnoxOrder) but is not active.
   </div>
 
 </div>

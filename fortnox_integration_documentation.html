@@ -54,7 +54,7 @@
     Company: <strong>Adgrabber AB</strong> &nbsp;|&nbsp;
     Fortnox account: <strong>Oleksandr Boiko</strong> &nbsp;|&nbsp;
     n8n host: <strong>automation.offertizer.com</strong> &nbsp;|&nbsp;
-    Researched: 2026-03-13
+    Researched: 2026-03-12
   </p>
 
   <div class="info-box">
@@ -303,13 +303,13 @@
       <td><code>/orders</code></td>
       <td>GET, POST, PUT</td>
       <td>FortnoxOrder</td>
-      <td><span class="badge badge-orange">Bidirectional</span></td>
+      <td><span class="badge badge-blue">Fortnox → Airtable</span><br><small style="color:#9a3412">⚠ POST/PUT methods exist in schema (Order Status, Sync Fortnox fields) but push workflow is confirmed inactive — three live-data proofs: (1) all records have DocumentNumber pre-populated by Fortnox, (2) Order Status and Sync Fortnox fields empty on all records, (3) all OrderRow records have LineItem Source = "Fortnox". User interview recommended to confirm definitively.</small></td>
     </tr>
     <tr>
       <td><code>/orders/{id}/orderrows</code></td>
       <td>GET, POST</td>
       <td>Fortnox OrderRow</td>
-      <td><span class="badge badge-orange">Bidirectional</span></td>
+      <td><span class="badge badge-blue">Fortnox → Airtable</span><br><small style="color:#9a3412">⚠ POST method present in schema (LineItem Source = "Airtable users") but all records confirmed LineItem Source = "Fortnox" — push path is unused.</small></td>
     </tr>
     <tr>
       <td><code>/invoices</code></td>

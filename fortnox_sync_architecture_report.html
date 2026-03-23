@@ -201,7 +201,7 @@
   </div>
 
   <h3>3.1 @url Field (Fortnox REST URL stored per record)</h3>
-  <p>Present on 7 of 8 tables. Absent only on <strong>FortnoxInvoiceRow</strong> — consistent with the Fortnox REST API not exposing individual invoice row URLs.</p>
+  <p>Present on <strong>6 of 8 tables</strong>. Absent on both <strong>Fortnox OrderRow</strong> and <strong>FortnoxInvoiceRow</strong> — the Fortnox REST API does not expose individual row URLs; rows are embedded in their parent (order/invoice) response. The upsert key for both row tables is FIELD <code>RowId</code> (number assigned by Fortnox), not <code>@url</code>. See table below.</p>
   <table>
     <tr><th>Table</th><th>@url field ID</th></tr>
     <tr><td>FortnoxOrder</td><td><code>fldtR0mLqKMcMUuEb</code></td></tr>
@@ -491,10 +491,19 @@
     <h3>6.2 Fortnox → Airtable Direction</h3>
     <p>The presence of <code>@url</code>, <code>Last Modified Time</code>, and <code>RowId</code> fields on all 8 tables is consistent with n8n periodically fetching data from Fortnox REST API endpoints and upserting Airtable records. The <code>Fortnox details modified date</code> LMT field on Fortnox OrderRow (which watches only Fortnox data fields) could be used to detect whether a row's Fortnox data has changed since last sync. Whether <code>?lastmodified</code> query params are used in the GET calls is not known.</p>
 
-    <h3>6.3 Airtable → Fortnox Direction</h3>
-    <p>FortnoxOrder is the only table with a dedicated write-queue flag: <code>Sync Fortnox</code> (options: "To sync" / "In progress"). This pattern — set to "To sync" to request a push, mark "In progress" while processing — is a common n8n pattern for preventing duplicate runs. FortnoxOrder also has the most complex LMT field setup (multiple scoped fields) which makes sense if n8n writes back to it and needs to avoid re-triggering its own reads.</p>
-    <p>The <code>LineItem Source</code> field ("Fortnox" / "Airtable users") on Fortnox OrderRow likely controls which rows are pushed to Fortnox: only "Airtable users" rows would be written, while "Fortnox" rows would be treated as read-only.</p>
-    <p>The <code>FortnoxOrder_Sync</code> view is confirmed to filter by "Created is within the past month" (not by <code>Sync Fortnox</code> value). Whether n8n applies an additional <code>Sync Fortnox = "To sync"</code> filter within the workflow node — or processes all recent orders unconditionally — is not known.</p>
+    <h3>6.3 Airtable → Fortnox Direction — Designed But Confirmed Inactive</h3>
+    <div class="warn-box">
+      <strong>The push workflow was designed but is confirmed not running.</strong> Three independent proofs from live Airtable data establish this:
+      <ol style="margin: 8px 0 0 20px; line-height: 1.8;">
+        <li><strong>FIELD <code>DocumentNumber</code> is pre-populated on every FortnoxOrder record.</strong> If orders were created in Airtable first and then pushed to Fortnox, newly created records would have no DocumentNumber until Fortnox assigned one. Every record in the live table has DocumentNumber already set — confirming all orders arrived via the Fortnox → Airtable sync direction, not the reverse.</li>
+        <li><strong>FIELD <code>Order Status</code> and FIELD <code>Sync Fortnox</code> are empty across the entire FortnoxOrder table.</strong> These are the trigger fields for the push workflow ("Airtable Draft" → "Copy to Fortnox" → "Fortnox Order"; "To sync" / "In progress"). If the workflow had ever run, records would show lifecycle stages. All sampled records had both fields empty.</li>
+        <li><strong>FIELD <code>LineItem Source = "Fortnox"</code> on every Fortnox OrderRow record.</strong> The <code>"Airtable users"</code> option exists in the schema for rows created by staff and pushed to Fortnox. Zero records use this value in the live table.</li>
+      </ol>
+    </div>
+    <p>The schema infrastructure for a push workflow is fully present — <code>Sync Fortnox</code>, <code>Order Status</code>, and <code>LineItem Source</code> fields were clearly built with a two-way workflow in mind. However, the workflow itself has never been activated based on the evidence above.</p>
+    <div class="ok-box">
+      <strong>Recommended verification:</strong> Interview base users (staff who manage the Kampanjer/order workflow) and ask directly: <em>"Have you ever created an order row in Airtable and pushed it to Fortnox?"</em> and <em>"Is there a step in your workflow where you initiate an order from Airtable?"</em> This is the only way to be 100% certain the push path has never been used in any context.
+    </div>
 
     <h3>6.4 The Deleted/Changed in Fortnox Cluster</h3>
     <p>Fortnox OrderRow has a cluster of fields for tracking Fortnox-side deletion/change events: <code>Deleted/Changed in fortnox</code> (singleSelect: "Deleted" / "Changed"), <code>When is it changed/deleted in fortnox</code> (manual date), <code>is it changed/deleted today?</code> (formula comparing that date to today), and the <code>CHANGED/DELETED TODAY IN FORTNOX</code> view. Whether these flags are set automatically by n8n or entered manually is not confirmed.</p>
@@ -513,8 +522,8 @@
       <td>Would confirm or replace all of Section 6. Only way to fully confirm is to inspect the workflows on <code>automation.offertizer.com</code>.</td>
     </tr>
     <tr>
-      <td>Whether n8n filters by <code>Sync Fortnox = "To sync"</code> in the workflow node, given the view filter is date-based not flag-based</td>
-      <td>If no flag filter exists in the workflow, all orders created in the past month would be pushed on every run — not just flagged ones.</td>
+      <td>Confirm with base users whether the Airtable → Fortnox push has ever been used</td>
+      <td>Live data proves the push is currently inactive: all FortnoxOrder records have DocumentNumber pre-populated, FIELD <code>Order Status</code> and FIELD <code>Sync Fortnox</code> are empty on all records, and all OrderRow records have <code>LineItem Source = "Fortnox"</code>. Interviewing staff is the only way to confirm it has <em>never</em> been activated. Ask: <em>"Have you ever created an order in Airtable and pushed it to Fortnox?"</em></td>
     </tr>
     <tr>
       <td>Whether <code>Deleted/Changed in fortnox</code> is written by n8n automatically or set manually</td>

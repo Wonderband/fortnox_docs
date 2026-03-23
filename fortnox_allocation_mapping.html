@@ -468,7 +468,7 @@ Allocated media spend (Pay for mediaköp)   7,476 SEK  🔴 +233 SEK upplupna</p
       <div style="background:#0f3460;color:#fff;border-radius:50%;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;">2</div>
       <div><strong>Order allocation.</strong> Staff links a Fortnox order row to the campaign in TABLE <code>sys.orderallocationmapping</code>, creating one record per month that the campaign runs and splitting the order row total across those months. Each record links to the order row AND the Media / Prod New line item.
         <div style="margin-top:8px;background:#fff3cd;border-left:4px solid #e6a817;padding:8px 12px;border-radius:4px;font-size:13px;">
-          ⚠ <strong>Schema note:</strong> The schema includes a push path where staff creates order rows directly in Airtable with FIELD <code>LineItem Source = "Airtable users"</code>. In practice, all sampled <code>Fortnox OrderRow</code> records show <code>LineItem Source = "Fortnox"</code> — the rows arrive via the Fortnox→Airtable sync, not staff entry.
+          ⚠ <strong>Schema note:</strong> The schema includes a push path where staff creates order rows directly in Airtable with FIELD <code>LineItem Source = "Airtable users"</code>. Confirmed from live data: every <code>Fortnox OrderRow</code> record has <code>LineItem Source = "Fortnox"</code> — the push path has never been used. This is one of three live-data proofs that the Airtable → Fortnox push workflow is inactive (see <em>Fortnox ↔ Airtable — Helicopter View</em> for the full list of proofs).
         </div>
       </div>
     </div>
