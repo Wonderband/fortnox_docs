@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FortnoxSupplierInvoice — Full Field Audit</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a1a; max-width: 1400px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 22px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+  h2 { font-size: 17px; margin-top: 32px; border-left: 4px solid; padding-left: 10px; }
+  h3 { font-size: 14px; margin-top: 20px; color: #444; }
+  p { line-height: 1.6; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+  th { background: #2c2c2c; color: #fff; padding: 8px 10px; text-align: left; }
+  td { padding: 7px 10px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+  tr:nth-child(even) { background: #fafafa; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .b-sync    { background: #d0ebff; color: #1864ab; }
+  .b-platform{ background: #e9fac8; color: #2b8a3e; }
+  .b-manual  { background: #fff3bf; color: #7d6608; }
+  .b-formula { background: #f3e8fd; color: #5f3dc4; }
+  .b-lookup  { background: #ffe8cc; color: #b85c00; }
+  .b-rollup  { background: #ffe0f0; color: #a61e4d; }
+  .b-link    { background: #d3f9d8; color: #1a5e2a; }
+  .b-system  { background: #e9ecef; color: #495057; }
+  .b-broken  { background: #ffe3e3; color: #c92a2a; }
+  .b-dev     { background: #e8e8e8; color: #555; }
+  code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; font-size: 12px; font-family: monospace; }
+  .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 16px 0; }
+  .summary-card { padding: 12px; border-radius: 6px; }
+  .summary-card .count { font-size: 24px; font-weight: 700; }
+  .summary-card .label { font-size: 12px; margin-top: 4px; }
+  .note { background: #fff9db; border-left: 3px solid #f08c00; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+  .broken-note { background: #fff0f0; border-left: 3px solid #c92a2a; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+  .field-id { font-size: 11px; color: #888; font-family: monospace; }
+  .cat-header { margin-top: 36px; }
+
+  /* category color accents */
+  h2.sync     { border-color: #1864ab; }
+  h2.platform { border-color: #2b8a3e; }
+  h2.manual   { border-color: #7d6608; }
+  h2.formula  { border-color: #5f3dc4; }
+  h2.lookup   { border-color: #b85c00; }
+  h2.rollup   { border-color: #a61e4d; }
+  h2.link     { border-color: #1a5e2a; }
+  h2.system   { border-color: #868e96; }
+  h2.broken   { border-color: #c92a2a; }
+  h2.dev      { border-color: #aaa; }
+</style>
+</head>
+<body>
+
+<h1>TABLE FortnoxSupplierInvoice — Full Field Audit</h1>
+<p>
+  <strong>Table ID:</strong> <code>tblYERBn2P6wrHEzl</code> &nbsp;|&nbsp;
+  <strong>Base:</strong> DEV. Betaportal Adgrabber 2.0 (<code>app01yDjf98U6ejKs</code>) &nbsp;|&nbsp;
+  <strong>Total fields: 120</strong> &nbsp;|&nbsp;
+  <strong>Audit date:</strong> 2026-03-25
+</p>
+
+<p>This table stores supplier invoices from two distinct sources: (1) invoices synced automatically from Fortnox via n8n, and (2) platform invoices (Facebook, Google, TikTok, etc.) entered manually by staff via the platform import workflow. These two record types share one table but have structurally different field populations — many fields only apply to one source type.</p>
+
+<div class="summary-grid">
+  <div class="summary-card" style="background:#d0ebff">
+    <div class="count" style="font-size:16px">A1: 24 &nbsp;·&nbsp; A2: 16</div>
+    <div class="label"><strong>Fortnox-side fields</strong><br>A1: read-only in Fortnox API (engine-generated)<br>A2: writable in Fortnox API (staff-entered in Fortnox)</div>
+  </div>
+  <div class="summary-card" style="background:#e9fac8">
+    <div class="count">9</div>
+    <div class="label"><strong>Platform import</strong><br>Written by staff (manual)</div>
+  </div>
+  <div class="summary-card" style="background:#fff3bf">
+    <div class="count">4</div>
+    <div class="label"><strong>Manual operational</strong><br>Staff-managed workflow</div>
+  </div>
+  <div class="summary-card" style="background:#f3e8fd">
+    <div class="count">21</div>
+    <div class="label"><strong>Formulas</strong><br>Computed by Airtable</div>
+  </div>
+  <div class="summary-card" style="background:#ffe8cc">
+    <div class="count">17</div>
+    <div class="label"><strong>Lookups</strong><br>Pulled from linked tables</div>
+  </div>
+  <div class="summary-card" style="background:#ffe0f0">
+    <div class="count">13</div>
+    <div class="label"><strong>Rollups</strong><br>Aggregated from linked records</div>
+  </div>
+  <div class="summary-card" style="background:#d3f9d8">
+    <div class="count">4</div>
+    <div class="label"><strong>Link fields</strong><br>Connections to other tables</div>
+  </div>
+  <div class="summary-card" style="background:#e9ecef">
+    <div class="count">7</div>
+    <div class="label"><strong>System fields</strong><br>Auto-managed by Airtable</div>
+  </div>
+  <div class="summary-card" style="background:#ffe3e3">
+    <div class="count">5</div>
+    <div class="label"><strong>Broken / invalid</strong><br>Non-functional, needs cleanup</div>
+  </div>
+  <div class="summary-card" style="background:#e8e8e8">
+    <div class="count">23</div>
+    <div class="label"><strong>Dev / legacy / duplicate</strong><br>Candidates for removal</div>
+  </div>
+</div>
+
+<!-- ================================================================ CAT A -->
+<h2 class="sync cat-header">A — Fortnox-Side Fields &nbsp;<span class="badge b-sync">Origin: Fortnox / n8n sync</span></h2>
+
+<p>These fields all originate from the Fortnox accounting system. n8n polls <code>GET /3/supplierinvoices</code> and upserts records in Airtable using <strong>FIELD <code>@url</code> as the upsert key</strong>.</p>
+
+<p><strong>Sync gate:</strong> n8n only processes invoices where the linked FortnoxSupplier has FIELD <code>Internal Status</code> = <em>"Sync"</em>. Suppliers marked <em>"Do not sync"</em> are skipped entirely.</p>
+
+<p><strong>⚠️ Any manual edit to an A-field in Airtable will be silently overwritten on the next sync.</strong> Changes must be made in Fortnox first.</p>
+
+<p><strong>Note on text-typed fields:</strong> Fortnox returns all values as strings. n8n writes them as-is, so dates and numbers are stored as <code>singleLineText</code>. Formula fields in Category D parse these into usable types.</p>
+
+<div class="note">
+  <strong>Caveat on A1/A2 completeness:</strong> Classification is based on the Fortnox REST API spec. Not every field in the spec is written by n8n — <strong>VoucherNumber, VoucherSeries, VoucherYear</strong> exist in the Fortnox API and are marked A1, but n8n does not write them to Airtable. Voucher details are only available inside the <code>Vouchers</code> JSON blob. Other optional A2 fields (YourReference, CostCenter, Project, etc.) may be empty on most records simply because staff did not fill them in Fortnox.
+</div>
+
+<!-- A1 -->
+<h3>A1 — Read-only in Fortnox API &nbsp;<span class="badge b-sync">Fortnox calculates · staff cannot change</span></h3>
+<p>These fields are marked <strong>read-only</strong> in the Fortnox API spec. Their values are calculated or assigned by Fortnox's accounting engine — the document number it assigns, the amounts it calculates, the vouchers it creates when booking, the payment status it tracks. Adgrabber staff cannot change these values even within Fortnox itself. n8n is the sole writer in Airtable, and what it writes is always exactly what Fortnox computed.</p>
+
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Fortnox API property</th><th>What Fortnox does with it</th></tr>
+  <tr><td><strong>@url</strong> <span class="field-id">fldXEitnLyFSDIgLu</span></td><td>singleLineText</td><td><code>@url</code></td><td><strong>Upsert key.</strong> Fortnox auto-generates this self-link URL (e.g. <code>https://api.fortnox.se/3/supplierinvoices/12345</code>). n8n uses it to match existing Airtable records on each sync cycle. Empty on platform import records.</td></tr>
+  <tr><td><strong>GivenNumber</strong> <span class="field-id">fldyeitRT8iNraoSX</span></td><td>singleLineText</td><td><code>GivenNumber</code></td><td>The sequential document number Fortnox assigns when the invoice is registered. Not chosen by staff. Empty on platform import records.</td></tr>
+  <tr><td><strong>InvoiceNumber</strong> <span class="field-id">fldJDipeMzo83oMOB</span></td><td>singleLineText</td><td><code>InvoiceNumber</code></td><td>Fortnox's internal invoice number (a separate sequence from GivenNumber in some configurations). Assigned by Fortnox.</td></tr>
+  <tr><td><strong>FinalPayDate</strong> <span class="field-id">fld37FoRkGc0xeBL4</span></td><td>singleLineText</td><td><code>FinalPayDate</code></td><td>Effective final payment deadline, calculated by Fortnox from DueDate and any payment adjustments. Updates automatically as payments are registered.</td></tr>
+  <tr><td><strong>Total</strong> <span class="field-id">fldGnelOCFSH2rsXX</span></td><td>number (precision 2)</td><td><code>Total</code></td><td>Total invoice amount <em>including</em> VAT, calculated by Fortnox by summing rows + fees. Central to the <code>Total Excl VAT in SEK</code> formula.</td></tr>
+  <tr><td><strong>VAT</strong> <span class="field-id">fldVhpWOP9JGOOzOj</span></td><td>number (precision 2)</td><td><code>VAT</code></td><td>VAT portion of Total, calculated by Fortnox from the line rows and their account codes.</td></tr>
+  <tr><td><strong>Balance</strong> <span class="field-id">fldQnrgCKjoOYlT2S</span></td><td>singleLineText</td><td><code>Balance</code></td><td>Remaining unpaid amount, tracked by Fortnox as payments are registered. Changes over time; stored as text string. <code>Balance(integer format)</code> formula converts to number.</td></tr>
+  <tr><td><strong>CurrencyRate</strong> <span class="field-id">fld61oX34J6N0fH4E</span></td><td>singleLineText</td><td><code>CurrencyRate</code></td><td>Exchange rate fetched by Fortnox from its currency tables at the invoice date. Staff do not choose this — Fortnox looks it up automatically. Stored as text; <code>CurrencyRate (number)</code> formula converts via <code>VALUE()</code>.</td></tr>
+  <tr><td><strong>CurrencyUnit</strong> <span class="field-id">fldSTb7ebE3CWjZeS</span></td><td>number</td><td><code>CurrencyUnit</code></td><td>Unit basis for the exchange rate (typically 1; sometimes 100 for certain currencies). Set by Fortnox.</td></tr>
+  <tr><td><strong>Booked</strong> <span class="field-id">fldD0ycqchLo7RhXJ</span></td><td>checkbox</td><td><code>Booked</code></td><td>Set to true by Fortnox when the invoice is journalized. Staff trigger the booking action but Fortnox controls this flag.</td></tr>
+  <tr><td><strong>Cancelled</strong> <span class="field-id">fldUIkhZcFj3SzwOK</span></td><td>checkbox</td><td><code>Cancelled</code></td><td>Set by Fortnox when a cancellation action is performed on the invoice.</td></tr>
+  <tr><td><strong>Credit</strong> <span class="field-id">fldbXEzbACs08KlRt</span></td><td>singleSelect (true/false)</td><td><code>Credit</code></td><td>Whether this is a credit note. Determined by Fortnox based on how the invoice was created. Stored as select with string "true"/"false" because Fortnox returns a JSON boolean as a string in this API version.</td></tr>
+  <tr><td><strong>PaymentPending</strong> <span class="field-id">fldyMN7DBsFfYXwhg</span></td><td>checkbox</td><td><code>PaymentPending</code></td><td>Set to true by Fortnox when a payment has been registered but not yet fully settled. Clears automatically on full payment.</td></tr>
+  <tr><td><strong>RoundOffValue</strong> <span class="field-id">fldK07WibaXrHnbSg</span></td><td>singleLineText</td><td><code>RoundOffValue</code></td><td>Öre-level rounding adjustment calculated by Fortnox.</td></tr>
+  <tr><td><strong>SupplierName</strong> <span class="field-id">fldL1ATptBSjd55wl</span></td><td>singleLineText</td><td><code>SupplierName</code></td><td>Supplier name denormalized inline from the supplier record by Fortnox. Staff cannot change this on the invoice — it always reflects the supplier's registered name in Fortnox. FortnoxSupplier link is authoritative.</td></tr>
+  <tr><td><strong>SalesType</strong> <span class="field-id">fldPJJyYORJS3NCOT</span></td><td>singleLineText</td><td><code>SalesType</code></td><td>Derived by Fortnox from the supplier's configuration. Not staff-chosen on the individual invoice.</td></tr>
+  <tr><td><strong>VATType</strong> <span class="field-id">fldUyqV770Lxrcbqj</span></td><td>singleLineText</td><td><code>VATType</code></td><td>VAT type code (e.g. "NORMAL", "REVERSE") derived by Fortnox from the invoice's accounting configuration.</td></tr>
+  <tr><td><strong>AccountingMethod</strong> <span class="field-id">fldwp4b2oesz1EXxz</span></td><td>singleLineText</td><td><code>AccountingMethod</code></td><td>Accrual vs. cash basis — derived from the Fortnox company's global accounting settings, not chosen per invoice.</td></tr>
+  <tr><td><strong>VoucherNumber</strong> <span class="field-id">fldRxUCJ82bn90ObR</span></td><td>number</td><td><code>VoucherNumber</code></td><td>Accounting voucher number assigned by Fortnox when the invoice is booked. <strong>⚠️ n8n does not write this field</strong> — always empty in Airtable. Voucher data is available only inside the <code>Vouchers</code> JSON blob.</td></tr>
+  <tr><td><strong>VoucherSeries</strong> <span class="field-id">fldw0CCRZ1xUtsdNr</span></td><td>singleLineText</td><td><code>VoucherSeries</code></td><td>Voucher series letter (e.g. "D") assigned by Fortnox. <strong>⚠️ n8n does not write this field</strong> — always empty in Airtable.</td></tr>
+  <tr><td><strong>VoucherYear</strong> <span class="field-id">fldqo9db619cK4Srg</span></td><td>number</td><td><code>VoucherYear</code></td><td>Fiscal year of the voucher, set by Fortnox at booking time. <strong>⚠️ n8n does not write this field</strong> — always empty in Airtable.</td></tr>
+  <tr><td><strong>Vouchers</strong> <span class="field-id">fldfSumQBwAGfuaB6</span></td><td>multilineText</td><td><code>Vouchers</code> (array)</td><td>Full accounting journal entries generated by Fortnox when the invoice is booked. Stored as serialized JSON. Populated only after booking.</td></tr>
+  <tr><td><strong>SupplierInvoice Parts</strong> <span class="field-id">fldVgPNoIBt32SVMA</span></td><td>singleLineText</td><td><code>SupplierInvoiceParts</code></td><td>Payment history entries, appended automatically by Fortnox as partial or full payments are registered. Serialized as text.</td></tr>
+  <tr><td><strong>FortnoxSupplier</strong> (link) <span class="field-id">fldjanoWy86UEcreu</span></td><td>multipleRecordLinks → FortnoxSupplier</td><td><em>n8n construct — not a direct API field</em></td><td><strong>Set by n8n</strong>, not a Fortnox API field. n8n reads the invoice's SupplierNumber, looks up the matching record in TABLE FortnoxSupplier, and creates this link. Entirely automation-controlled. Empty on platform import records.</td></tr>
+</table>
+
+<!-- A2 -->
+<h3>A2 — Writable in Fortnox API &nbsp;<span class="badge b-manual">Staff entered this value in Fortnox</span></h3>
+<p>These fields are <strong>writable</strong> in the Fortnox API — meaning staff at Adgrabber (or the supplier) provided the value when the invoice was created or updated in Fortnox. n8n copies whatever is stored there into Airtable on each sync. The value reflects a human decision, not a machine calculation.</p>
+<p><strong>Practical implication:</strong> if the value looks wrong in Airtable, the fix must be made in Fortnox — not in Airtable. Any Airtable edit will be overwritten on the next sync. These fields are also the ones most likely to be empty or inconsistently filled (staff don't always fill every optional field).</p>
+
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Fortnox API property</th><th>Who provides the value and when</th></tr>
+  <tr><td><strong>SupplierNumber</strong> <span class="field-id">fldW4vWfktFg1LsNJ</span></td><td>singleLineText</td><td><code>SupplierNumber</code> (required)</td><td>The supplier's Fortnox ID. <strong>Required field</strong> — must be provided when registering the invoice. Staff select the correct supplier from Fortnox's supplier list. Denormalized inline in the invoice response; the FortnoxSupplier link field is the Airtable-level reference.</td></tr>
+  <tr><td><strong>InvoiceDate</strong> <span class="field-id">fldMSoHi0uK2IdiFy</span></td><td>singleLineText</td><td><code>InvoiceDate</code></td><td>The date printed on the supplier's invoice. Staff copy this from the physical/PDF invoice when entering it in Fortnox. Stored as text "YYYY-MM-DD". Used in the ID formula. Three formula fields parse it into a date type (see Category D).</td></tr>
+  <tr><td><strong>DueDate</strong> <span class="field-id">fldG5zUDR6Qq2OrZ3</span></td><td>singleLineText</td><td><code>DueDate</code></td><td>Payment due date. May be entered manually from the supplier's invoice, or calculated by Fortnox from InvoiceDate + payment terms — depends on whether payment terms are configured for the supplier. Often staff-entered to match what the supplier printed.</td></tr>
+  <tr><td><strong>Currency</strong> <span class="field-id">fldDTXj7xQSaW9T8y</span></td><td>singleLineText</td><td><code>Currency</code></td><td>ISO currency code of the invoice (e.g. "EUR"). Staff select this when the invoice is in a foreign currency. Defaults to SEK if not specified.</td></tr>
+  <tr><td><strong>OCR</strong> <span class="field-id">fld5vLAVqM9QbY3jH</span></td><td>singleLineText</td><td><code>OCR</code></td><td>Payment reference (OCR/bankgiro number) from the supplier's invoice. Staff copy this from the invoice to enable correct payment routing.</td></tr>
+  <tr><td><strong>ExternalInvoiceNumber</strong> <span class="field-id">fldXgteCfWCf9JlRi</span></td><td>singleLineText</td><td><code>ExternalInvoiceNumber</code></td><td>The supplier's own invoice number (their numbering, distinct from Fortnox's GivenNumber). Staff copy this from the invoice for reconciliation with the supplier.</td></tr>
+  <tr><td><strong>ExternalInvoiceSeries</strong> <span class="field-id">fldeJxLgenSujNcua</span></td><td>singleLineText</td><td><code>ExternalInvoiceSeries</code></td><td>Series prefix of the supplier's invoice number. Entered alongside ExternalInvoiceNumber if applicable.</td></tr>
+  <tr><td><strong>OurReference</strong> <span class="field-id">flddDZtno9kqLxEuA</span></td><td>singleLineText</td><td><code>OurReference</code></td><td>Adgrabber's internal reference — typically the name of the person who approved or ordered this, or an internal project code. Staff enter this in Fortnox. Useful for tracing responsibility.</td></tr>
+  <tr><td><strong>YourReference</strong> <span class="field-id">fld9F7lSxfKViL8u7</span></td><td>singleLineText</td><td><code>YourReference</code></td><td>The supplier's reference from the invoice (whatever contact name or reference they printed). Staff copy it from the invoice; may often be empty if the supplier doesn't include one.</td></tr>
+  <tr><td><strong>CostCenter</strong> <span class="field-id">fldtceZvyLcc13A16</span></td><td>singleLineText</td><td><code>CostCenter</code></td><td>Fortnox cost center code. Staff assign this for accounting/reporting segmentation. Optional — may be empty if cost center tracking is not used or is handled via sys.fakturamapping in Airtable instead.</td></tr>
+  <tr><td><strong>Project</strong> <span class="field-id">fldE7wb1vnnDNzL8u</span></td><td>singleLineText</td><td><code>Project</code></td><td>Fortnox project code. Staff assign this if the invoice is associated with a Fortnox project. Often empty — project/campaign attribution is handled in Airtable via sys.fakturamapping, not in Fortnox.</td></tr>
+  <tr><td><strong>AdministrationFee</strong> <span class="field-id">fldMgkVmgVQVomPTr</span></td><td>singleLineText</td><td><code>AdministrationFee</code></td><td>Any administration fee on the invoice. Staff copy from the supplier's invoice when entering in Fortnox.</td></tr>
+  <tr><td><strong>Freight</strong> <span class="field-id">fldOQ7xYz5FS7T9Dz</span></td><td>singleLineText</td><td><code>Freight</code></td><td>Freight/shipping cost. Copied from the supplier's invoice by staff.</td></tr>
+  <tr><td><strong>DisablePaymentFile</strong> <span class="field-id">fldqn24beBa1Rrs4t</span></td><td>checkbox</td><td><code>DisablePaymentFile</code></td><td>Staff can toggle this to exclude the invoice from bank payment file exports (e.g. if payment is handled manually or via a different method).</td></tr>
+  <tr><td><strong>CreditReference</strong> <span class="field-id">fldea7wq3wGTn6s5k</span></td><td>singleLineText</td><td><code>CreditReference</code></td><td>When creating a credit note, staff enter the GivenNumber of the original invoice being reversed. Only relevant on credit invoices.</td></tr>
+  <tr><td><strong>SupplierInvoiceRows</strong> <span class="field-id">fld1iVAQmlA5jCHJD</span></td><td>multilineText</td><td><code>SupplierInvoiceRows</code> (array)</td><td>The line items staff enter when registering the invoice in Fortnox (account code, amount, VAT, description per row). Stored here as a serialized JSON blob. This table has no child row table — all row detail lives in this text field.</td></tr>
+</table>
+
+<!-- ================================================================ CAT B -->
+<h2 class="platform cat-header">B — Platform Import Fields &nbsp;<span class="badge b-platform">Written by staff (manual)</span></h2>
+<p>These fields are populated during the <strong>platform import workflow</strong> — where staff manually create supplier invoice records for ad platform invoices (Facebook, LinkedIn, TikTok, Google, etc.) that are not synced from Fortnox. Each platform invoice is split one record per client per platform per billing period. These fields are empty (or irrelevant) on Fortnox-synced records.</p>
+
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Role</th></tr>
+  <tr><td><strong>Platform Import File</strong> <span class="field-id">fldAzxkHMaZWQYlt9</span></td><td>multipleRecordLinks → Platform Import Files</td><td><strong>The structural anchor for platform imports.</strong> Links this invoice split to its parent TABLE Platform Import Files record (one per platform per billing period). Populated by staff when creating the split record.</td></tr>
+  <tr><td><strong>Kund</strong> <span class="field-id">fldVGjITsLOfEt9RL</span></td><td>multipleRecordLinks → Kund</td><td>Links to the specific client this cost split belongs to. Required for platform imports (always populated). Empty on Fortnox-synced records.</td></tr>
+  <tr><td><strong>ID from 4.2</strong> <span class="field-id">fldKCC0ngNwVsGTuT</span></td><td>number</td><td>Sequential integer identifying this split record within its platform import file. Used to distinguish multiple per-client splits from the same platform invoice. Appended to the ID formula for platform records.</td></tr>
+  <tr><td><strong>Platform Export Name</strong> <span class="field-id">fldGKLLJat9fmu6Vj</span></td><td>singleLineText</td><td>Name of the platform export report/file this invoice was derived from. Used for traceability back to the source file.</td></tr>
+  <tr><td><strong>Platform Text 1</strong> <span class="field-id">fld2pxu6u9RUtoJby</span></td><td>singleLineText</td><td>Free-text metadata field for platform imports. Content varies (period label, notes, etc.). Also tracked by the scoped FIELD <code>Last Modified</code>.</td></tr>
+  <tr><td><strong>Platform Text 2</strong> <span class="field-id">fldgmoBxJGc63wRq1</span></td><td>singleLineText</td><td>Second free-text metadata field. Appended to the ID formula to differentiate platform records from Fortnox records (the IF branch in the ID formula checks whether this is blank).</td></tr>
+  <tr><td><strong>Invoice PDF</strong> <span class="field-id">flddfQgb2IOie2tzp</span></td><td>multipleAttachments</td><td>Attachment field for uploading the actual invoice PDF. Primarily used for platform imports where the PDF is received from the platform directly. Fortnox-synced records may also use this but it's not written by the n8n sync.</td></tr>
+  <tr><td><strong>Invoice PDF URL</strong> <span class="field-id">fldpZ1TptTqeGBXGw</span></td><td>url</td><td>URL link to the invoice PDF stored externally (Google Cloud Storage). Present on older Fortnox-synced records (pre-2024) and some platform import records. Newer records use the <code>Invoice PDF</code> attachment field instead.</td></tr>
+  <tr><td><strong>Ad Accountr</strong> <span class="field-id">fldXGFsR3HD15C8YI</span></td><td>singleLineText</td><td>Ad account identifier or reference. Field name contains a typo ("Accountr" not "Account"). Likely entered during platform import to record which ad account the spend belongs to.</td></tr>
+</table>
+
+<!-- ================================================================ CAT C -->
+<h2 class="manual cat-header">C — Manual Operational Fields &nbsp;<span class="badge b-manual">Staff-managed workflow</span></h2>
+<p>Fields that staff interact with directly as part of the invoice review and approval workflow. These are not written by any automation.</p>
+
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Role</th></tr>
+  <tr><td><strong>Attest Status</strong> <span class="field-id">fldKgOSW76q8M6YB5</span></td><td>singleSelect</td><td>Invoice approval/attestation status. Options: <em>"Ok att betala"</em> (ready to pay), <em>"Ska inte betalas"</em> (do not pay), <em>"För åtgärd"</em> (needs action). This is the primary operational field for accounts payable workflow.</td></tr>
+  <tr><td><strong>Comments</strong> <span class="field-id">fldSaMCuyeKu7PLXG</span></td><td>multilineText</td><td>Free-text notes field. Used by staff to add context, notes about exceptions, or payment instructions. (The Fortnox API does have a Comments property but this is most likely used manually in Airtable.)</td></tr>
+  <tr><td><strong>Dev | Suggestion Mapping</strong> <span class="field-id">fldimjepv2BHSToIE</span></td><td>multilineText</td><td>Suggestions for which sys.fakturamapping record to create for this invoice. Entered manually (possibly auto-suggestions from a dev feature). Assists staff in cost attribution step.</td></tr>
+  <tr><td><strong>Delete</strong> <span class="field-id">fldK3ZbZglXuFpOEr</span></td><td>singleSelect</td><td>Soft-delete flag. Option: <em>"Please delete (accidentally created)"</em>. Used to mark records for cleanup without hard-deleting them. Currently 4 records have this flag set (total = 0, ID = #ERROR, waiting for deletion).</td></tr>
+</table>
+
+<!-- ================================================================ CAT D -->
+<h2 class="formula cat-header">D — Formula Fields &nbsp;<span class="badge b-formula">Computed by Airtable</span></h2>
+<p>These fields are calculated by Airtable and never written by users or automations. They are read-only derived values. Several are <strong>duplicates of each other</strong> — flagged below.</p>
+
+<table>
+  <tr><th>Field name</th><th>Formula summary</th><th>Purpose / Issues</th></tr>
+  <tr><td><strong>ID</strong> <span class="field-id">fld6Q5JlH7I8DvU4X</span> ⭐ <em>Primary field</em></td><td><code>IF(Platform Text 2="", GivenNumber - DATETIME_FORMAT(InvoiceDate) - DATETIME_FORMAT(DueDate), GivenNumber - DATETIME_FORMAT(InvoiceDate) - DATETIME_FORMAT(DueDate) + " " + Platform Text 2)</code></td><td>The record's primary identifier. For Fortnox records: <code>"3351 - 2026-02-02 - 2026-02-16"</code>. For platform records: <code>" - 2023-11-30 - 2023-12-20"</code> (no GivenNumber prefix, Platform Text 2 appended when set). Uses <code>DATETIME_FORMAT()</code> on <code>InvoiceDate</code> and <code>DueDate</code> which are singleLineText fields — Airtable auto-coerces the date string.</td></tr>
+  <tr><td><strong>Total Excl VAT in SEK</strong> <span class="field-id">fldxN9fxX9Wz6ph73</span></td><td><code>(Total − VAT) × CurrencyRate</code> (if not Platform type; rate=1 for SEK)</td><td>The canonical cost figure in SEK, net of VAT. Used as the denominator in all mapping variance calculations. Central to the <em>Invoice fully mapped?</em> check.</td></tr>
+  <tr><td><strong>CurrencyRate (number)</strong> <span class="field-id">fldKMsy8WZJlX8mRl</span></td><td><code>VALUE(CurrencyRate)</code></td><td>Converts the text CurrencyRate field to a usable number. Required because Fortnox returns CurrencyRate as a string. Used inside Total Excl VAT in SEK.</td></tr>
+  <tr><td><strong>Balance(integer format)</strong> <span class="field-id">fldZUKRx1gqdjYl2E</span></td><td><code>VALUE(Balance)</code></td><td>Converts the text Balance field to a number, enabling numeric comparisons and filters.</td></tr>
+  <tr><td><strong>InvoiceDate_Date type</strong> <span class="field-id">fldSxxVusU4behEHx</span></td><td><code>DATETIME_PARSE(InvoiceDate, 'YYYY-MM-DD')</code></td><td>Parses the InvoiceDate text into a proper Airtable date field. Enables date-based filtering and sorting. <strong>⚠️ Has two exact duplicates (see below).</strong></td></tr>
+  <tr><td><strong>Invoice Date_Date type</strong> <span class="field-id">fld4YJO1GDxUOg4Mo</span></td><td>Same formula as above</td><td><strong>⚠️ Exact duplicate of InvoiceDate_Date type.</strong> Different field ID, same formula, same result. One of the three should be kept; the others deleted.</td></tr>
+  <tr><td><strong>InvoiceDate_DATE FORMAT</strong> <span class="field-id">fldNFdNnNi2zrLBOQ</span></td><td>Same formula as above</td><td><strong>⚠️ Third duplicate</strong> of the same InvoiceDate parse. Likely created each time a new view needed date filtering and the author forgot the field already existed.</td></tr>
+  <tr><td><strong>Invoice fully mapped?</strong> <span class="field-id">fldteg2W0Pw0WQWRD</span></td><td>Multi-step IF: no mapping → "⚠️Not mapping yet"; no linked MP → "⚠️Mapping has no linked MP"; variance &gt;100 → "🔴"; &lt;-100 → "⚪"; else "🟢Fully Mapped🟢"</td><td>The authoritative mapping status indicator. Used in views and operational workflow. See also the duplicate <em>Is it fully mapped? copy</em>.</td></tr>
+  <tr><td><strong>Is it fully mapped? copy</strong> <span class="field-id">fldTrLOHE4zAbdqBH</span></td><td>Revised multi-step IF — adds ±100 tolerance check and additional messages</td><td><strong>⚠️ Evolved duplicate of Invoice fully mapped?</strong> More detailed logic (adds "Alloc spend is lower/higher than campaign cost" branches). Unclear which is the current authoritative version — likely this is the newer one but both still exist.</td></tr>
+  <tr><td><strong>Mapping variance</strong> <span class="field-id">fldc98DTimSPFEiCQ</span></td><td><code>ROUND(Ek. utfall. Externkostnad − Total Excl VAT in SEK)</code></td><td>The difference between total mapped cost (from sys.fakturamapping) and the invoice total in SEK. Zero = fully mapped. Referenced by Invoice fully mapped?, Variance_supplier invoice level, and the emoji fields.</td></tr>
+  <tr><td><strong>Variance_supplier invoice level</strong> <span class="field-id">fldKbwux5MqB2TNsE</span></td><td><code>IF(ABS(Mapping variance) &lt; 101, 0, Mapping variance)</code></td><td>Suppresses small variances (within ±100 SEK tolerance). Returns 0 if within tolerance, else the actual variance. Used for reporting and rollups that ignore minor rounding differences.</td></tr>
+  <tr><td><strong>Abs(not mapped amount)</strong> <span class="field-id">fldiCvDitPjfALfcF</span></td><td><code>ABS(ROUND(Ek. utfall. Externkostnad − Total Excl VAT in SEK))</code></td><td>Absolute value of the mapping variance. Used for magnitude-only sorting/filtering without sign.</td></tr>
+  <tr><td><strong>UPPLUPNA +-100 …</strong> <span class="field-id">fldEtxsGxjXOAv1W8</span></td><td><code>ABS(UPPLUPNA Rollup)</code></td><td>Absolute value of the UPPLUPNA (accrued cost) rollup. The full name is unwieldy — this is just |UPPLUPNA|. Used for filtering/sorting magnitude of accruals.</td></tr>
+  <tr><td><strong>Supplier Usually Needs Allocation String</strong> <span class="field-id">fldSLTdGW1G0GI8qx</span></td><td><code>ARRAYJOIN(Supplier Usually Needs Allocation, '')</code></td><td>Converts the lookup array to a plain string. Required because lookup fields return arrays, which can't be used directly in IF() comparisons. Enables filtering views by this flag.</td></tr>
+  <tr><td><strong>Supplier Internal Status String</strong> <span class="field-id">fldTeeLyx67EtZpeo</span></td><td><code>ARRAYJOIN(Supplier Internal Status)</code></td><td>Same pattern as above — converts the Supplier Internal Status lookup to a comparable string.</td></tr>
+  <tr><td><strong>ID_backup</strong> <span class="field-id">fldJTB7vabYFjbOjW</span></td><td><code>GivenNumber + " - " + InvoiceDate + " - " + DueDate + IF(Suppliertype="Platform - Not Fortnox", "-" + ID from 4.2, "")</code></td><td><strong>⚠️ Redundant.</strong> An earlier version of the ID formula that appended the sequential platform ID (<code>ID from 4.2</code>) for platform records. Identical to Platform Primary field with ID. Both appear to be legacy from before the current primary ID formula was finalized.</td></tr>
+  <tr><td><strong>Platform Primary field with ID</strong> <span class="field-id">fldxU2C4M6NIPMUVv</span></td><td>Same formula as ID_backup</td><td><strong>⚠️ Exact duplicate of ID_backup.</strong> Different field ID, same formula. Neither is the current primary field. Both are candidates for deletion.</td></tr>
+  <tr><td><strong>Calculation 3</strong> <span class="field-id">fldV3w4nq0NKBwjF9</span></td><td><code>{Count of M/P} − {Count of M/P}</code></td><td><strong>🔴 Dead formula — always returns 0.</strong> A field subtracting a value from itself. Likely a leftover from an abandoned calculation. Should be deleted.</td></tr>
+</table>
+
+<!-- ================================================================ CAT E -->
+<h2 class="lookup cat-header">E — Lookup Fields &nbsp;<span class="badge b-lookup">Pulled from linked tables</span></h2>
+<p>These fields pull values from records in linked tables. They are read-only in this table.</p>
+
+<h3>From FortnoxSupplier (via FIELD FortnoxSupplier link)</h3>
+<table>
+  <tr><th>Field name</th><th>Source field in FortnoxSupplier</th><th>Purpose / Issues</th></tr>
+  <tr><td><strong>Suppliertype</strong> <span class="field-id">fldF0nbSfvrOpiD0Q</span></td><td><code>Suppliertype</code></td><td>Whether the supplier is "Platform - Not Fortnox". Used in the ID formula and Total Excl VAT formula to handle platform records differently.</td></tr>
+  <tr><td><strong>Sync</strong> <span class="field-id">fldTSfERJEsU4O6rn</span></td><td><code>Internal Status</code> (same field as Supplier Internal Status)</td><td>"Sync" or "Do not sync". This is the n8n sync gate — n8n reads this value from the sync view filter. <strong>⚠️ Exact duplicate of Supplier Internal Status (fldI8XVUB7Ik48CDi) — same source field, two lookup fields.</strong></td></tr>
+  <tr><td><strong>Supplier Internal Status</strong> <span class="field-id">fldi8XVUB7Ik48CDi</span></td><td><code>Internal Status</code> (same field as Sync)</td><td><strong>⚠️ Duplicate of Sync.</strong> Created because a formula (Supplier Internal Status String) needs to ARRAYJOIN it, and perhaps at some point Sync was used differently. Both return the same value.</td></tr>
+  <tr><td><strong>Supplier Usually Needs Allocation</strong> <span class="field-id">fldS2cD5IpiiSgaiW</span></td><td><code>Usually Needs Allocation</code></td><td>"Yes" or "No" — whether this supplier's invoices typically need to be attributed via sys.fakturamapping. <strong>⚠️ Duplicate of Usually needs mapping (fld3K9TcOxvfWbkZ1) — same source field.</strong></td></tr>
+  <tr><td><strong>Usually needs mapping</strong> <span class="field-id">fld3K9TcOxvfWbkZ1</span></td><td><code>Usually Needs Allocation</code> (same as above)</td><td><strong>⚠️ Exact duplicate of Supplier Usually Needs Allocation.</strong> Different name, same source. One can be deleted.</td></tr>
+  <tr><td><strong>ID (from FortnoxSupplier)</strong> <span class="field-id">fldMJVMWM0Go8nGMn</span></td><td><code>ID</code> (primary field of FortnoxSupplier)</td><td>The supplier's primary field value. Useful for display and cross-reference. Also exposed by the Supplier lookup (see below).</td></tr>
+  <tr><td><strong>Name (from FortnoxSupplier)</strong> <span class="field-id">fld9JzOE4qRh1hQUc</span></td><td><code>Name</code></td><td>Supplier name from the authoritative FortnoxSupplier record.</td></tr>
+  <tr><td><strong>Supplier</strong> <span class="field-id">fldruYiHQGPq4THiI</span></td><td><code>ID</code> (same field as ID from FortnoxSupplier)</td><td><strong>⚠️ Likely duplicate of ID (from FortnoxSupplier).</strong> Both look up the same ID/Name field. May have been created separately for a specific view.</td></tr>
+  <tr><td><strong>Suppliernumber Lookup</strong> <span class="field-id">fldyYN0cNFUvuuoZT</span></td><td><code>SupplierNumber</code></td><td>Supplier number from the FortnoxSupplier record. Note: the raw FIELD SupplierNumber (Category A) already holds this value as synced from Fortnox — this lookup is a cross-check via the link.</td></tr>
+  <tr><td><strong>Brief. Mediatype</strong> <span class="field-id">fldDbBQgGu6ljAa3B</span></td><td><code>Mediatype</code></td><td>The media type category of the supplier (e.g. "Facebook", "Google"). Used for grouping and filtering invoice views by media channel.</td></tr>
+</table>
+
+<h3>From sys.fakturamapping (via FIELD sys.fakturamapping link)</h3>
+<table>
+  <tr><th>Field name</th><th>Source field</th><th>Purpose</th></tr>
+  <tr><td><strong>Leverantörsfaktura (from sys.fakturamapping)</strong> <span class="field-id">fldQEuWr5F6EtuOEx</span></td><td><code>Leverantörsfaktura</code> (ID of mapping record)</td><td>Shows the display identifier of each linked sys.fakturamapping record. Useful for quick visual verification that cost attribution records exist.</td></tr>
+  <tr><td><strong>Mediaköp (from sys.fakturamapping)</strong> <span class="field-id">fld79W1FnAWmCzdVH</span></td><td><code>Mediakop/Production</code> (link to Media/Prod New)</td><td>Shows which Media/Prod New campaign line records are attributed through the mapping. Enables seeing at a glance which campaigns this invoice is being charged to.</td></tr>
+</table>
+
+<h3>From Kund (via FIELD Kund link)</h3>
+<table>
+  <tr><th>Field name</th><th>Source</th><th>Purpose</th></tr>
+  <tr><td><strong>Who Pays Facebook / Instagram (from Agreement) (from Kund)</strong> <span class="field-id">fldoCVONHLJsklcHr</span></td><td>Client's agreement field</td><td>Whether Adgrabber or the customer pays Facebook/Instagram costs. Used to determine cost attribution logic for platform invoices.</td></tr>
+  <tr><td><strong>Agreement</strong> <span class="field-id">fldj4Es61xIp28XhR</span></td><td>Agreement link on Kund</td><td>Links through to the client's agreement record, giving context for pricing/billing terms.</td></tr>
+</table>
+
+<h3>From Platform Import File (via FIELD Platform Import File link)</h3>
+<table>
+  <tr><th>Field name</th><th>Status</th><th>Purpose</th></tr>
+  <tr><td><strong>Platform Code</strong> <span class="field-id">fldvOVHD683B7IQnq</span></td><td>✅ Valid</td><td>The platform entity from the import file (which links to the FortnoxSupplier record for that platform). Second link to FortnoxSupplier — not through the main FortnoxSupplier field, but through this lookup chain.</td></tr>
+  <tr><td><strong>Total platform cost</strong> <span class="field-id">fld4EtdlxFNdoJmNx</span></td><td>✅ Valid</td><td>The total cost of the entire platform import file (before the per-client split). Used to verify that all split records sum correctly.</td></tr>
+  <tr><td><strong>Rapport Start (from Platform Export Name)</strong> <span class="field-id">fldtYtsVZL3eF8CQ3</span></td><td>🔴 BROKEN — <code>isValid: false</code>, <code>recordLinkFieldId: null</code></td><td>Intended to look up the reporting period start date from the Platform Import File. The link field reference is null — the field it was pointing to was removed or renamed. Currently returns nothing.</td></tr>
+  <tr><td><strong>Rapport End (from Platform Export Name)</strong> <span class="field-id">fldyIg4I3sFdaFvTF</span></td><td>🔴 BROKEN — <code>isValid: false</code>, <code>recordLinkFieldId: null</code></td><td>Same issue as Rapport Start. Intended to show period end date. Currently broken and returns nothing.</td></tr>
+</table>
+
+<!-- ================================================================ CAT F -->
+<h2 class="rollup cat-header">F — Rollup / Count Fields &nbsp;<span class="badge b-rollup">Aggregated from linked records</span></h2>
+<p>Rollups and counts aggregate values from records in linked tables.</p>
+
+<h3>Rollups from sys.fakturamapping (via FIELD sys.fakturamapping)</h3>
+<table>
+  <tr><th>Field name</th><th>Aggregates</th><th>Purpose</th></tr>
+  <tr><td><strong>Ek. utfall. Externkostnad</strong> <span class="field-id">fldbw33Wh0aWR4Oop</span></td><td>SUM of <code>Belopp ex moms</code> (SEK)</td><td><strong>The authoritative actual cost figure for this invoice.</strong> Total external cost attributed to campaign lines via sys.fakturamapping. Used in Mapping variance = this minus Total Excl VAT in SEK.</td></tr>
+  <tr><td><strong>Allocated External Costs (V5)</strong> <span class="field-id">fldZCM10EdFhWElku</span></td><td>SUM of allocated external cost field (V5)</td><td>Total of allocated external costs across all mapping records. Part of the V5 cost model.</td></tr>
+  <tr><td><strong>Alloc Spend less Belopp ex moms (V5)</strong> <span class="field-id">fld7USrhW5p1cd7zr</span></td><td>SUM of per-record allocation variance</td><td>Difference between pre-allocated spend and actual invoice amount at the mapping record level. Used in the detailed Is it fully mapped? copy formula.</td></tr>
+  <tr><td><strong>UPPLUPNA (Supplier cost less Alloc Spend) Rollup</strong> <span class="field-id">fldw7mLLaAbs7jY23</span></td><td>SUM of UPPLUPNA from Media/Prod New via mapping</td><td>Total accrued cost (actual vs. allocated spend) rolled up through the mapping chain. A positive value means more was actually invoiced than was pre-allocated.</td></tr>
+  <tr><td><strong>Variance_excluding -+100</strong> <span class="field-id">fldm2tSytFmlnDKIQ</span></td><td>SUM of per-mapping variance excluding ±100 tolerance</td><td>Only counts variances that exceed the ±100 SEK threshold. Used for identifying genuinely unmapped amounts.</td></tr>
+  <tr><td><strong>Upplupna_emoji (V5) (from sys.fakturamapping)</strong> <span class="field-id">fldsVXkQJmIssod5w</span></td><td>Emoji status from each mapping record</td><td>Visual accrual status rolled up from the mapping records. Displayed as a collection of emoji indicators.</td></tr>
+  <tr><td><strong>Count of fakturamapping records</strong> <span class="field-id">fldwJnTwnNsANUXsy</span></td><td>COUNT of mapping records</td><td>How many sys.fakturamapping records are linked. <strong>⚠️ Likely duplicate of Count (sys.fakturamapping) and Mapping Count — see below.</strong></td></tr>
+  <tr><td><strong>Count of M/P linked to the fakturamapping record</strong> <span class="field-id">fldUisHjBFtdIX7gC</span></td><td>SUM of count of Media/Prod New records per mapping</td><td>Total number of campaign lines (Media/Prod New records) linked across all mapping records for this invoice. Used in Invoice fully mapped? — if zero, the mapping exists but isn't attached to any campaign.</td></tr>
+  <tr><td><strong>Count of no linked MP</strong> <span class="field-id">fldt2mppvx9zPOaNk</span></td><td>COUNT of mapping records with no Media/Prod New link</td><td>Number of mapping records that haven't been connected to a campaign line. If > 0, cost is mapped but not attributed.</td></tr>
+  <tr><td><strong>Count (sys.fakturamapping)</strong> <span class="field-id">fldqTDBF6uBuWQnvC</span></td><td>COUNT of linked sys.fakturamapping records</td><td><strong>⚠️ Duplicate of Mapping Count (fldsnA9UuaEiJAQW).</strong> Both are simple counts of the same link field. One is redundant.</td></tr>
+  <tr><td><strong>Mapping Count</strong> <span class="field-id">fldsOnA9UuaEiJAQW</span></td><td>COUNT of linked sys.fakturamapping records</td><td>Used by Invoice fully mapped? formula (checks if = 0 → "not mapping yet"). <strong>⚠️ Duplicate of Count (sys.fakturamapping).</strong></td></tr>
+</table>
+
+<h3>From SupplierInvoiceLink — BROKEN</h3>
+<div class="broken-note">
+  FIELD <code>SupplierInvoiceLink</code> (<code>fld9PqsUuFloBwjUJ</code>) is a <strong>singleLineText field</strong>, not a link field. Two rollups reference it as their <code>recordLinkFieldId</code> — meaning they were built assuming this would be a link field. Both are permanently invalid.
+</div>
+<table>
+  <tr><th>Field name</th><th>Status</th><th>Notes</th></tr>
+  <tr><td><strong>Actual media amount_Supplier</strong> <span class="field-id">fldPdJGJX1YXjdjsE</span></td><td>🔴 BROKEN — <code>isValid: false</code></td><td>Was intended to roll up actual media spend from a linked table. Non-functional. Returns nothing.</td></tr>
+  <tr><td><strong>Actual production amount_Supplier</strong> <span class="field-id">fldIcjxQFiwRfmGpu</span></td><td>🔴 BROKEN — <code>isValid: false</code></td><td>Was intended to roll up actual production spend. Non-functional. Returns nothing.</td></tr>
+</table>
+
+<!-- ================================================================ CAT G -->
+<h2 class="link cat-header">G — Link Fields &nbsp;<span class="badge b-link">Connections to other tables</span></h2>
+<p>The four outgoing record link fields in this table.</p>
+<table>
+  <tr><th>Field name</th><th>Links to</th><th>Set by</th><th>Notes</th></tr>
+  <tr><td><strong>FortnoxSupplier</strong> <span class="field-id">fldjanoWy86UEcreu</span></td><td>TABLE FortnoxSupplier (<code>tblSFdN7U9Bri8zwr</code>)</td><td>n8n sync</td><td>Set by n8n when syncing — matches by SupplierNumber. Empty on platform import records (they use Platform Code instead, which looks up through the Platform Import File link).</td></tr>
+  <tr><td><strong>sys.fakturamapping</strong> <span class="field-id">fld2h78ru7NwwupNX</span></td><td>TABLE sys.fakturamapping (<code>tblRXZqzj79Vd3iC6</code>)</td><td>Staff (manual)</td><td>Staff create and link mapping records here to attribute invoice costs to specific campaign lines. The core cost attribution link.</td></tr>
+  <tr><td><strong>Kund</strong> <span class="field-id">fldVGjITsLOfEt9RL</span></td><td>TABLE Kund (<code>tbl8RNJ9wRkv3rg7A</code>)</td><td>Staff (platform import)</td><td>Links to the specific client. Always populated for platform import records. Empty for Fortnox-synced records (supplier ≠ client).</td></tr>
+  <tr><td><strong>Platform Import File</strong> <span class="field-id">fldAzxkHMaZWQYlt9</span></td><td>TABLE Platform Import Files (<code>tbl922EeY899adWVD</code>)</td><td>Staff (platform import)</td><td>Links this per-client split to its parent platform billing period record. Always populated for platform import records. Empty for Fortnox-synced records.</td></tr>
+</table>
+
+<!-- ================================================================ CAT H -->
+<h2 class="system cat-header">H — System Fields &nbsp;<span class="badge b-system">Auto-managed by Airtable</span></h2>
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><strong>Created time</strong> <span class="field-id">fld1lKUhsQmscgWwt</span></td><td>createdTime</td><td>When the record was created in Airtable (not when the invoice was issued).</td></tr>
+  <tr><td><strong>Created By</strong> <span class="field-id">fldHvlWdpVt7IETJg</span></td><td>createdBy</td><td>Which Airtable user (or API key) created the record.</td></tr>
+  <tr><td><strong>Updated By</strong> <span class="field-id">fldgeDz2ThiiHnxuK</span></td><td>lastModifiedBy</td><td>Last Airtable user to modify any field.</td></tr>
+  <tr><td><strong>Last Modified By</strong> <span class="field-id">fldvDEffQvjAi30PS</span></td><td>lastModifiedBy</td><td><strong>⚠️ Appears to duplicate Updated By.</strong> Both are lastModifiedBy with no scoped field restrictions — they return the same value.</td></tr>
+  <tr><td><strong>Last Modified Time</strong> <span class="field-id">fldwgUzOPRalYsqNA</span></td><td>lastModifiedTime (all fields)</td><td>Timestamp of last modification to any field. Useful for sorting recently changed records.</td></tr>
+  <tr><td><strong>Last Modified</strong> <span class="field-id">fldRFxKJe5EsexdaV</span></td><td>lastModifiedTime (scoped: Platform Text 1 + Platform Text 2 only)</td><td>A scoped modification timestamp — only updates when Platform Text 1 or Platform Text 2 change. Used to track when platform import metadata was last edited, independently of other changes.</td></tr>
+  <tr><td><strong>Autonumber</strong> <span class="field-id">fldzAYFAzZgCj5HLc</span></td><td>autoNumber</td><td>Sequential integer assigned on record creation. Useful for stable sorting and as a simple numeric ID.</td></tr>
+</table>
+
+<!-- ================================================================ CAT I BROKEN -->
+<h2 class="broken cat-header">I — Broken / Invalid Fields &nbsp;<span class="badge b-broken">Non-functional, needs cleanup</span></h2>
+<div class="broken-note">These fields return no data and cannot be fixed without schema changes. They should be investigated for whether they can be repaired or should be deleted.</div>
+<table>
+  <tr><th>Field name</th><th>Field ID</th><th>Problem</th><th>Recommendation</th></tr>
+  <tr><td><strong>Actual media amount_Supplier</strong></td><td><code>fldPdJGJX1YXjdjsE</code></td><td>Rollup using SupplierInvoiceLink as link field, but that field is a singleLineText. <code>isValid: false</code>.</td><td>Delete unless SupplierInvoiceLink is converted to a real link field (would require understanding what table it was meant to link to).</td></tr>
+  <tr><td><strong>Actual production amount_Supplier</strong></td><td><code>fldIcjxQFiwRfmGpu</code></td><td>Same issue — uses SupplierInvoiceLink as link source. <code>isValid: false</code>.</td><td>Delete same as above.</td></tr>
+  <tr><td><strong>Rapport Start (from Platform Export Name)</strong></td><td><code>fldtYtsVZL3eF8CQ3</code></td><td>Lookup with <code>recordLinkFieldId: null</code>. The link field it referenced no longer exists or was renamed. <code>isValid: false</code>.</td><td>Either repair by pointing to the correct link field, or delete if the period dates are no longer needed here.</td></tr>
+  <tr><td><strong>Rapport End (from Platform Export Name)</strong></td><td><code>fldyIg4I3sFdaFvTF</code></td><td>Same issue — <code>recordLinkFieldId: null</code>. <code>isValid: false</code>.</td><td>Same as Rapport Start.</td></tr>
+  <tr><td><strong>Calculation 3</strong></td><td><code>fldV3w4nq0NKBwjF9</code></td><td>Formula: <code>{Count of M/P} − {Count of M/P}</code> — always evaluates to zero. No meaningful output ever.</td><td>Delete immediately.</td></tr>
+</table>
+
+<p>Also note: FIELD <strong>SupplierInvoiceLink</strong> (<code>fld9PqsUuFloBwjUJ</code>) is a <code>singleLineText</code> field that appears to have been intended as a link field (used as <code>recordLinkFieldId</code> in the two broken rollups above). Its current content and purpose are unclear — it may store a URL or a related record identifier as text. It should be investigated to determine if it holds live data before any deletion decision.</p>
+
+<!-- ================================================================ CAT J DEV -->
+<h2 class="dev cat-header">J — Dev / Legacy / Duplicate Fields &nbsp;<span class="badge b-dev">Candidates for cleanup</span></h2>
+<p>Fields that are redundant, were clearly created during development/testing, or duplicate the function of another existing field. None are actively broken but all add clutter and maintenance overhead.</p>
+
+<table>
+  <tr><th>Field name</th><th>Field ID</th><th>Issue</th><th>Preferred replacement</th></tr>
+  <tr><td><strong>ID_backup</strong></td><td><code>fldJTB7vabYFjbOjW</code></td><td>Formula duplicate — same as Platform Primary field with ID. An earlier iteration of the primary ID formula.</td><td>Use <strong>ID</strong> (primary field) — delete this</td></tr>
+  <tr><td><strong>Platform Primary field with ID</strong></td><td><code>fldxU2C4M6NIPMUVv</code></td><td>Formula duplicate — same formula as ID_backup.</td><td>Delete — same as ID_backup</td></tr>
+  <tr><td><strong>Invoice Date_Date type</strong></td><td><code>fld4YJO1GDxUOg4Mo</code></td><td>Exact duplicate of InvoiceDate_Date type (same formula, different field).</td><td>Use <strong>InvoiceDate_Date type</strong> — delete this</td></tr>
+  <tr><td><strong>InvoiceDate_DATE FORMAT</strong></td><td><code>fldNFdNnNi2zrLBOQ</code></td><td>Third duplicate of the same InvoiceDate parse formula.</td><td>Use <strong>InvoiceDate_Date type</strong> — delete this</td></tr>
+  <tr><td><strong>Is it fully mapped? emoji</strong></td><td><code>fldFUje8SNfQ20NWV</code></td><td>Manual singleSelect with emoji values (👎❌🎯✖️🚫). A manual predecessor to the automated Invoice fully mapped? formula. Staff would set this by hand.</td><td>Use <strong>Invoice fully mapped?</strong> formula — this can be archived</td></tr>
+  <tr><td><strong>Is it fully mapped? copy</strong></td><td><code>fldTrLOHE4zAbdqBH</code></td><td>A more detailed evolved version of Invoice fully mapped?. Unclear which is canonical.</td><td>Pick one, delete the other. Recommend keeping this one (more detailed logic) and renaming to "Invoice fully mapped?".</td></tr>
+  <tr><td><strong>Supplier Internal Status</strong></td><td><code>fldi8XVUB7Ik48CDi</code></td><td>Duplicate lookup of same source as FIELD Sync.</td><td>Use <strong>Sync</strong> — delete Supplier Internal Status (but keep Supplier Internal Status String as it derives from it)</td></tr>
+  <tr><td><strong>Usually needs mapping</strong></td><td><code>fld3K9TcOxvfWbkZ1</code></td><td>Duplicate lookup of same source as Supplier Usually Needs Allocation.</td><td>Use <strong>Supplier Usually Needs Allocation</strong> — delete this</td></tr>
+  <tr><td><strong>Supplier</strong></td><td><code>fldruYiHQGPq4THiI</code></td><td>Lookup of FortnoxSupplier.ID — likely duplicates ID (from FortnoxSupplier).</td><td>Confirm whether they pull the same field; if so, keep <strong>ID (from FortnoxSupplier)</strong></td></tr>
+  <tr><td><strong>Count (sys.fakturamapping)</strong></td><td><code>fldqTDBF6uBuWQnvC</code></td><td>COUNT duplicate — same as Mapping Count.</td><td>Keep <strong>Mapping Count</strong> (used in formulas) — delete this</td></tr>
+  <tr><td><strong>Count of fakturamapping records</strong></td><td><code>fldwJnTwnNsANUXsy</code></td><td>Another COUNT of sys.fakturamapping links — possible third duplicate.</td><td>Confirm if different aggregation; if same, delete</td></tr>
+  <tr><td><strong>Last Modified By</strong></td><td><code>fldvDEffQvjAi30PS</code></td><td>Likely duplicate of Updated By (both are unscoped lastModifiedBy).</td><td>Keep <strong>Updated By</strong> — delete this</td></tr>
+  <tr><td><strong>old or new record</strong></td><td><code>fldRlBfFcxAiYED1t</code></td><td>Manual singleSelect ("old"/"new"). A dev-era classification. Almost certainly unused in current workflows.</td><td>Audit usage in views/automations; delete if unused</td></tr>
+  <tr><td><strong>Total copy</strong></td><td><code>fldTwqvbRRaAkQimL</code></td><td>A number field that is a copy of Total. Created during dev, no clear ongoing purpose.</td><td>Delete unless actively used somewhere</td></tr>
+  <tr><td><strong>Temp Create Number Of Fields</strong></td><td><code>fldvWu05n7jiXGXoO</code></td><td>Number field labelled "Temp". Used during dev/testing for field scaffolding.</td><td>Delete</td></tr>
+  <tr><td><strong>Dev | Temp Create Number Of Records</strong></td><td><code>fldSSD1Pq7gUrP63m</code></td><td>Number field labelled "Dev | Temp". Testing scaffolding.</td><td>Delete</td></tr>
+  <tr><td><strong>Leverantörsfakturor_Dev</strong></td><td><code>fldKn4EJ0Y4ZVkELC</code></td><td>singleLineText labelled "_Dev". Dev scratch field.</td><td>Delete</td></tr>
+  <tr><td><strong>Leverantörsfakturor_Dev 2</strong></td><td><code>fldM65om35yyWGRnM</code></td><td>Second dev scratch field.</td><td>Delete</td></tr>
+  <tr><td><strong>FortnoxSupplierInvoiceRow</strong></td><td><code>fldtjB4SWMmvDIz5v</code></td><td>Always empty — never populated on any record. Likely an early n8n mapping superseded by <code>SupplierInvoiceRows</code> (A2).</td><td>Delete</td></tr>
+  <tr><td><strong>FortnoxInvoice</strong></td><td><code>fld1BU0sSnideqjsI</code></td><td>Always empty — never populated on any record. Possibly intended as a cross-reference to the customer-side invoice, never implemented.</td><td>Delete</td></tr>
+  <tr><td><strong>SupplierInvoiceLink</strong></td><td><code>fld9PqsUuFloBwjUJ</code></td><td>Always empty — never populated on any record. Intended as a link field but remained singleLineText. Referenced as <code>recordLinkFieldId</code> in two rollups, making both permanently broken. <strong>Deleting this field also eliminates the 2 broken rollups in Category I.</strong></td><td>Delete (cascade: removes 2 broken rollups in Cat I)</td></tr>
+</table>
+
+<!-- ================================================================ SUMMARY -->
+<h2 style="border-left: 4px solid #333; border-color:#333">Key Structural Observations</h2>
+
+<h3>0. Not all "Fortnox fields" are equal — the A1/A2 distinction matters</h3>
+<p>Category A is split into two subcategories. <strong>A1 (24 fields)</strong> = read-only in the Fortnox API — Fortnox's accounting engine generates the value (amounts, status flags, assigned numbers). Staff cannot change these even in Fortnox. <strong>A2 (16 fields)</strong> = writable in the Fortnox API — staff typed these values when registering the invoice in Fortnox. <strong>Important caveat:</strong> VoucherNumber, VoucherSeries, and VoucherYear are A1 fields (Fortnox generates them) but n8n does not write them to individual Airtable fields — voucher details are only available inside the <code>Vouchers</code> JSON blob.</p>
+
+<h3>1. Two record types sharing one table</h3>
+<p>This table conflates two structurally different record types: <strong>Fortnox-synced invoices</strong> (where @url is set, FortnoxSupplier is linked, all Fortnox fields are populated) and <strong>platform import invoices</strong> (where @url is empty, FortnoxSupplier is empty, Kund + Platform Import File are populated instead). There is no explicit type discriminator field — record type must be inferred from which fields are populated.</p>
+
+<h3>2. Date fields stored as text throughout</h3>
+<p>InvoiceDate, DueDate, FinalPayDate, Balance, and CurrencyRate are all stored as <code>singleLineText</code>. This is a consequence of how n8n writes Fortnox API responses. Three separate formula fields parse InvoiceDate into a proper date — all three are identical duplicates.</p>
+
+<h3>3. 23 fields are candidates for removal</h3>
+<p>5 are outright broken (return no data). 23 are duplicates, dev artifacts, or dead fields (never populated). Removing all of them would reduce the table from 120 to approximately 92 fields with no functional loss.</p>
+
+<h3>4. The mapping integrity chain</h3>
+<p>The <em>Ek. utfall. Externkostnad</em> rollup is the final step of the cost attribution chain: <code>FortnoxSupplierInvoice → sys.fakturamapping → Media/Prod New</code>. The "Invoice fully mapped?" formula compares this rollup against "Total Excl VAT in SEK" to detect gaps. This is the most important computed value for operational use.</p>
+
+<p style="margin-top:32px; color:#666; font-size:12px">Audit date: 2026-03-25 | Base: app01yDjf98U6ejKs | Table: tblYERBn2P6wrHEzl</p>
+</body>
+</html>
