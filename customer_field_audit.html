@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FortnoxCustomer — Full Field Audit</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a1a; max-width: 1400px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 22px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+  h2 { font-size: 17px; margin-top: 32px; border-left: 4px solid; padding-left: 10px; }
+  h3 { font-size: 14px; margin-top: 20px; color: #444; }
+  p { line-height: 1.6; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+  th { background: #2c2c2c; color: #fff; padding: 8px 10px; text-align: left; }
+  td { padding: 7px 10px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+  tr:nth-child(even) { background: #fafafa; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .b-sync    { background: #d0ebff; color: #1864ab; }
+  .b-crm     { background: #fff3bf; color: #7d6608; }
+  .b-rollup  { background: #ffe0f0; color: #a61e4d; }
+  .b-link    { background: #d3f9d8; color: #1a5e2a; }
+  .b-system  { background: #e9ecef; color: #495057; }
+  .b-dev     { background: #e8e8e8; color: #555; }
+  code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; font-size: 12px; font-family: monospace; }
+  .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 16px 0; }
+  .summary-card { padding: 12px; border-radius: 6px; }
+  .summary-card .count { font-size: 24px; font-weight: 700; }
+  .summary-card .label { font-size: 12px; margin-top: 4px; }
+  .note { background: #fff9db; border-left: 3px solid #f08c00; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+  .info-note { background: #e7f5ff; border-left: 3px solid #339af0; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+  .field-id { font-size: 11px; color: #888; font-family: monospace; }
+  .cat-header { margin-top: 36px; }
+  .sub-section { margin-top: 20px; padding: 10px 0 0 0; border-top: 1px dashed #ccc; }
+  .sub-section-title { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 8px; }
+
+  h2.sync     { border-color: #1864ab; }
+  h2.crm      { border-color: #7d6608; }
+  h2.rollup   { border-color: #a61e4d; }
+  h2.link     { border-color: #1a5e2a; }
+  h2.system   { border-color: #868e96; }
+  h2.dev      { border-color: #aaa; }
+</style>
+</head>
+<body>
+
+<h1>TABLE FortnoxCustomer — Full Field Audit</h1>
+<p>
+  <strong>Table ID:</strong> <code>tblDF3Ff0KJ3pN6aG</code> &nbsp;|&nbsp;
+  <strong>Base:</strong> DEV. Betaportal Adgrabber 2.0 (<code>app01yDjf98U6ejKs</code>) &nbsp;|&nbsp;
+  <strong>Total fields: 148</strong> &nbsp;|&nbsp;
+  <strong>Audit date:</strong> 2026-03-25
+</p>
+
+<p>This table was <strong>designed</strong> for two purposes simultaneously: (1) a <strong>Fortnox sync table</strong> — n8n polls <code>GET /3/customers</code> and upserts customer master data from Fortnox's accounting system; and (2) a <strong>CRM layer</strong> — account management data, financial KPIs, and time tracking per employee. In practice, <strong>only the sync function is active</strong>. The entire CRM layer (Category C, 46 fields) is empty across both the production base (<code>appk463NGeDy17j9T</code>) and the DEV base (<code>app01yDjf98U6ejKs</code>), confirmed by live queries.</p>
+
+<div class="info-note">
+  <strong>Verified against production base (<code>appk463NGeDy17j9T</code> — Betaportal Adgrabber 2.0):</strong> Aktiva Kunder, Bransch, Kundansvarig, MGMT Ansvarig, Säljare, Omsättning, Totalt TB, Totalt fakturabelopp, Fortnox status, Malin tid, Logo, and all other C-category fields return zero records when filtered for non-empty values. The table functions as a pure Fortnox sync table in production.
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card" style="background:#d0ebff">
+    <div class="count" style="font-size:16px">A1: 2 &nbsp;·&nbsp; A2: 62</div>
+    <div class="label"><strong>Fortnox-side fields</strong><br>A1: auto-generated identifiers<br>A2: master data from Fortnox Customer API</div>
+  </div>
+  <div class="summary-card" style="background:#fff3bf">
+    <div class="count">46</div>
+    <div class="label"><strong>CRM fields — designed, never used</strong><br>Schema exists for account management, KPIs, time tracking · empty in both bases</div>
+  </div>
+  <div class="summary-card" style="background:#ffe0f0">
+    <div class="count">2</div>
+    <div class="label"><strong>Rollups</strong><br>Aggregated from linked FortnoxInvoice records</div>
+  </div>
+  <div class="summary-card" style="background:#d3f9d8">
+    <div class="count">3</div>
+    <div class="label"><strong>Link fields</strong><br>Connections to FortnoxOrder, FortnoxInvoice, and Kunder tables</div>
+  </div>
+  <div class="summary-card" style="background:#e9ecef">
+    <div class="count">2</div>
+    <div class="label"><strong>System fields</strong><br>Auto-managed by Airtable</div>
+  </div>
+  <div class="summary-card" style="background:#e8e8e8">
+    <div class="count">31</div>
+    <div class="label"><strong>Dev / legacy / unused</strong><br>Never populated, old experiment fields, obsolete download series</div>
+  </div>
+</div>
+
+<!-- ================================================================ CAT A -->
+<h2 class="sync cat-header">A — Fortnox-Side Fields &nbsp;<span class="badge b-sync">Origin: Fortnox / n8n sync</span></h2>
+
+<p>These fields all originate from the Fortnox accounting system. n8n polls <code>GET /3/customers</code> and upserts records in Airtable using <strong>FIELD <code>@url</code> as the upsert key</strong>.</p>
+
+<p><strong>⚠️ Any manual edit to an A-field in Airtable will be silently overwritten on the next sync.</strong> Changes to customer master data must be made in Fortnox first.</p>
+
+<p>Compared to FortnoxSupplier, the Fortnox Customer API is significantly richer — it includes a full delivery address set, multiple email addresses per document type, invoice/order/offer defaults, and standard document configuration. This reflects Fortnox's role as an invoicing engine: customer records carry all the configuration needed to produce and deliver documents automatically.</p>
+
+<div class="note">
+  <strong>Serialized objects:</strong> <code>DefaultDeliveryTypes</code> and <code>DefaultTemplates</code> are returned by Fortnox as nested JSON objects (e.g. <code>{"Invoice":"PRINT","Order":"PRINT"}</code>). n8n stores them as JSON strings in <code>singleLineText</code> fields. Similarly, <code>Active</code> and <code>ShowPriceVATIncluded</code> are Fortnox booleans stored as the string <code>"true"</code> or <code>"false"</code> — not Airtable checkboxes.
+</div>
+
+<!-- A1 -->
+<h3>A1 — Auto-generated identifiers &nbsp;<span class="badge b-sync">Fortnox / n8n assigns · not user-chosen</span></h3>
+
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>What it represents</th></tr>
+  <tr>
+    <td><strong>CustomerNumber</strong> <span class="field-id">fldm1U6uRu1fB2YAd</span></td>
+    <td>number</td>
+    <td><strong>Primary key.</strong> Fortnox's unique identifier for this customer. Auto-incremented by Fortnox when a new customer record is created. Used by n8n to match invoices and orders to their customer. Also appears as the numeric suffix in <code>@url</code> (e.g. customer 5060 → <code>/3/customers/5060</code>).</td>
+  </tr>
+  <tr>
+    <td><strong>@url</strong> <span class="field-id">fldG9l81CELdYm9Yq</span></td>
+    <td>singleLineText</td>
+    <td><strong>Upsert key.</strong> Fortnox REST API self-link (e.g. <code>https://api.fortnox.se/3/customers/5060</code>). n8n writes this on every sync and uses it to match existing records. Empty on any customer records that did not come from the Fortnox sync (though in practice all FortnoxCustomer records come from Fortnox).</td>
+  </tr>
+</table>
+
+<!-- A2 -->
+<h3>A2 — Staff-entered master data in Fortnox &nbsp;<span class="badge b-sync">Staff entered in Fortnox · n8n syncs here</span></h3>
+<p>The 62 fields below are the Fortnox customer record — the full customer profile as configured in Fortnox's invoicing system. Staff maintain this data in Fortnox. n8n copies it to Airtable on each sync. If a value looks wrong here, the fix must be made in Fortnox. Any Airtable edit will be overwritten on the next sync.</p>
+
+<div class="sub-section">
+<div class="sub-section-title">Identity &amp; registration</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Fortnox API property</th><th>Notes</th></tr>
+  <tr><td><strong>Name</strong> <span class="field-id">fldzj84KoegnqV1e4</span></td><td>singleLineText</td><td><code>Name</code></td><td>Customer's registered company or individual name.</td></tr>
+  <tr><td><strong>Active</strong> <span class="field-id">fldDr5rvf9BqoI1l7</span></td><td>multilineText</td><td><code>Active</code></td><td>Whether the customer is active in Fortnox. Stored as string <code>"true"</code> or <code>"false"</code> — not an Airtable checkbox. Staff can deactivate customers to hide them from selection in new documents.</td></tr>
+  <tr><td><strong>Type</strong> <span class="field-id">fldjiKq29b3IcjJzX</span></td><td>multilineText</td><td><code>Type</code></td><td>Entity type: <code>COMPANY</code> or <code>PRIVATE</code>. Affects how Fortnox applies VAT and formats documents.</td></tr>
+  <tr><td><strong>OrganisationNumber</strong> <span class="field-id">fldHcyMxbVdr1iE1W</span></td><td>multilineText</td><td><code>OrganisationNumber</code></td><td>Swedish corporate registration number (Organisationsnummer). Key for identity verification and VAT handling.</td></tr>
+  <tr><td><strong>VATNumber</strong> <span class="field-id">fldyppPEkCPfdKHQq</span></td><td>multilineText</td><td><code>VATNumber</code></td><td>EU VAT registration number. Required for reverse-charge or EU-internal transactions.</td></tr>
+  <tr><td><strong>VATType</strong> <span class="field-id">fldSCdl2hxY171Dm1</span></td><td>multilineText</td><td><code>VATType</code></td><td>VAT treatment type (e.g. <code>SEVAT</code> for standard Swedish VAT). Determines how Fortnox applies VAT on invoices to this customer.</td></tr>
+  <tr><td><strong>ExternalReference</strong> <span class="field-id">fldHfxUEhA2G0tNcm</span></td><td>multilineText</td><td><code>ExternalReference</code></td><td>An external reference code for this customer (e.g. a CRM ID from another system). Rarely populated.</td></tr>
+  <tr><td><strong>GLN</strong> <span class="field-id">fldyRLrsO9cZheUck</span></td><td>multilineText</td><td><code>GLN</code></td><td>Global Location Number — a GS1 standard location identifier. Used for e-invoicing (PEPPOL). Rarely populated.</td></tr>
+  <tr><td><strong>GLNDelivery</strong> <span class="field-id">fldyFBTPUMu6B1f6H</span></td><td>multilineText</td><td><code>GLNDelivery</code></td><td>GLN for the delivery address (can differ from billing GLN). Rarely populated.</td></tr>
+  <tr><td><strong>ShowPriceVATIncluded</strong> <span class="field-id">fldu0xPEV4bXX009d</span></td><td>singleLineText</td><td><code>ShowPriceVATIncluded</code></td><td>Whether prices on documents should be shown VAT-included. Stored as string <code>"false"</code> (default for B2B) or <code>"true"</code>.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Primary address</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Notes</th></tr>
+  <tr><td><strong>Address1</strong> <span class="field-id">fldKc1bmBAKVXiN9a</span></td><td>multilineText</td><td>Primary address line.</td></tr>
+  <tr><td><strong>Address2</strong> <span class="field-id">fldnRxOnjH5ZHX7pU</span></td><td>multilineText</td><td>Secondary address line.</td></tr>
+  <tr><td><strong>City</strong> <span class="field-id">fldjckaIkvjxn8de2</span></td><td>multilineText</td><td>City.</td></tr>
+  <tr><td><strong>ZipCode</strong> <span class="field-id">fldW9TNig10Kodw35</span></td><td>multilineText</td><td>Postal code.</td></tr>
+  <tr><td><strong>Country</strong> <span class="field-id">fldilY3uY8vCs3HMA</span></td><td>multilineText</td><td>Country name.</td></tr>
+  <tr><td><strong>CountryCode</strong> <span class="field-id">flduhX0msQUDqeQYh</span></td><td>multilineText</td><td>ISO 2-letter country code.</td></tr>
+  <tr><td><strong>VisitingAddress</strong> <span class="field-id">fldvUfcsIcms4XSKy</span></td><td>multilineText</td><td>Physical visiting address (if different from postal).</td></tr>
+  <tr><td><strong>VisitingCity</strong> <span class="field-id">fldupAsdMF9X4ZZdm</span></td><td>multilineText</td><td>City for visiting address.</td></tr>
+  <tr><td><strong>VisitingCountry</strong> <span class="field-id">fldKT5zYbpTLHX2Xd</span></td><td>singleLineText</td><td>Country for visiting address.</td></tr>
+  <tr><td><strong>VisitingCountryCode</strong> <span class="field-id">fldB0xVoeJxg6MB0g</span></td><td>multilineText</td><td>ISO code for visiting country.</td></tr>
+  <tr><td><strong>VisitingZipCode</strong> <span class="field-id">fldj6SuwMkEg5oR9E</span></td><td>multilineText</td><td>Postal code for visiting address.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Delivery address</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Notes</th></tr>
+  <tr><td><strong>DeliveryName</strong> <span class="field-id">fldlfkr1tMyYmiraH</span></td><td>multilineText</td><td>Name at delivery address (may differ from billing name).</td></tr>
+  <tr><td><strong>DeliveryAddress1</strong> <span class="field-id">fldecCN1tHu2iCA9G</span></td><td>multilineText</td><td>Delivery address line 1.</td></tr>
+  <tr><td><strong>DeliveryAddress2</strong> <span class="field-id">fldXmQMFAGlQfGl91</span></td><td>multilineText</td><td>Delivery address line 2.</td></tr>
+  <tr><td><strong>DeliveryCity</strong> <span class="field-id">fldS8lrTixFZTX3An</span></td><td>multilineText</td><td>Delivery city.</td></tr>
+  <tr><td><strong>DeliveryZipCode</strong> <span class="field-id">fld4dTemcwUXgMOkL</span></td><td>multilineText</td><td>Delivery postal code.</td></tr>
+  <tr><td><strong>DeliveryCountry</strong> <span class="field-id">flduEkmVA7suW7Qb4</span></td><td>multilineText</td><td>Delivery country name.</td></tr>
+  <tr><td><strong>DeliveryCountryCode</strong> <span class="field-id">fldBUFDBYaQyLbhxD</span></td><td>multilineText</td><td>ISO code for delivery country.</td></tr>
+  <tr><td><strong>DeliveryFax</strong> <span class="field-id">fldyxabSWlenVT7KZ</span></td><td>multilineText</td><td>Fax at delivery address. Never populated in practice.</td></tr>
+  <tr><td><strong>DeliveryPhone1</strong> <span class="field-id">fldXM7BwZsfej3Sm8</span></td><td>multilineText</td><td>Phone 1 at delivery address.</td></tr>
+  <tr><td><strong>DeliveryPhone2</strong> <span class="field-id">fldB447uQjcYjBYF8</span></td><td>multilineText</td><td>Phone 2 at delivery address.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Contact details</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Notes</th></tr>
+  <tr><td><strong>Phone1</strong> <span class="field-id">fldou00sEZY4zBHus</span></td><td>multilineText</td><td>Primary phone number.</td></tr>
+  <tr><td><strong>Phone2</strong> <span class="field-id">fldksLkSZ0ltL7A6P</span></td><td>multilineText</td><td>Secondary phone number. Rarely populated.</td></tr>
+  <tr><td><strong>Fax</strong> <span class="field-id">fld8BjC1QrSJqyRQq</span></td><td>multilineText</td><td>Fax number. Never populated in practice.</td></tr>
+  <tr><td><strong>WWW</strong> <span class="field-id">fldJMRWuzNFXaRV2E</span></td><td>multilineText</td><td>Website URL.</td></tr>
+  <tr><td><strong>Email</strong> <span class="field-id">fldwbPkl5IAxZn06K</span></td><td>multilineText</td><td>General contact email.</td></tr>
+  <tr><td><strong>EmailInvoice</strong> <span class="field-id">fldKkUgWCHXTSozUf</span></td><td>multilineText</td><td>Email address for sending invoices. Fortnox uses this when the delivery method is EMAIL for invoices.</td></tr>
+  <tr><td><strong>EmailInvoiceBCC</strong> <span class="field-id">fldn03OrSVAZqpLIh</span></td><td>multilineText</td><td>BCC address for invoice emails.</td></tr>
+  <tr><td><strong>EmailInvoiceCC</strong> <span class="field-id">fldHsHzBQN0ML9Y4e</span></td><td>multilineText</td><td>CC address for invoice emails.</td></tr>
+  <tr><td><strong>EmailOffer</strong> <span class="field-id">fldL6ct3H64nZZT0s</span></td><td>multilineText</td><td>Email for sending offers (quotes). Fortnox uses this when delivery method is EMAIL for offers.</td></tr>
+  <tr><td><strong>EmailOfferBCC</strong> <span class="field-id">fldNZCiPTiFFg8rvD</span></td><td>multilineText</td><td>BCC for offer emails.</td></tr>
+  <tr><td><strong>EmailOfferCC</strong> <span class="field-id">fldZQvmTpLv7lTwyk</span></td><td>multilineText</td><td>CC for offer emails.</td></tr>
+  <tr><td><strong>EmailOrder</strong> <span class="field-id">fldBwbrbOTvCQfhZQ</span></td><td>multilineText</td><td>Email for sending order confirmations.</td></tr>
+  <tr><td><strong>EmailOrderBCC</strong> <span class="field-id">fldpi6hgcu5Qv1ZAk</span></td><td>multilineText</td><td>BCC for order emails.</td></tr>
+  <tr><td><strong>EmailOrderCC</strong> <span class="field-id">fld1YaeGZRvsoOVqM</span></td><td>multilineText</td><td>CC for order emails.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">References &amp; contacts</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Notes</th></tr>
+  <tr><td><strong>OurReference</strong> <span class="field-id">fldGOsvJaLskBjfes</span></td><td>singleLineText</td><td>Default Adgrabber contact name for this customer — the account manager's name. Fortnox pre-fills this on new documents for this customer. Populated from Fortnox and appears as a human name (e.g. "Robin Thyselius").</td></tr>
+  <tr><td><strong>YourReference</strong> <span class="field-id">fldSOWQ4ldhX423S5</span></td><td>multilineText</td><td>The customer's contact person (their reference). Stored in Fortnox and pre-filled on documents. May often be empty.</td></tr>
+  <tr><td><strong>Comments</strong> <span class="field-id">fldXWI4dgxgsJ9LTl</span></td><td>multilineText</td><td>Free-text notes about the customer in Fortnox.</td></tr>
+  <tr><td><strong>InvoiceRemark</strong> <span class="field-id">fld3jdVcR2kBGswTf</span></td><td>multilineText</td><td>A standard remark to pre-print on all invoices for this customer. Configured in Fortnox.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Financial &amp; accounting defaults</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Notes</th></tr>
+  <tr><td><strong>Currency</strong> <span class="field-id">fldPUreJa8wSsyDfW</span></td><td>multilineText</td><td>Default currency for this customer's invoices (ISO code, e.g. <code>SEK</code>). Fortnox pre-fills this on new invoices.</td></tr>
+  <tr><td><strong>PriceList</strong> <span class="field-id">fldpE2N3f6L7iuuii</span></td><td>multilineText</td><td>Fortnox price list code (e.g. <code>"A"</code>). Determines which price list Fortnox applies when creating invoices or orders for this customer.</td></tr>
+  <tr><td><strong>TermsOfPayment</strong> <span class="field-id">fldz3dlVRQdTB1PIM</span></td><td>multilineText</td><td>Payment terms code (e.g. <code>"20"</code> = net 20 days). Fortnox calculates the default DueDate from this when creating an invoice.</td></tr>
+  <tr><td><strong>TermsOfDelivery</strong> <span class="field-id">fldvnavyxh9SSOnEq</span></td><td>multilineText</td><td>Delivery terms (e.g. <code>"EXW"</code>). Printed on order confirmations. Rarely populated.</td></tr>
+  <tr><td><strong>WayOfDelivery</strong> <span class="field-id">fldGLZp4WHbpIMkuL</span></td><td>multilineText</td><td>Delivery method code (e.g. <code>"DIRECT"</code>). Rarely populated.</td></tr>
+  <tr><td><strong>CostCenter</strong> <span class="field-id">fldLA0gehGpcTfOkx</span></td><td>multilineText</td><td>Default Fortnox cost center code for invoices to this customer. Rarely used.</td></tr>
+  <tr><td><strong>Project</strong> <span class="field-id">fldJ6GfS6phu1xU6H</span></td><td>multilineText</td><td>Default Fortnox project code for invoices to this customer. Rarely used.</td></tr>
+  <tr><td><strong>SalesAccount</strong> <span class="field-id">fldK8Bd5JVCWZAmIj</span></td><td>multilineText</td><td>Default Fortnox sales account code (chart of accounts) for this customer's invoices. Determines the accounting entry when invoiced.</td></tr>
+  <tr><td><strong>InvoiceAdministrationFee</strong> <span class="field-id">fldb2Re2w2MPfDoG8</span></td><td>multilineText</td><td>Default administration fee pre-applied on invoices to this customer. Rarely used.</td></tr>
+  <tr><td><strong>InvoiceDiscount</strong> <span class="field-id">fldIP1nIHSAnmP64z</span></td><td>multilineText</td><td>Default discount percentage on invoices to this customer.</td></tr>
+  <tr><td><strong>InvoiceFreight</strong> <span class="field-id">fld6x47e0ko3egN8t</span></td><td>multilineText</td><td>Default freight cost on invoices to this customer. Rarely populated.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Document configuration</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Notes</th></tr>
+  <tr><td><strong>DefaultDeliveryTypes</strong> <span class="field-id">fldX32cPGTCB0h0eb</span></td><td>singleLineText</td><td>JSON object defining how each document type is delivered. Example: <code>{"Invoice":"EMAIL","Order":"PRINT","Offer":"PRINT"}</code>. Fortnox uses this to select the delivery method automatically when producing documents. Stored as a serialized JSON string because Fortnox returns a nested object.</td></tr>
+  <tr><td><strong>DefaultTemplates</strong> <span class="field-id">fldLztZJx1qrOE0UQ</span></td><td>singleLineText</td><td>JSON object defining the default print template for each document type. Example: <code>{"Invoice":"DEFAULTTEMPLATE","Order":"DEFAULTTEMPLATE","Offer":"DEFAULTTEMPLATE","CashInvoice":"DEFAULTTEMPLATE"}</code>. Stored as serialized JSON string.</td></tr>
+</table>
+</div>
+
+<!-- ================================================================ CAT C -->
+<h2 class="crm cat-header">C — CRM Fields (Designed, Never Used) &nbsp;<span class="badge b-crm">Empty in both bases · intended for staff use</span></h2>
+
+<p>These 46 fields were designed as Adgrabber's own customer management layer — not from Fortnox, not written by n8n. They were intended for account managers to track responsibility, financial KPIs, and time worked per customer.</p>
+
+<div class="info-note">
+  <strong>All 46 C-fields are empty in both production and DEV bases.</strong> Verified via live queries on production (<code>appk463NGeDy17j9T</code>). No records exist with non-empty values for Aktiva Kunder, Bransch, Kundansvarig, Omsättning, Totalt TB, or any of the 11 employee time fields. The CRM layer was built into the schema but never populated. Each field is documented below for completeness, but none are in active use.
+</div>
+
+<p>The CRM layer uses Swedish-language field names, reflecting the intended Swedish-speaking Adgrabber team audience.</p>
+
+<div class="sub-section">
+<div class="sub-section-title">Account status &amp; identity</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Purpose</th></tr>
+  <tr><td><strong>Aktiva Kunder</strong> <span class="field-id">flddJRzCCrqDeedT8</span></td><td>checkbox</td><td>Marks whether this is an active customer in Adgrabber's CRM — distinct from <code>Active</code> (which is whether they exist in Fortnox). Used in views and reports to focus on current clients.</td></tr>
+  <tr><td><strong>Fortnox status</strong> <span class="field-id">fld0QMuIG19GOSKtd</span></td><td>singleSelect</td><td>CRM assessment of this customer's standing in Fortnox: <code>Exists</code> / <code>Does not exist</code> / <code>Inaktiv</code> / <code>Aktiv</code>. Manually set by staff to track whether the Fortnox record is current and in good standing.</td></tr>
+  <tr><td><strong>Bransch</strong> <span class="field-id">fldeogv21ah8rEOqA</span></td><td>singleSelect</td><td>Industry sector classification: Kläder (clothing), Fordon (automotive), Handel (retail), Fastigheter (real estate), Hälsa &amp; Skönhet, Teknisk konsult, and more (18 options). Used for segmentation and reporting.</td></tr>
+  <tr><td><strong>Kundstatus</strong> <span class="field-id">fldFN8fnA5MWNsPgD</span></td><td>multilineText</td><td>Free-text notes about the current state of the customer relationship (e.g. "Pausing in Q4", "Expanding to Google"). Maintained by account managers.</td></tr>
+  <tr><td><strong>Kundtyp</strong> <span class="field-id">flds7uFLi4VbzR7nY</span></td><td>multilineText</td><td>Customer type classification (free-text). E.g. distinguishing resellers, direct clients, agencies, etc.</td></tr>
+  <tr><td><strong>Org nr</strong> <span class="field-id">fldJU6H5H9pFmM7h8</span></td><td>singleLineText</td><td>Organisation number — manually maintained alongside the Fortnox-synced <code>OrganisationNumber</code> field. May be used when the Fortnox record doesn't yet exist or for lookup convenience. Potentially redundant with A2 <code>OrganisationNumber</code>.</td></tr>
+  <tr><td><strong>Aktivitet nivå</strong> <span class="field-id">fldm4w5YFBvBT7d5R</span></td><td>singleSelect</td><td>Customer activity level: <code>Löpande</code> (ongoing / regular activity) or <code>Då och då</code> (occasional). Used to classify how actively Adgrabber is working with this customer.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Account responsibility</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Purpose</th></tr>
+  <tr><td><strong>MGMT Ansvarig</strong> <span class="field-id">fldTu0r2noF7Cgigf</span></td><td>singleCollaborator</td><td>Management-level Adgrabber person responsible for this customer account. Linked to an Airtable collaborator (staff member).</td></tr>
+  <tr><td><strong>Kundansvarig</strong> <span class="field-id">fldJy4JD4ZUUalvGZ</span></td><td>singleCollaborator</td><td>Account manager (day-to-day responsible person) for this customer. Linked to an Airtable collaborator.</td></tr>
+  <tr><td><strong>Säljare</strong> <span class="field-id">fldMzD0sZvksXlEEF</span></td><td>singleLineText</td><td>Salesperson who acquired or owns this customer account. Stored as free text (not a collaborator link).</td></tr>
+  <tr><td><strong>Team</strong> <span class="field-id">fldZMs3nuFlq72JJP</span></td><td>multipleCollaborators</td><td>Full team of Adgrabber staff working on this customer. Multiple collaborators can be linked.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Customer contact info (Adgrabber-maintained)</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Purpose</th></tr>
+  <tr><td><strong>Cusomer contactperson</strong> <span class="field-id">fldMAJz100BvCwzh2</span></td><td>singleLineText</td><td>Name of the customer's primary contact person at their company. Note: field name contains a typo ("Cusomer" instead of "Customer"). This is the person Adgrabber deals with at the client.</td></tr>
+  <tr><td><strong>Customer Contact</strong> <span class="field-id">fldljldRESpJHCbXB</span></td><td>singleLineText</td><td>A second customer contact field — possibly for a different contact role or a duplicate of the above. Both fields exist in parallel.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Financial performance KPIs</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Purpose</th></tr>
+  <tr><td><strong>Omsättning</strong> <span class="field-id">flde2G6QOiXaFtbub</span></td><td>currency (SEK)</td><td>Total revenue (omsättning) from this customer. Manually entered or computed externally and synced.</td></tr>
+  <tr><td><strong>Rörelsekostnader</strong> <span class="field-id">fldlaLU6fbHDtxI5S</span></td><td>currency (SEK)</td><td>Operating costs (rörelsekostnader) attributable to this customer.</td></tr>
+  <tr><td><strong>Omsättning per månad</strong> <span class="field-id">fldCrSPpvNt8VFjcu</span></td><td>currency (SEK)</td><td>Average monthly revenue from this customer (Omsättning ÷ Period).</td></tr>
+  <tr><td><strong>Rörelsekostnader per mån</strong> <span class="field-id">fldUU5i637Q60aqFq</span></td><td>currency (SEK)</td><td>Average monthly operating costs for this customer.</td></tr>
+  <tr><td><strong>Totalt per månad</strong> <span class="field-id">fldP5Gh6B39RniHhw</span></td><td>number</td><td>Monthly total (revenue or margin). Purpose overlaps with Omsättning per månad — likely measures a different aggregate.</td></tr>
+  <tr><td><strong>Totalt fakturabelopp</strong> <span class="field-id">fldX2Y15f8P1d8tl7</span></td><td>number</td><td>Total invoiced amount to this customer across all time (in SEK).</td></tr>
+  <tr><td><strong>Kundens kampanjbudget</strong> <span class="field-id">fldT2tnPkiBGCPysL</span></td><td>multilineText</td><td>The customer's overall campaign budget (free-text, may include multiple years or product types).</td></tr>
+  <tr><td><strong>Kampanjbudget per mån</strong> <span class="field-id">fldbkQEEcHQ7PSqqL</span></td><td>multilineText</td><td>Campaign budget per month breakdown.</td></tr>
+  <tr><td><strong>Totalt TB</strong> <span class="field-id">fldanjbQt9HsAAdJV</span></td><td>multilineText</td><td>Total täckningsbidrag (contribution margin) from this customer.</td></tr>
+  <tr><td><strong>Totalt TG</strong> <span class="field-id">fldVVdPwVFlfyACEI</span></td><td>multilineText</td><td>Total täckningsgrad (contribution margin percentage) from this customer.</td></tr>
+  <tr><td><strong>TB per månad</strong> <span class="field-id">fldvtimmaC1M4drn9</span></td><td>multilineText</td><td>Contribution margin per month.</td></tr>
+  <tr><td><strong>Kundindex</strong> <span class="field-id">fld6BZePrFIgteSsZ</span></td><td>multilineText</td><td>A composite customer index or score. Purpose not fully standardized.</td></tr>
+  <tr><td><strong>Period</strong> <span class="field-id">fldxatIOTNRL15UTo</span></td><td>number</td><td>The number of months in the active period used to calculate per-month averages.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Dates &amp; history</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Purpose</th></tr>
+  <tr><td><strong>Första köp</strong> <span class="field-id">fld6jzfrW8466gngS</span></td><td>date</td><td>Date of this customer's first purchase from Adgrabber. Manually entered.</td></tr>
+  <tr><td><strong>Sista köp</strong> <span class="field-id">fldlEkVdzV319w7Ol</span></td><td>date</td><td>Date of this customer's most recent purchase. Manually updated.</td></tr>
+  <tr><td><strong>Latest Invoice Date</strong> <span class="field-id">fldGxtYmBU70WJs0E</span></td><td>date</td><td>The latest invoice date for this customer, stored as a proper date type. May be updated by n8n or manually set — distinct from the rollup approach in other tables.</td></tr>
+  <tr><td><strong>Airtable Created Time</strong> <span class="field-id">fldS0LnLXA4ARvbtr</span></td><td>dateTime</td><td>Timestamp recording when this record was first created in Airtable. This is a <strong>regular dateTime field</strong> (not the system <code>createdTime</code> type) — likely written by n8n on first import so it can be controlled, not auto-managed by Airtable.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Other operational</div>
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Purpose</th></tr>
+  <tr><td><strong>Logo</strong> <span class="field-id">fldamXbi0MyugPH33</span></td><td>multipleAttachments</td><td>Customer's company logo. Used in presentations, proposals, or client-facing reports.</td></tr>
+  <tr><td><strong>Remarks</strong> <span class="field-id">flde4A0JfWGpL3O56</span></td><td>multilineText</td><td>General remarks about this customer. Catch-all notes field used by account managers.</td></tr>
+  <tr><td><strong>Agreement Info</strong> <span class="field-id">fldnnjUxC8rEsly66</span></td><td>multilineText</td><td>Contract or agreement details for this customer — terms, duration, special conditions.</td></tr>
+  <tr><td><strong>Budget</strong> <span class="field-id">fldomDd3wl6bzKsWD</span></td><td>singleLineText</td><td>Budget field with unclear specific purpose — may be a free-text budget note or a manually entered total. Not the same as Kundens kampanjbudget.</td></tr>
+  <tr><td><strong>Updated By Automation</strong> <span class="field-id">fldoJMA0HJMAtrCRz</span></td><td>singleLineText</td><td>Written by n8n to mark the last automation that touched this record — audit trail for sync and automation activity.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Time tracking per employee</div>
+<p>These 11 fields record hours worked by specific named Adgrabber employees on this customer account. Each is a <code>number</code> field named after the employee. This design embeds staff structure directly in the schema — each time the team changes, a new field must be added and old ones become stale.</p>
+<table>
+  <tr><th>Field name</th><th>Field ID</th></tr>
+  <tr><td><strong>Malin tid</strong></td><td><span class="field-id">fldcq33NO1Tcej9oK</span></td></tr>
+  <tr><td><strong>Simon tid</strong></td><td><span class="field-id">fldQFziaLRIf6Ccjr</span></td></tr>
+  <tr><td><strong>Robin tid</strong></td><td><span class="field-id">fldPrsVi4L3dEvldD</span></td></tr>
+  <tr><td><strong>Sizar tid</strong></td><td><span class="field-id">fldz1JxEgStABglTo</span></td></tr>
+  <tr><td><strong>Kristian tid</strong></td><td><span class="field-id">fldVvJffVihXP8tGw</span></td></tr>
+  <tr><td><strong>Mikaela tid</strong></td><td><span class="field-id">fld0DQ9MCLobvamgV</span></td></tr>
+  <tr><td><strong>Elmedin tid</strong></td><td><span class="field-id">fldxAcmD800hnkhHL</span></td></tr>
+  <tr><td><strong>Katja tid</strong></td><td><span class="field-id">fldSUYs8IFUQk2bCU</span></td></tr>
+  <tr><td><strong>Fanny tid</strong></td><td><span class="field-id">fldRBLcNiy2NaceJq</span></td></tr>
+  <tr><td><strong>Sarah tid</strong></td><td><span class="field-id">fldHc0Ye36DkcYzyU</span></td></tr>
+  <tr><td><strong>Ida</strong></td><td><span class="field-id">fldmeiTiwGfMKmivk</span></td></tr>
+</table>
+</div>
+
+<!-- ================================================================ CAT F -->
+<h2 class="rollup cat-header">F — Rollup Fields &nbsp;<span class="badge b-rollup">Aggregated from FortnoxInvoices</span></h2>
+
+<table>
+  <tr><th>Field name</th><th>Source</th><th>Purpose</th></tr>
+  <tr>
+    <td><strong>Balance (from FortnoxInvoices)</strong> <span class="field-id">fld5M6jV0JwgxmzLR</span></td>
+    <td>Rollup of <code>Balance</code> (text) from <code>FortnoxInvoices</code> link</td>
+    <td>Aggregates the remaining unpaid balance across all linked Fortnox invoices for this customer. The source Balance field in FortnoxInvoice is a text string (Fortnox stores amounts as text), so the rollup result is also text. Shows which invoices still have outstanding amounts owed by this customer.</td>
+  </tr>
+  <tr>
+    <td><strong>Unpaid Invoices</strong> <span class="field-id">fldUZ0pY4TqokNVlZ</span></td>
+    <td>Rollup of <code>Unpaid</code> field from <code>FortnoxInvoices</code> link</td>
+    <td>Aggregates the unpaid invoice indicator from linked FortnoxInvoice records. Used to get a quick view of how many (or which) invoices for this customer are still outstanding.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT G -->
+<h2 class="link cat-header">G — Link Fields &nbsp;<span class="badge b-link">Connections to other tables</span></h2>
+
+<table>
+  <tr><th>Field name</th><th>Linked table</th><th>Direction</th><th>Purpose</th></tr>
+  <tr>
+    <td><strong>FortnoxOrders</strong> <span class="field-id">fld7xKsm70PtgkfuH</span></td>
+    <td><code>tblhNdAzxbWeNgEgW</code> (FortnoxOrder)</td>
+    <td>1 customer → many orders</td>
+    <td><strong>Primary order relationship.</strong> Links this customer to all their orders in FortnoxOrder. n8n writes this link when upserting orders — it looks up the customer by CustomerNumber and creates the link. Central to the customer revenue view.</td>
+  </tr>
+  <tr>
+    <td><strong>FortnoxInvoices</strong> <span class="field-id">fldjitfu9WBhjl6Wp</span></td>
+    <td><code>tblOLaZyIaVJP6h6V</code> (FortnoxInvoice)</td>
+    <td>1 customer → many invoices</td>
+    <td>Links this customer to all their invoices in the FortnoxInvoice table. Used by the F-category rollups above (<code>Balance</code> and <code>Unpaid Invoices</code>). Provides a direct view of all Fortnox invoices issued to this customer.</td>
+  </tr>
+  <tr>
+    <td><strong>Kunder</strong> <span class="field-id">fldB7Ga9wzMgBXGhj</span></td>
+    <td><code>tbl8RNJ9wRkv3rg7A</code></td>
+    <td>1 Fortnox customer → 1 (or more) Kunder records</td>
+    <td>Links this Fortnox customer record to the corresponding record in the Kunder (clients) table — Adgrabber's own client management table. This is the bridge between the Fortnox identity and the Adgrabber CRM identity. Not all FortnoxCustomer records have a Kunder link (e.g. some customers may exist in Fortnox without being active Adgrabber CRM clients).</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT H -->
+<h2 class="system cat-header">H — System Fields &nbsp;<span class="badge b-system">Auto-managed by Airtable</span></h2>
+
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Notes</th></tr>
+  <tr>
+    <td><strong>Last Modified Time</strong> <span class="field-id">fldulguW8Lu73NQvM</span></td>
+    <td>lastModifiedTime</td>
+    <td>Timestamp of the most recent change to any field in this record. Reflects both n8n sync writes and manual Airtable edits by staff.</td>
+  </tr>
+  <tr>
+    <td><strong>Created Time</strong> <span class="field-id">fld8Ru9kJcOFelOQM</span></td>
+    <td>createdTime</td>
+    <td>Timestamp when this Airtable record was first created. Note: a separate field <code>Airtable Created Time</code> (Category C) also exists as a regular dateTime field — that one is likely written by n8n on first import to make the creation time controllable.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT J -->
+<h2 class="dev cat-header">J — Dev / Legacy / Unused Fields &nbsp;<span class="badge b-dev">Candidates for removal</span></h2>
+
+<p>These 31 fields are never populated in any records inspected (confirmed via live queries). They fall into three distinct groups based on their origin.</p>
+
+<div class="sub-section">
+<div class="sub-section-title">Group 1: Duplicate / redundant Fortnox ID and URL fields</div>
+<p>These appear to be earlier development attempts at storing Fortnox identifiers and URLs before the schema settled on using <code>@url</code> (A1) as the canonical key.</p>
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Why unused</th></tr>
+  <tr><td><strong>Fortnox Customer ID</strong> <span class="field-id">fldFOMOXxwQ3lp7ao</span></td><td>number</td><td>Always empty. Purpose unclear relative to <code>CustomerNumber</code> (A1). May have been intended to store a Fortnox internal database ID distinct from the display CustomerNumber, or simply a dev duplicate.</td></tr>
+  <tr><td><strong>Fortnox Internal Customer ID</strong> <span class="field-id">fldlfGZE7H1fNADhH</span></td><td>number</td><td>Always empty. Similar to above. Never populated.</td></tr>
+  <tr><td><strong>Url To Fortnox</strong> <span class="field-id">fldTr1eo200mjt425</span></td><td>multilineText</td><td>Always empty. Likely intended to store the Fortnox web UI URL (the browser link to view this customer in the Fortnox app) vs. <code>@url</code> which is the API URL. Never implemented.</td></tr>
+  <tr><td><strong>Fortnox API URL</strong> <span class="field-id">fldEGxYMWvbah6drF</span></td><td>url</td><td>Always empty. A proper <code>url</code>-typed field, likely created as a "fixed" version of the <code>@url</code> singleLineText field. Redundant with <code>@url</code>.</td></tr>
+  <tr><td><strong>DocumentNumber</strong> <span class="field-id">fldWuAE4X60CRpuUI</span></td><td>singleLineText</td><td>Always empty. <code>DocumentNumber</code> is not a valid field in the Fortnox Customer API object — it belongs to invoices and orders. Either a mistaken carry-over from another table or a dev field.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Group 2: The "Fortnox Invoice Download" legacy series</div>
+<p>These fields are remnants of an early development approach where n8n would pull invoice summary data from Fortnox and store it directly as raw text or numbers in this table — before the proper <code>FortnoxInvoice</code> table and the <code>FortnoxInvoices</code> link field existed. They are all empty now and superseded by the <code>FortnoxInvoices</code> link and its rollups.</p>
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><strong>Fortnox Invoice Download</strong> <span class="field-id">fldTrGUuiFJyNSJa2</span></td><td>singleLineText</td><td>Raw invoice download slot 1. Always empty.</td></tr>
+  <tr><td><strong>Fortnox Invoice Download 2</strong> <span class="field-id">fldj9MBptKh6r5AUg</span></td><td>singleLineText</td><td>Raw invoice download slot 2. Always empty.</td></tr>
+  <tr><td><strong>Fortnox Invoice Download 3</strong> <span class="field-id">fldcy73TksIl9GsdX</span></td><td>singleLineText</td><td>Raw invoice download slot 3. Always empty.</td></tr>
+  <tr><td><strong>Fortnox Invoice Download 4</strong> <span class="field-id">fldR6jPWhOyLsOEiw</span></td><td>singleLineText</td><td>Raw invoice download slot 4. Always empty.</td></tr>
+  <tr><td><strong>Fortnox Invoice Download 5</strong> <span class="field-id">fldaSVMOhOTyBpLi0</span></td><td>singleLineText</td><td>Raw invoice download slot 5. Always empty.</td></tr>
+  <tr><td><strong>DueDate (from Fortnox Invoice Download 5)</strong> <span class="field-id">fldakMbviXDciB9Q8</span></td><td>singleLineText</td><td>Derived from slot 5. Always empty.</td></tr>
+  <tr><td><strong>Net (Fortnox Invoice Download)</strong> <span class="field-id">fldx4uUDLph2M5wCa</span></td><td>number</td><td>Net invoice amount, legacy cached value. Always empty.</td></tr>
+  <tr><td><strong>Total Invoice</strong> <span class="field-id">fld9HRzoNEJyIa6lk</span></td><td>number</td><td>Total invoice amount, cached number. Superseded by rollup. Always empty.</td></tr>
+  <tr><td><strong>Invoices Unpaid (Balance)</strong> <span class="field-id">fld0ihBnjzDBCkYZ6</span></td><td>number</td><td>Unpaid balance as a number, cached. Superseded by the <code>Balance (from FortnoxInvoices)</code> rollup. Always empty.</td></tr>
+  <tr><td><strong>Total VAT</strong> <span class="field-id">fld8RLMxpszLMoFL4</span></td><td>number</td><td>Cached total VAT amount. Superseded by linked invoices. Always empty.</td></tr>
+  <tr><td><strong>Total Amount Paid</strong> <span class="field-id">fldpqciyz9iAi85pC</span></td><td>number</td><td>Cached total paid amount. Always empty.</td></tr>
+  <tr><td><strong>No Of Orders</strong> <span class="field-id">fldcOUQ71mNQWMAHZ</span></td><td>number</td><td>Cached count of orders, never populated. Superseded by the <code>FortnoxOrders</code> link.</td></tr>
+  <tr><td><strong>InvoiceReference from Fortnox Order) copy</strong> <span class="field-id">fldZaqZulSFzMafO6</span></td><td>singleLineText</td><td>A copy/temp field for invoice reference from an order. Name contains a bracket typo. Never populated.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">Group 3: Miscellaneous dev / copy / placeholder fields</div>
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><strong>Kampanjer</strong> <span class="field-id">fldGChUXLtO6YPMnT</span></td><td>singleLineText</td><td>Always empty. Was probably intended to list or link to campaigns for this customer, but was never implemented as a link field.</td></tr>
+  <tr><td><strong>sys.users</strong> <span class="field-id">fldUrvNcXtOFBT5ZO</span></td><td>singleLineText</td><td>Always empty. Placeholder — likely intended as a link to a sys.users table for user management, never built.</td></tr>
+  <tr><td><strong>Fortnox Order</strong> <span class="field-id">fldpSJMRVudrjcqeI</span></td><td>singleLineText</td><td>Always empty. A text field competing with the <code>FortnoxOrders</code> link (Category G). Dev placeholder never replaced.</td></tr>
+  <tr><td><strong>RecordID</strong> <span class="field-id">fld4JAl4jimkluIHV</span></td><td>multilineText</td><td>Stores the Airtable record ID of this record as a text string. Used during development for cross-referencing or debugging. Not needed in production.</td></tr>
+  <tr><td><strong>Could Be Duplicates</strong> <span class="field-id">fldD3SIlO8FGLf7nf</span></td><td>singleSelect (<code>Yes</code> / <code>Need to control</code>)</td><td>Data quality flag for identifying potential duplicate customer records. Used during the initial Fortnox data import to flag records that looked like duplicates. Not part of the ongoing workflow.</td></tr>
+  <tr><td><strong>Comment At Duplicate</strong> <span class="field-id">fldWKL5V5Oy9jmAMZ</span></td><td>singleLineText</td><td>Notes about why a record was flagged as a potential duplicate. Companion to <code>Could Be Duplicates</code>.</td></tr>
+  <tr><td><strong>Ek. utfall. Arbetstid h Rollup (from Mediaköp 2) Rollup (from Fortnox Order)</strong> <span class="field-id">fldxfuaSlFgsOpr9d</span></td><td>number</td><td>A cross-table rollup result stored as a plain number — not a rollup field type. The value was computed elsewhere and cached here. Name suggests it tracked actual billable hours from media plans via orders. Never populated.</td></tr>
+  <tr><td><strong>Order Drafts</strong> <span class="field-id">fldlkLwZ0GiqWuzk6</span></td><td>singleLineText</td><td>Always empty. Purpose unclear — likely a dev placeholder for a draft order tracking mechanism.</td></tr>
+  <tr><td><strong>OrderDrafts Total</strong> <span class="field-id">fldkPz1XC9rAviG6p</span></td><td>currency (SEK)</td><td>Always empty. Would aggregate the total value of draft orders. Never implemented.</td></tr>
+  <tr><td><strong>OrderDrafts Total To Pay</strong> <span class="field-id">fldBJkk89WdZjB4nk</span></td><td>currency (SEK)</td><td>Always empty. Companion to OrderDrafts Total. Never implemented.</td></tr>
+  <tr><td><strong>Orders copy</strong> <span class="field-id">fldD0ELNJsO5uJu7i</span></td><td>singleLineText</td><td>Always empty. A copy/temp field related to orders. Dev artifact.</td></tr>
+  <tr><td><strong>Main Customers</strong> <span class="field-id">fldbnrgvyUWqYKPHM</span></td><td>singleLineText</td><td>Always empty. Unclear purpose — possibly intended to flag "strategic" customers or link to a parent customer group.</td></tr>
+  <tr><td><strong>FortnoxOrder copy</strong> <span class="field-id">fldNlE8fu7OEMWxVl</span></td><td>singleLineText</td><td>Always empty. A second copy field for FortnoxOrder. Dev artifact.</td></tr>
+</table>
+</div>
+
+</body>
+</html>
