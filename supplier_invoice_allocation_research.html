@@ -7,8 +7,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f2f5; color: #1a1a2e; line-height: 1.6; }
 
-  /* ── Layout ── */
-  .page { max-width: 1000px; margin: 0 auto; padding: 32px 24px 80px; }
+  .page { max-width: 1050px; margin: 0 auto; padding: 32px 24px 80px; }
   .header { margin-bottom: 40px; }
   .header h1 { font-size: 1.75rem; font-weight: 700; }
   .header .meta { color: #888; font-size: 0.85rem; margin-top: 6px; }
@@ -22,18 +21,20 @@
   }
   section > h2::after { content: ''; flex: 1; height: 1px; background: #ddd; }
 
-  /* ── Cards ── */
   .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); padding: 24px 28px; margin-bottom: 16px; }
   .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-  /* ── Alert boxes ── */
   .alert { border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
   .alert-verdict { background: #1a1a2e; color: #fff; }
-  .alert-verdict p { color: #ccc; margin-top: 8px; }
-  .alert h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
-  .alert-verdict h3 { color: #fff; font-size: 1.1rem; }
+  .alert-verdict p { color: #ccc; margin-top: 8px; font-size: 0.9rem; }
+  .alert-verdict h3 { color: #fff; font-size: 1.1rem; font-weight: 700; }
+  .alert-new { background: #1b5e20; color: #fff; }
+  .alert-new p { color: #c8e6c9; margin-top: 8px; font-size: 0.9rem; }
+  .alert-new h3 { color: #fff; font-size: 1.05rem; font-weight: 700; }
+  .alert-warn { background: #fff3cd; border: 1px solid #ffc107; }
+  .alert-warn h3 { color: #856404; font-size: 1rem; font-weight: 700; }
+  .alert-warn p { color: #664d03; margin-top: 6px; font-size: 0.875rem; }
 
-  /* ── Tags ── */
   .tag { display: inline-block; border-radius: 4px; padding: 2px 9px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; }
   .tag-green  { background: #d4edda; color: #155724; }
   .tag-red    { background: #f8d7da; color: #721c24; }
@@ -41,16 +42,17 @@
   .tag-blue   { background: #cce5ff; color: #004085; }
   .tag-purple { background: #e2d9f3; color: #4a1c74; }
   .tag-grey   { background: #e9ecef; color: #495057; }
+  .tag-dark   { background: #1a1a2e; color: #fff; }
 
-  /* ── Tables ── */
   table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
   th { background: #f8f9fa; text-align: left; padding: 9px 12px; font-weight: 600; border-bottom: 2px solid #dee2e6; color: #555; }
   td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
   tr:last-child td { border-bottom: none; }
   tr.highlight-row td { background: #fffbea; }
+  tr.success-row td { background: #f0fff4; }
+  tr.fail-row td { background: #fff5f5; }
   tr.dim-row td { color: #aaa; }
 
-  /* ── Flow diagram ── */
   .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 20px 0; }
   .flow-box {
     background: #fff; border: 1.5px solid #ccc; border-radius: 8px;
@@ -62,9 +64,9 @@
   .flow-box.step-key    { border-color: #f5a623; background: #fffbea; }
   .flow-box.step-target { border-color: #4caf50; background: #e8f5e9; }
   .flow-box.step-dead   { border-color: #e53935; background: #fce8e8; opacity: 0.8; }
+  .flow-box.step-new    { border-color: #7b1fa2; background: #f3e5f5; }
   .flow-arrow { font-size: 1.4rem; color: #aaa; padding: 0 6px; flex-shrink: 0; }
 
-  /* ── Example ── */
   .example-wrap { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 10px; padding: 20px; margin-top: 8px; }
   .example-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 14px; }
   .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
@@ -79,33 +81,37 @@
   .mapping-result { margin-top: 16px; }
   .mapping-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed #ddd; font-size: 0.85rem; flex-wrap: wrap; }
   .mapping-row:last-child { border-bottom: none; }
-  .mapping-proj { font-family: monospace; font-weight: 700; color: #0d47a1; min-width: 50px; }
+  .mapping-proj { font-family: monospace; font-weight: 700; color: #0d47a1; min-width: 60px; }
   .mapping-arrow { color: #aaa; flex-shrink: 0; }
   .mapping-name { color: #555; font-style: italic; min-width: 180px; }
   .mapping-airtable { color: #1b5e20; font-weight: 600; }
   .mapping-amount { margin-left: auto; font-family: monospace; font-weight: 700; color: #333; }
+  .mapping-fail { color: #c62828; font-style: italic; }
 
-  /* ── Status indicator ── */
+  .case-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .case-badge { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+  .case-badge-ok { background: #1b5e20; color: #fff; }
+  .case-badge-fail { background: #b71c1c; color: #fff; }
+
+  .verdict-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 6px 14px; font-weight: 700; font-size: 0.85rem; }
+  .verdict-ok   { background: #d4edda; color: #155724; }
+  .verdict-fail { background: #f8d7da; color: #721c24; }
+
   .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .status-item { background: #fff; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #eee; }
   .status-icon { font-size: 1.8rem; display: block; margin-bottom: 6px; }
   .status-label { font-size: 0.78rem; color: #888; }
   .status-value { font-size: 0.95rem; font-weight: 700; }
 
-  /* ── Repair section ── */
   .step-list { counter-reset: steps; }
   .step-item { counter-increment: steps; display: flex; gap: 16px; margin-bottom: 20px; }
-  .step-num {
-    background: #1a1a2e; color: #fff; border-radius: 50%;
-    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-    font-size: 0.85rem; font-weight: 700; flex-shrink: 0; margin-top: 2px;
-  }
+  .step-num { background: #1a1a2e; color: #fff; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .step-num-new { background: #7b1fa2; }
   .step-body h4 { font-size: 0.95rem; margin-bottom: 4px; }
   .step-body p  { font-size: 0.875rem; color: #555; }
-  .step-body code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 0.82rem; }
 
-  /* ── Misc ── */
   .note { background: #fffbea; border-left: 3px solid #f5a623; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 0.875rem; margin: 14px 0; }
+  .note-new { background: #f3e5f5; border-left: 3px solid #7b1fa2; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 0.875rem; margin: 14px 0; }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   code { font-family: Consolas, monospace; font-size: 0.85em; background: #f0f0f0; padding: 1px 5px; border-radius: 3px; }
   hr { border: none; border-top: 1px solid #e0e0e0; margin: 40px 0; }
@@ -125,573 +131,607 @@
 
   <!-- HEADER -->
   <div class="header">
-    <h1>Supplier Invoice Allocation — Full Research</h1>
+    <h1>Supplier Invoice Allocation — Research & Proposed Automation</h1>
     <p class="meta">
-      Adgrabber · Base <code>appk463NGeDy17j9T</code> ·
-      FortnoxSupplierInvoice <code>tblYERBn2P6wrHEzl</code> ·
-      sys.fakturamapping <code>tblRXZqzj79Vd3iC6</code> · 2026-03-25
+      Adgrabber &middot; Base <code>appk463NGeDy17j9T</code> &middot;
+      FortnoxSupplierInvoice <code>tblYERBn2P6wrHEzl</code> &middot;
+      sys.fakturamapping <code>tblRXZqzj79Vd3iC6</code> &middot;
+      Media/Prod New <code>tblTf9sNLy464khq5</code> &middot; 2026-03-26
     </p>
   </div>
 
-  <!-- VERDICT -->
+  <!-- TOP VERDICT -->
   <div class="alert alert-verdict">
-    <h3>Key Conclusion</h3>
+    <h3>Summary</h3>
     <p>
-      Fortnox supplier invoices <strong>can and do carry client/campaign information</strong> — via Fortnox Project codes
-      assigned by Adgrabber's bookkeeper when processing invoices inside Fortnox.
-      This allocation mechanism was working in the past and produced per-campaign row breakdowns on supplier invoices.
-      It appears to have stopped being used for recent invoices. <strong>It can be reactivated</strong>, and combined with
-      an n8n automation, could eliminate most manual work in sys.fakturamapping.
+      The goal is to automatically create <strong>sys.fakturamapping</strong> records linking supplier invoices
+      to specific client campaign line items (Media/Prod New) — currently done 100% manually.
+      Research shows a previous partial attempt using Fortnox Project codes was architecturally insufficient:
+      project codes identified clients/orders but not specific campaigns, and the bookkeeper stopped tagging them.
+      A revised strategy — where each Fortnox Project maps directly to one Media/Prod New record — removes
+      all ambiguity and enables full automation with a one-time setup effort.
     </p>
   </div>
 
   <!-- ═══════════════════════════════════════════════════ -->
   <section>
-    <h2>1 — What are Fortnox Projects?</h2>
+    <h2>1 — The Problem: Manual sys.fakturamapping</h2>
     <div class="card">
       <p>
-        <strong>Fortnox Projects</strong> (<em>Pr</em>) are an accounting dimension built into Fortnox.
-        Each project has a <strong>project number</strong> (free-form, up to 20 characters) and a <strong>name</strong>.
-        You create them once in the Fortnox register, then tag individual accounting rows with that code
-        to track where money is going.
+        When Adgrabber receives a supplier invoice (e.g. from Google, Bidtheatre, Hemnet), the cost must be
+        allocated to the specific client campaigns the spend belongs to. This allocation is stored in
+        TABLE <strong>sys.fakturamapping</strong>: one record per invoice-per-campaign-line, linking
+        the FortnoxSupplierInvoice to the Media/Prod New record (campaign line item) and recording the amount.
       </p>
-      <p style="margin-top:12px;">Projects can be assigned to three document types in Fortnox:</p>
-      <table style="margin-top:8px;">
-        <tr>
-          <th>Document type</th>
-          <th>How you assign a project</th>
-          <th>Effect</th>
-        </tr>
-        <tr>
-          <td>Customer invoice / order</td>
-          <td>PR column on each line item, or at document level</td>
-          <td>Revenue is tracked against the project</td>
-        </tr>
-        <tr class="highlight-row">
-          <td><strong>Supplier invoice</strong></td>
-          <td><strong>PR column on each accounting row</strong>, or globally under "Ytterligare information"</td>
-          <td><strong>Cost is tracked against the project</strong></td>
-        </tr>
-        <tr>
-          <td>Journal entry (verifikat)</td>
-          <td>PR column on each row</td>
-          <td>Any debit/credit tracked per project</td>
-        </tr>
-      </table>
-      <div class="note" style="margin-top:16px;">
-        <strong>Important for Adgrabber:</strong> When a bookkeeper processes a supplier invoice in Fortnox,
-        they can add a project code to each row — one row per campaign. This is exactly what was happening
-        with older invoices (project codes 137–520 range). The project name in Fortnox would say something like
-        "Fritidscenter kampanj Q1" or the client name, giving a human-readable meaning to the number.
+      <p>
+        A single consolidated supplier invoice may cover costs for many clients and many campaigns at once.
+        Today, a staff member manually creates one sys.fakturamapping record per allocation split.
+        For a Bidtheatre invoice covering 24 campaigns, that is 24 manual records.
+      </p>
+      <div class="flow" style="margin-top:20px;">
+        <div class="flow-box step-active"><strong>Supplier invoice</strong><small>arrives in Fortnox</small></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-box step-active"><strong>n8n syncs</strong><small>FortnoxSupplierInvoice to Airtable</small></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-box step-dead"><strong>MANUAL STEP</strong><small>staff creates sys.fakturamapping records</small></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-box step-target"><strong>P&amp;L visible</strong><small>cost matched to campaign</small></div>
+      </div>
+      <div class="note" style="margin-top: 16px;">
+        The target is to replace the manual step with an n8n automation that reads the supplier invoice
+        and automatically creates the correct sys.fakturamapping records with no human input.
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════════ -->
   <section>
-    <h2>2 — Two sources of records in Airtable</h2>
+    <h2>2 — Two Invoice Sources: Only One Can Be Automated</h2>
     <div class="card-grid">
       <div class="card" style="border-top: 3px solid #4caf50;">
-        <strong style="font-size:0.95rem;">Source A — Fortnox API sync (n8n)</strong>
+        <strong style="font-size:0.95rem;">Source A — Fortnox-synced invoices</strong>
         <ul style="margin-top:10px;">
-          <li><code>@url</code> = <code>api.fortnox.se/3/supplierinvoices/…</code></li>
-          <li><code>Created By</code> = <em>integration adgrabber</em></li>
+          <li>Created in Fortnox, synced to Airtable by n8n</li>
+          <li><code>@url</code> = <code>api.fortnox.se/3/supplierinvoices/&hellip;</code></li>
           <li><code>SupplierInvoiceRows</code> JSON blob present</li>
-          <li>Invoice created by supplier in their system, imported into Fortnox</li>
-          <li>Bookkeeper in Fortnox assigns project codes per row → synced to Airtable</li>
+          <li>FortnoxSupplier link populated</li>
+          <li>Examples: Google, Bidtheatre, Hemnet, Reklambossen, Westcoast Digital</li>
         </ul>
+        <div style="margin-top:10px;"><span class="tag tag-green">Automation target</span></div>
       </div>
-      <div class="card" style="border-top: 3px solid #2196f3;">
-        <strong style="font-size:0.95rem;">Source B — Manual / Platform Import Files</strong>
+      <div class="card" style="border-top: 3px solid #9e9e9e;">
+        <strong style="font-size:0.95rem;">Source B — Platform import invoices</strong>
         <ul style="margin-top:10px;">
+          <li>Created manually in Airtable, one per client per platform per month</li>
           <li>No <code>@url</code>, no <code>SupplierInvoiceRows</code> blob</li>
-          <li><code>Created By</code> = human user name</li>
-          <li>Created directly in Airtable or imported from Platform Import Files table</li>
-          <li>No project codes available — allocation always 100% manual</li>
+          <li>FortnoxSupplier link empty; Platform Code field populated instead</li>
+          <li>Examples: Facebook, LinkedIn, TikTok, Snapchat splits</li>
         </ul>
+        <div style="margin-top:10px;"><span class="tag tag-grey">Always manual — out of scope</span></div>
       </div>
     </div>
-    <p style="font-size:0.875rem; color:#555; margin-top:4px;">
-      The project-code mechanism described in this document applies only to <strong>Source A</strong> records.
-      Source B records always require full manual allocation.
+    <p style="font-size:0.875rem; color:#555;">
+      All analysis below applies to <strong>Source A</strong> only.
     </p>
   </section>
 
   <!-- ═══════════════════════════════════════════════════ -->
   <section>
-    <h2>3 — What we found in the data</h2>
+    <h2>3 — What is in a Supplier Invoice Row? (SupplierInvoiceRows JSON)</h2>
     <div class="card">
-      <p>Analysis of 11 Fortnox-synced FortnoxSupplierInvoice records produced the following:</p>
-
-      <div class="status-grid" style="margin: 20px 0;">
-        <div class="status-item">
-          <span class="status-icon">📋</span>
-          <div class="status-value">11</div>
-          <div class="status-label">Fortnox-sourced records with<br>SupplierInvoiceRows blob</div>
-        </div>
-        <div class="status-item">
-          <span class="status-icon">🏷️</span>
-          <div class="status-value">37</div>
-          <div class="status-label">Distinct Fortnox Project codes<br>found across all rows</div>
-        </div>
-        <div class="status-item">
-          <span class="status-icon">📊</span>
-          <div class="status-value">137–517</div>
-          <div class="status-label">Range of project numbers<br>(+ 1 alphanumeric: K999)</div>
-        </div>
-      </div>
-
-      <table>
-        <tr>
-          <th>Supplier</th>
-          <th>Project codes on invoice</th>
-          <th>What this means</th>
-        </tr>
-        <tr>
-          <td>Hemnet AB</td>
-          <td>
-            <span class="tag tag-blue">418</span>
-            <span class="tag tag-blue">419</span>
-            <span class="tag tag-blue">420</span>
-          </td>
-          <td>3 separate campaigns billed on one invoice</td>
-        </tr>
-        <tr>
-          <td>Hemnet AB <em>(second invoice)</em></td>
-          <td>
-            <span class="tag tag-blue">408</span>
-            <span class="tag tag-blue">409</span>
-            <span class="tag tag-blue">410</span>
-          </td>
-          <td>3 separate campaigns billed on one invoice</td>
-        </tr>
-        <tr>
-          <td>Westcoast Digital AB</td>
-          <td><span class="tag tag-blue">462</span></td>
-          <td>Single campaign — straightforward 1:1</td>
-        </tr>
-        <tr>
-          <td>Reklambossen i Ystad AB</td>
-          <td><span class="tag tag-blue">495</span></td>
-          <td>Single campaign</td>
-        </tr>
-        <tr>
-          <td>Reklambossen i Ystad AB <em>(second)</em></td>
-          <td><span class="tag tag-blue">496</span></td>
-          <td>Single campaign</td>
-        </tr>
-        <tr class="highlight-row">
-          <td><strong>Bidtheatre AB</strong></td>
-          <td style="font-size:0.8rem;">
-            <span class="tag tag-blue">137</span> <span class="tag tag-blue">302</span> <span class="tag tag-blue">303</span>
-            <span class="tag tag-blue">394</span> <span class="tag tag-blue">399</span> <span class="tag tag-blue">403</span>
-            <span class="tag tag-blue">405</span> <span class="tag tag-blue">406</span> <span class="tag tag-blue">407</span>
-            <span class="tag tag-blue">408</span> <span class="tag tag-blue">409</span> <span class="tag tag-blue">411</span>
-            <span class="tag tag-blue">412</span> <span class="tag tag-blue">414</span> <span class="tag tag-blue">416</span>
-            <span class="tag tag-blue">417</span> <span class="tag tag-blue">418</span> <span class="tag tag-blue">419</span>
-            <span class="tag tag-blue">421</span> + more
-          </td>
-          <td><strong>24 campaigns on one invoice</strong> — a programmatic platform billing all clients at once</td>
-        </tr>
-      </table>
-
-      <div class="note" style="margin-top:16px;">
-        Project numbers are <strong>not</strong> Fortnox Order numbers — no FortnoxOrder with DocumentNumber "462" exists.
-        They are separate Fortnox Project entities created in Adgrabber's Fortnox account. Their names (which identify
-        the actual client or campaign) require a call to <code>GET /3/projects/{number}</code> to retrieve.
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════ -->
-  <section>
-    <h2>4 — How the system works: a real example</h2>
-    <div class="card">
-      <p style="margin-bottom:16px;">
-        Below is a simplified reconstruction of how a Hemnet invoice would have been processed
-        when the project-code workflow was active. The data comes from actual Airtable records.
+      <p style="margin-bottom:14px;">
+        Every Source A invoice stores a <code>SupplierInvoiceRows</code> JSON array in Airtable,
+        mirroring the Fortnox accounting rows. A typical invoice for one client looks like this:
       </p>
-
-      <div class="example-title">Step 1 — Supplier invoice arrives in Fortnox</div>
-      <div class="example-wrap">
-        <div class="invoice-header">
-          <div>
-            <div class="invoice-supplier">Hemnet AB</div>
-            <div class="invoice-meta">Invoice for display advertising — January</div>
-          </div>
-          <div style="text-align:right;">
-            <div class="invoice-meta">Fortnox GivenNumber: <strong>XXX</strong></div>
-            <div class="invoice-meta">Total: <strong>12,363 SEK incl. VAT</strong></div>
-          </div>
-        </div>
-
-        <table class="row-table">
-          <tr>
-            <th>Account</th>
-            <th>Description</th>
-            <th>Code</th>
-            <th>Project (PR)</th>
-            <th class="amount-cell">Amount</th>
-          </tr>
-          <tr>
-            <td>2440</td>
-            <td>Leverantörsskulder</td>
-            <td>TOT</td>
-            <td class="proj-cell">471</td>
-            <td class="amount-cell">−12,363</td>
-          </tr>
-          <tr>
-            <td>2641</td>
-            <td>Debiterad ingående moms</td>
-            <td>VAT</td>
-            <td class="proj-cell">471</td>
-            <td class="amount-cell">+2,472.60</td>
-          </tr>
-          <tr>
-            <td>4611</td>
-            <td>Direkta kampanjkostnader i Sverige, 25% moms</td>
-            <td>PRE</td>
-            <td class="proj-cell">471</td>
-            <td class="amount-cell">+9,890.40</td>
-          </tr>
-        </table>
-        <p style="font-size:0.78rem; color:#888; margin-top:8px;">
-          ↑ Bookkeeper manually enters "471" in the PR column for each row, meaning: this spend belongs to project 471.
-        </p>
-      </div>
-
-      <div class="example-title" style="margin-top:20px;">Step 2 — n8n syncs the invoice to Airtable</div>
-      <div class="example-wrap">
-        <p style="font-size:0.875rem;">The <code>SupplierInvoiceRows</code> field in Airtable stores the raw JSON from Fortnox:</p>
-        <pre style="background:#1a1a2e; color:#a8d8a8; border-radius:6px; padding:14px; font-size:0.78rem; overflow-x:auto; margin-top:10px;">[
-  { "Account": 2440, "Code": "TOT", <span style="color:#ffe082;">"Project": "471"</span>, "Total": -12363 },
-  { "Account": 2641, "Code": "VAT", <span style="color:#ffe082;">"Project": "471"</span>, "Total": 2472.6 },
-  { "Account": 4611, "Code": "PRE", <span style="color:#ffe082;">"Project": "471"</span>, "Total": 9890.4 }
+      <pre style="background:#1a1a2e; color:#a8d8a8; border-radius:6px; padding:14px; font-size:0.78rem; overflow-x:auto;">[
+  { "Account": 2440, "Code": "TOT", <span style="color:#ff8a65;">"Project": "462"</span>, "Total": -10575 },
+  { "Account": 2641, "Code": "VAT", <span style="color:#ff8a65;">"Project": "462"</span>, "Total": 2115 },
+  { "Account": 4510, "Code": "PRE", <span style="color:#ff8a65;">"Project": "462"</span>, <span style="color:#ffe082;">"Debit": 8460</span> }
 ]</pre>
-        <p style="font-size:0.78rem; color:#888; margin-top:8px;">
-          The project code "471" is preserved in the JSON. It's already in Airtable — no extra API call needed to read it.
-        </p>
-      </div>
-
-      <div class="example-title" style="margin-top:20px;">Step 3 — Parse project code → look up project name</div>
-      <div class="example-wrap">
-        <p style="font-size:0.875rem;">n8n reads the JSON, extracts the unique project codes, and calls the Fortnox Projects API:</p>
-        <pre style="background:#1a1a2e; color:#a8d8a8; border-radius:6px; padding:14px; font-size:0.78rem; margin-top:10px;">GET https://api.fortnox.se/3/projects/471
-
-Response:
-{
-  "Project": {
-    "ProjectNumber": "471",
-    "Description": "Fritidscenter i Göteborg AB — Kampanj Q1 2020",
-    "Status": "ONGOING"
-  }
-}</pre>
-      </div>
-
-      <div class="example-title" style="margin-top:20px;">Step 4 — Match to Airtable → auto-create sys.fakturamapping</div>
-      <div class="example-wrap">
-        <p style="font-size:0.875rem; margin-bottom:12px;">
-          The project description is matched (by name or a stored code) to a record in Media / Prod New.
-          A sys.fakturamapping entry is created automatically:
-        </p>
-        <div class="mapping-result">
-          <div class="mapping-row">
-            <span class="mapping-proj">471</span>
-            <span class="mapping-arrow">→</span>
-            <span class="mapping-name">Fritidscenter — Q1 2020</span>
-            <span class="mapping-arrow">→</span>
-            <span class="mapping-airtable">Media/Prod New: recXXXXXX</span>
-            <span class="mapping-amount">9,890 SEK</span>
-          </div>
-        </div>
-        <p style="font-size:0.78rem; color:#888; margin-top:10px;">
-          The 9,890 SEK (account 4611, the actual campaign cost row) is allocated. VAT and payable rows are ignored — only cost rows (account 4xxx) are relevant for spend tracking.
-        </p>
-      </div>
-    </div>
-
-    <!-- Bidtheatre complex example -->
-    <div class="card" style="margin-top:16px; border-left: 4px solid #7b1fa2;">
-      <strong style="font-size:0.95rem;">The complex case: Bidtheatre AB — 24 campaigns, one invoice</strong>
-      <p style="font-size:0.875rem; margin-top:10px;">
-        Bidtheatre is a programmatic advertising platform. They send Adgrabber one consolidated invoice per month
-        covering <em>all campaigns</em> they ran for all Adgrabber clients. In the Fortnox accounting, the bookkeeper
-        breaks this down: one accounting row per client project, each tagged with a different project code.
+      <p style="margin-top:14px;">
+        For automation, only the <strong>cost rows</strong> (Account starting with <code>4xxx</code>) matter.
+        The relevant fields per row are:
       </p>
-      <div class="example-wrap" style="margin-top:12px;">
-        <table class="row-table">
-          <tr>
-            <th>Account</th>
-            <th>Project</th>
-            <th class="amount-cell">Amount (SEK)</th>
-            <th>Auto-maps to</th>
-          </tr>
-          <tr>
-            <td>4611</td><td class="proj-cell">303</td><td class="amount-cell">4,200</td>
-            <td style="font-size:0.8rem; color:#555;">→ Client A campaign</td>
-          </tr>
-          <tr>
-            <td>4611</td><td class="proj-cell">394</td><td class="amount-cell">8,750</td>
-            <td style="font-size:0.8rem; color:#555;">→ Client B campaign</td>
-          </tr>
-          <tr>
-            <td>4611</td><td class="proj-cell">405</td><td class="amount-cell">3,100</td>
-            <td style="font-size:0.8rem; color:#555;">→ Client C campaign</td>
-          </tr>
-          <tr>
-            <td>…</td><td class="proj-cell">…</td><td class="amount-cell">…</td>
-            <td style="font-size:0.8rem; color:#555;">21 more rows</td>
-          </tr>
-        </table>
-        <p style="font-size:0.78rem; color:#888; margin-top:10px;">
-          One invoice → 24 sys.fakturamapping entries created automatically, each with the correct amount.
-          What would take a human 30+ minutes of cross-referencing becomes a zero-click operation.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════ -->
-  <section>
-    <h2>5 — Current status of the system</h2>
-    <div class="card">
-      <div class="two-col">
-        <div>
-          <strong>What was working (older invoices)</strong>
-          <ul style="margin-top:10px;">
-            <li>Project codes 137–520 range found in data</li>
-            <li>Multiple suppliers using it: Hemnet, Bidtheatre, Reklambossen, Westcoast Digital</li>
-            <li>Per-row breakdown already done in Fortnox by bookkeeper</li>
-            <li>Data is in Airtable — in the <code>SupplierInvoiceRows</code> JSON blob</li>
-            <li>It was <strong>never</strong> auto-synced to sys.fakturamapping — always manual</li>
-          </ul>
-        </div>
-        <div>
-          <strong>What is not working (recent invoices)</strong>
-          <ul style="margin-top:10px;">
-            <li>Recent supplier invoices have <code>Project: ""</code> on all rows</li>
-            <li>Recent FortnoxOrders (4000+) also have empty Project fields</li>
-            <li>The bookkeeper stopped tagging project codes at some point</li>
-            <li>Exact date of change unknown — no meta-information available</li>
-            <li>sys.fakturamapping entries still being created, but 100% manually</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="note" style="margin-top:16px;">
-        <strong>The project codes were never the bottleneck.</strong> Even when bookkeepers were tagging invoices
-        with project codes in Fortnox, that data was never read by n8n and never used to auto-populate
-        sys.fakturamapping. The automation potential existed but was never built.
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════ -->
-  <section>
-    <h2>6 — The full allocation chain (as it could work)</h2>
-    <div class="card">
-      <div class="flow">
-        <div class="flow-box step-active">
-          <strong>Supplier sends invoice</strong>
-          <small>e.g. Bidtheatre monthly billing</small>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box step-active">
-          <strong>Fortnox receives it</strong>
-          <small>via e-invoice or manual entry</small>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box step-key">
-          <strong>Bookkeeper tags rows</strong>
-          <small>PR column: 303, 394, 405…</small>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box step-active">
-          <strong>n8n syncs to Airtable</strong>
-          <small>SupplierInvoiceRows JSON</small>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box step-dead">
-          <strong>STOPS HERE</strong>
-          <small>project codes not read</small>
-        </div>
-      </div>
-
-      <p style="font-size:0.875rem; color:#555; margin: 0 0 20px;">
-        The chain above is what currently happens. The step highlighted in red is where automation could be added.
-        Below is the full chain as it <em>could</em> work:
-      </p>
-
-      <div class="flow">
-        <div class="flow-box step-active">
-          <strong>SupplierInvoiceRows</strong>
-          <small>JSON in Airtable</small>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box step-key">
-          <strong>n8n parses Project codes</strong>
-          <small>extracts "303", "394"…</small>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box step-key">
-          <strong>GET /3/projects/{n}</strong>
-          <small>Fortnox API → project name</small>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box step-key">
-          <strong>Match to Airtable record</strong>
-          <small>Media / Prod New</small>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box step-target">
-          <strong>Auto-create fakturamapping</strong>
-          <small>with correct amount per row</small>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════ -->
-  <section>
-    <h2>7 — Can the system be reactivated? What needs to happen?</h2>
-    <div class="card">
-      <p style="margin-bottom:20px;">
-        Yes — the system can be reactivated. It requires two parallel tracks:
-        <strong>one human workflow change</strong> (bookkeeper) and <strong>one n8n automation</strong>.
-      </p>
-
-      <div class="step-list">
-        <div class="step-item">
-          <div class="step-num">1</div>
-          <div class="step-body">
-            <h4>Understand what project codes mean</h4>
-            <p>
-              Call <code>GET /3/projects</code> on the Fortnox API to get the full list of Fortnox Project names.
-              This tells us whether codes 303, 394, 462 etc. are named after clients, campaigns, or something else.
-              This is the prerequisite for building a mapping to Airtable records.
-            </p>
-          </div>
-        </div>
-        <div class="step-item">
-          <div class="step-num">2</div>
-          <div class="step-body">
-            <h4>Resume bookkeeper tagging in Fortnox (human step)</h4>
-            <p>
-              When processing a supplier invoice in Fortnox, the bookkeeper must fill the <strong>PR column</strong>
-              on each accounting row with the relevant Fortnox Project code. This is the only human input required —
-              one project code per row, entered once in Fortnox. No changes to Airtable workflow needed from their side.
-            </p>
-          </div>
-        </div>
-        <div class="step-item">
-          <div class="step-num">3</div>
-          <div class="step-body">
-            <h4>Store a project → Airtable record mapping</h4>
-            <p>
-              Create a lookup table (could live in Airtable or in n8n) that maps each Fortnox Project number
-              to the corresponding Media / Prod New record ID. This mapping only needs to be built once and
-              updated when new projects are created.
-            </p>
-          </div>
-        </div>
-        <div class="step-item">
-          <div class="step-num">4</div>
-          <div class="step-body">
-            <h4>Build n8n automation: parse → match → create</h4>
-            <p>
-              When n8n syncs a supplier invoice to Airtable, it additionally: (a) parses the <code>SupplierInvoiceRows</code>
-              JSON, (b) groups rows by Project code, (c) sums the amount per project (account 4xxx rows only),
-              (d) looks up the Airtable record for each project, (e) creates sys.fakturamapping entries.
-              Invoices where any Project code is missing or unrecognised are flagged for manual review.
-            </p>
-          </div>
-        </div>
-        <div class="step-item">
-          <div class="step-num">5</div>
-          <div class="step-body">
-            <h4>Handle the "no project code" case</h4>
-            <p>
-              For invoices where the bookkeeper did not tag project codes (or suppliers who send undivided invoices),
-              the existing manual sys.fakturamapping workflow remains as a fallback. The <code>Supplier Usually Needs Allocation</code>
-              flag already identifies which suppliers typically need this treatment.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <table style="margin-top:8px;">
-        <tr>
-          <th>Requirement</th>
-          <th>Who</th>
-          <th>Effort</th>
-        </tr>
-        <tr>
-          <td>Fetch Fortnox project list to understand naming</td>
-          <td>Developer / analyst</td>
-          <td><span class="tag tag-green">One API call</span></td>
-        </tr>
-        <tr>
-          <td>Bookkeeper resumes PR column tagging in Fortnox</td>
-          <td>Accounting team</td>
-          <td><span class="tag tag-orange">Process change — ongoing</span></td>
-        </tr>
-        <tr>
-          <td>Build project → Airtable record mapping table</td>
-          <td>Developer + accounting team</td>
-          <td><span class="tag tag-orange">One-time setup, ~1–2 days</span></td>
-        </tr>
-        <tr>
-          <td>n8n workflow: parse JSON → create fakturamapping</td>
-          <td>Developer</td>
-          <td><span class="tag tag-orange">New n8n flow, ~2–3 days</span></td>
-        </tr>
-        <tr>
-          <td>Backfill old invoices that already have project codes</td>
-          <td>n8n automation</td>
-          <td><span class="tag tag-blue">Can be done immediately for existing data</span></td>
-        </tr>
-      </table>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════ -->
-  <section>
-    <h2>8 — SupplierInvoiceRows field reference</h2>
-    <div class="card">
-      <p style="margin-bottom:14px;">Complete field inventory for the <code>SupplierInvoiceRows</code> JSON array returned by the Fortnox API:</p>
-      <table>
-        <tr>
-          <th>Field</th>
-          <th>Populated?</th>
-          <th>Notes</th>
-        </tr>
-        <tr><td><code>Account</code></td><td><span class="tag tag-green">Always</span></td><td>Swedish chart of accounts code (2440, 4611, etc.)</td></tr>
-        <tr><td><code>AccountDescription</code></td><td><span class="tag tag-green">Always</span></td><td>Human-readable account name in Swedish</td></tr>
-        <tr><td><code>Code</code></td><td><span class="tag tag-green">Always</span></td><td>Row type: TOT (total), VAT, PRE (prepayment), ROV (rounding)</td></tr>
-        <tr><td><code>Debit</code> / <code>DebitCurrency</code></td><td><span class="tag tag-green">Always</span></td><td>Debit amount</td></tr>
-        <tr><td><code>Credit</code> / <code>CreditCurrency</code></td><td><span class="tag tag-green">Always</span></td><td>Credit amount</td></tr>
-        <tr><td><code>Total</code></td><td><span class="tag tag-green">Always</span></td><td>Net row total (negative = credit)</td></tr>
+      <table style="margin-top:12px;">
+        <tr><th>Field</th><th>Populated?</th><th>Notes</th></tr>
+        <tr><td><code>Account</code></td><td><span class="tag tag-green">Always</span></td><td>Swedish chart of accounts code. Only accounts <code>4xxx</code> are campaign costs.</td></tr>
         <tr class="highlight-row">
           <td><code><strong>Project</strong></code></td>
           <td><span class="tag tag-orange">Sometimes</span></td>
-          <td><strong>Client/campaign allocation code — the key field for automation.</strong> Present when bookkeeper tagged it in Fortnox. Empty string when not tagged.</td>
+          <td><strong>Client/campaign allocation code.</strong> Present only when bookkeeper tagged it in Fortnox PR column. Empty string otherwise.</td>
         </tr>
-        <tr><td><code>CostCenter</code></td><td><span class="tag tag-red">Always empty</span></td><td>Not used in Adgrabber's Fortnox setup</td></tr>
-        <tr><td><code>TransactionInformation</code></td><td><span class="tag tag-red">Always empty</span></td><td>Free-text annotation — not used</td></tr>
-        <tr><td><code>ItemDescription</code></td><td><span class="tag tag-red">Always empty</span></td><td>Not populated by suppliers</td></tr>
-        <tr class="dim-row"><td><code>ArticleNumber</code></td><td><span class="tag tag-grey">Always empty</span></td><td>Not relevant for supplier invoices</td></tr>
-        <tr class="dim-row"><td><code>Price</code> / <code>Quantity</code> / <code>Unit</code></td><td><span class="tag tag-grey">Always empty</span></td><td>Not relevant for accounting rows</td></tr>
-        <tr class="dim-row"><td><code>StockPointCode</code> / <code>StockLocationCode</code></td><td><span class="tag tag-grey">Always empty</span></td><td>Inventory features — not used</td></tr>
+        <tr><td><code>Debit</code></td><td><span class="tag tag-green">Always</span></td><td>Amount of this row. Sum of Debit on account 4xxx rows = net campaign cost for this project code.</td></tr>
+        <tr><td><code>CostCenter</code></td><td><span class="tag tag-red">Always empty</span></td><td>Not used in Adgrabber's Fortnox setup — available for future use.</td></tr>
+        <tr><td><code>TransactionInformation</code></td><td><span class="tag tag-red">Always empty</span></td><td>Free-text field — not used.</td></tr>
+        <tr class="dim-row"><td><code>ItemDescription</code>, <code>ArticleNumber</code>, <code>Price</code>, <code>Quantity</code></td><td><span class="tag tag-grey">Always empty</span></td><td>Not relevant for accounting rows.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2>4 — What Fortnox Projects Are</h2>
+    <div class="card">
+      <p>
+        <strong>Fortnox Projects</strong> (PR) are an accounting dimension. Each project has a number and a name,
+        created in the Fortnox register. The bookkeeper can tag any accounting row on any document with a project code.
+        326 projects exist in Adgrabber's Fortnox account (verified by inspection of the project register).
+      </p>
+      <p style="margin-top:12px;">Fortnox projects are assigned via the <strong>PR column</strong> on supplier invoice rows.
+      They track where costs go within the company's accounts.</p>
+
+      <div class="note" style="margin-top:16px;">
+        <strong>Key finding from Fortnox project register inspection:</strong>
+        Project names follow no consistent convention. Examples found in the register:
+        <code>Order 462 - Fritidscenter i Göteborg AB</code>,
+        <code>Omnicom Media Group - Order 418</code>,
+        <code>Fritidscenter-495</code>,
+        <code>Juni Sociala medier Vätterhem</code>,
+        <code>Mars Växjö</code>,
+        <code>523</code>.
+        Naming was entered manually with no enforced format. The project name alone is not a reliable machine-readable key.
+      </div>
+
+      <p style="margin-top: 14px;"><strong>Customer link:</strong> some projects have a Fortnox customer formally linked;
+      others have an empty customer field (e.g. project 495 = "Fritidscenter-495" has no customer linked, only the name suggests the client).</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2>5 — How the Old Project Code Approach Worked (and Why It Is Insufficient)</h2>
+    <div class="card">
+      <p style="margin-bottom:16px;">
+        Between approximately 2019 and 2021, the bookkeeper tagged invoice rows with project codes.
+        These codes were found in the <code>SupplierInvoiceRows</code> JSON blob on older invoices
+        (project numbers 137–520 range). The data was never used by n8n — sys.fakturamapping remained 100% manual.
+        After 2021, the bookkeeper stopped tagging entirely.
+      </p>
+      <p style="margin-bottom:14px;">
+        The table below shows a complete end-to-end test of this old approach against real Airtable data,
+        to understand whether it could have worked if automation had been built:
+      </p>
+
+      <!-- CASE 1 -->
+      <div class="card" style="margin-bottom:14px; border-left:4px solid #2e7d32;">
+        <div class="case-header">
+          <div class="case-badge case-badge-ok">1</div>
+          <div>
+            <strong>Westcoast Digital AB &mdash; Invoice 390 &mdash; project 462 &mdash; single-client invoice</strong>
+            <div style="margin-top:4px;"><span class="verdict-badge verdict-ok">&#10003; Unambiguous match</span></div>
+          </div>
+        </div>
+        <table class="row-table" style="margin-bottom:14px;">
+          <tr><th>Invoice row (account 4xxx)</th><th>Project</th><th class="amount-cell">Amount</th></tr>
+          <tr><td>4510 &mdash; Inköp Övriga Leverantörer</td><td class="proj-cell">462</td><td class="amount-cell">8,460 SEK</td></tr>
+        </table>
+        <div class="mapping-result">
+          <div class="mapping-row">
+            <span class="mapping-proj">462</span>
+            <span class="mapping-arrow">&#8594;</span>
+            <span class="mapping-name">Fortnox project: "Order 462 - Fritidscenter i Göteborg AB"<br>Customer: 5015 - Fritidscenter i Göteborg AB</span>
+          </div>
+          <div class="mapping-row">
+            <span style="font-size:0.8rem; color:#555;">Search Media/Prod New: client = Fritidscenter + type = Övriga fasta medieköp + ext cost = 8,460 SEK</span>
+          </div>
+          <div class="mapping-row">
+            <span class="mapping-proj">M358</span>
+            <span class="mapping-arrow">&#8594;</span>
+            <span class="mapping-airtable">Övriga fasta medieköp &mdash; 2020-01-01 &mdash; Print för Fritidscenter &mdash; ext:8,460 SEK</span>
+            <span class="mapping-amount">8,460 SEK</span>
+          </div>
+        </div>
+        <p style="font-size:0.8rem; color:#555; margin-top:10px;">
+          Works because M358 is the only Media/Prod New record for this client with exactly 8,460 SEK external cost budget.
+          The exact amount is the disambiguator.
+        </p>
+      </div>
+
+      <!-- CASE 2 -->
+      <div class="card" style="margin-bottom:14px; border-left:4px solid #b71c1c;">
+        <div class="case-header">
+          <div class="case-badge case-badge-fail">2</div>
+          <div>
+            <strong>Reklambossen i Ystad AB &mdash; Invoice 468 &mdash; project 495 &mdash; print campaign</strong>
+            <div style="margin-top:4px;"><span class="verdict-badge verdict-fail">&#10007; Ambiguous &mdash; cannot auto-map</span></div>
+          </div>
+        </div>
+        <table class="row-table" style="margin-bottom:14px;">
+          <tr><th>Invoice row (account 4xxx)</th><th>Project</th><th class="amount-cell">Amount</th></tr>
+          <tr><td>4611 &mdash; Direkta kampanjkostnader</td><td class="proj-cell">495</td><td class="amount-cell">15,675 SEK</td></tr>
+        </table>
+        <div class="mapping-result">
+          <div class="mapping-row">
+            <span class="mapping-proj">495</span>
+            <span class="mapping-arrow">&#8594;</span>
+            <span class="mapping-name">Fortnox project: "Fritidscenter-495"<br><em style="color:#c62828;">No customer formally linked in Fortnox</em></span>
+          </div>
+          <div class="mapping-row">
+            <span style="font-size:0.8rem; color:#555;">Search Media/Prod New: client = Fritidscenter + type = Övriga fasta medieköp + date = March 2020</span>
+          </div>
+          <div class="mapping-row">
+            <span class="mapping-fail">7 matching records found &mdash; M351 (118,684), M353 (11,280), M354 (9,400), M355 (8,640), M386 (340,669), M352 (5,700), M358 (8,460)</span>
+          </div>
+        </div>
+        <p style="font-size:0.8rem; color:#555; margin-top:10px;">
+          Fails because Fritidscenter has many simultaneous "Övriga fasta medieköp" campaigns (Blocket, print publications,
+          Husbil.se etc.) all in the same period. Amount 15,675 matches none of them exactly.
+        </p>
+      </div>
+
+      <!-- CASE 3 -->
+      <div class="card" style="margin-bottom:0; border-left:4px solid #2e7d32;">
+        <div class="case-header">
+          <div class="case-badge case-badge-ok">3</div>
+          <div>
+            <strong>Hemnet AB &mdash; Invoice 365 &mdash; projects 418, 419, 420 &mdash; multi-campaign invoice</strong>
+            <div style="margin-top:4px;"><span class="verdict-badge verdict-ok">&#10003; Unambiguous match (3 rows &rarr; 3 records)</span></div>
+          </div>
+        </div>
+        <table class="row-table" style="margin-bottom:14px;">
+          <tr><th>Invoice row (account 4xxx)</th><th>Project</th><th class="amount-cell">Amount</th></tr>
+          <tr><td>4611 &mdash; Hemnet listing spend</td><td class="proj-cell">418</td><td class="amount-cell">7,833 SEK</td></tr>
+          <tr><td>4611 &mdash; Hemnet listing spend</td><td class="proj-cell">419</td><td class="amount-cell">7,833 SEK</td></tr>
+          <tr><td>4611 &mdash; Hemnet listing spend</td><td class="proj-cell">420</td><td class="amount-cell">7,833 SEK</td></tr>
+        </table>
+        <div class="mapping-result">
+          <div class="mapping-row">
+            <span class="mapping-proj">418</span>
+            <span class="mapping-arrow">&#8594;</span>
+            <span class="mapping-name">"Omnicom Media Group - Order 418" &rarr; Atteviks, Audi January</span>
+            <span class="mapping-arrow">&#8594;</span>
+            <span class="mapping-airtable">M24 &mdash; Övriga fasta medieköp &mdash; 2020-01-01</span>
+            <span class="mapping-amount">7,833 SEK</span>
+          </div>
+          <div class="mapping-row">
+            <span class="mapping-proj">419</span>
+            <span class="mapping-arrow">&#8594;</span>
+            <span class="mapping-name">"Omnicom Media Group - Order 419" &rarr; Atteviks, Audi February</span>
+            <span class="mapping-arrow">&#8594;</span>
+            <span class="mapping-airtable">M23 &mdash; Övriga fasta medieköp &mdash; 2020-02-01</span>
+            <span class="mapping-amount">7,833 SEK</span>
+          </div>
+          <div class="mapping-row">
+            <span class="mapping-proj">420</span>
+            <span class="mapping-arrow">&#8594;</span>
+            <span class="mapping-name">"Omnicom Media Group - Order 420" &rarr; Atteviks, Audi March</span>
+            <span class="mapping-arrow">&#8594;</span>
+            <span class="mapping-airtable">M15 &mdash; Övriga fasta medieköp &mdash; 2020-03-01</span>
+            <span class="mapping-amount">7,833 SEK</span>
+          </div>
+        </div>
+        <p style="font-size:0.8rem; color:#555; margin-top:10px;">
+          Works because Atteviks has exactly one Hemnet/fixed-media campaign per month (January, February, March),
+          each with a distinct date range. Date is the disambiguator.
+        </p>
+      </div>
+    </div>
+
+    <div class="alert alert-warn" style="margin-top:0;">
+      <h3>Why the old approach cannot be made to work reliably</h3>
+      <p>
+        Fortnox project codes in the old system identified a <em>client or order</em>, not a specific campaign.
+        Matching from project code to Media/Prod New record requires: (1) the supplier name to derive channel type
+        (not derivable from supplier name alone — needs a human-maintained lookup table per supplier),
+        and (2) the channel type + client + date to be unique within Media/Prod New.
+        Case 2 above shows that condition (2) regularly fails for clients with multiple concurrent campaigns of the same type.
+        Even if both conditions were met, they represent two fragile inferred steps, not a direct key.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2>6 — The Media/Prod New Campaign Type System</h2>
+    <div class="card">
+      <p style="margin-bottom:14px;">
+        FIELD <strong>Brief. Typ</strong> on Media/Prod New links to a separate table (<code>tblxLag0MUeQSdJb4</code>)
+        containing <strong>41 predefined campaign types</strong>. It is not a free-text field — staff picks from a fixed list.
+        FIELD <strong>Brief. Typ_</strong> is a formula that returns the text value of that linked record.
+      </p>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <span class="tag tag-blue">Google Ads</span>
+        <span class="tag tag-blue">Facebook / Instagram</span>
+        <span class="tag tag-blue">Display Programmatic</span>
+        <span class="tag tag-blue">LinkedIn</span>
+        <span class="tag tag-blue">Snapchat</span>
+        <span class="tag tag-blue">TikTok</span>
+        <span class="tag tag-blue">Youtube</span>
+        <span class="tag tag-blue">Microsoft Ads</span>
+        <span class="tag tag-blue">Pinterest</span>
+        <span class="tag tag-blue">Reddit</span>
+        <span class="tag tag-blue">Native Programmatic</span>
+        <span class="tag tag-blue">DOOH Programmatic</span>
+        <span class="tag tag-blue">WebbTV Programmatic</span>
+        <span class="tag tag-blue">PlayTV Programmatic</span>
+        <span class="tag tag-blue">TV fast medieköp</span>
+        <span class="tag tag-blue">Radio / Ljudannonsering</span>
+        <span class="tag tag-blue">Print medieköp</span>
+        <span class="tag tag-blue">Övriga fasta medieköp</span>
+        <span class="tag tag-blue">Utomhusreklam / Out of home</span>
+        <span class="tag tag-blue">Influencer Marketing</span>
+        <span class="tag tag-blue">SEO</span>
+        <span class="tag tag-blue">Marketing Automation</span>
+        <span class="tag tag-blue">Kampanjsystem</span>
+        <span class="tag tag-blue">Film &amp; Rörligt</span>
+        <span class="tag tag-blue">Webbutveckling</span>
+        <span class="tag tag-blue">Byråarvode</span>
+        <span class="tag tag-blue">Övrigt konsultation</span>
+        <span class="tag tag-grey">+ 14 more</span>
+      </div>
+      <div class="note" style="margin-top:16px;">
+        The supplier → campaign type mapping is NOT automatically derivable from supplier name alone.
+        For major platforms (Google Ireland Limited &rarr; Google Ads, LinkedIn Ireland &rarr; LinkedIn) it is obvious.
+        For niche suppliers (Westcoast Digital AB, Bidtheatre AB, Hemnet AB, Reklambossen i Ystad AB) it requires
+        a human to define the mapping once. This is a one-time setup, not ongoing work.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2>7 — The Proposed Strategy: Fortnox Project = Media/Prod New Campaign</h2>
+
+    <div class="alert alert-new">
+      <h3>Core Principle</h3>
+      <p>
+        Change what a Fortnox Project represents: from <em>"this client/order"</em> to
+        <em>"this specific Media/Prod New record"</em>. Each active campaign in Airtable
+        gets its own dedicated Fortnox project with the M-number as the project code.
+        The bookkeeper tags invoice rows with the M-number. n8n reads M-number &rarr;
+        finds Airtable record directly &rarr; creates sys.fakturamapping. No inference, no lookup tables, no ambiguity.
+      </p>
+    </div>
+
+    <div class="card">
+      <strong style="font-size:0.95rem;">End-to-end flow with the new strategy</strong>
+      <div class="flow" style="margin-top:20px;">
+        <div class="flow-box step-new"><strong>New campaign in Airtable</strong><small>Media/Prod New activated</small></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-box step-new"><strong>n8n trigger</strong><small>creates Fortnox Project "M4329"</small></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-box step-key"><strong>Bookkeeper in Fortnox</strong><small>tags PR column with M4329</small></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-box step-active"><strong>n8n syncs invoice</strong><small>SupplierInvoiceRows to Airtable</small></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-box step-new"><strong>n8n reads "M4329"</strong><small>looks up Airtable record directly</small></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-box step-target"><strong>sys.fakturamapping created</strong><small>automatically, zero manual steps</small></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:0;">
+      <strong style="font-size:0.95rem;">Worked example: Bidtheatre invoice, 3 campaigns</strong>
+      <p style="font-size:0.875rem; margin:12px 0;">
+        Bidtheatre sends one monthly invoice covering all programmatic campaigns for all Adgrabber clients.
+        With M-number tagging, the bookkeeper fills the PR column as follows:
+      </p>
+      <table class="row-table">
+        <tr><th>Account</th><th>Project (PR column)</th><th class="amount-cell">Debit</th><th>What n8n does</th></tr>
+        <tr>
+          <td>4611</td>
+          <td class="proj-cell">M4329</td>
+          <td class="amount-cell">12,450 SEK</td>
+          <td style="font-size:0.8rem;">Finds Media/Prod New where Autonumber=4329 &rarr; creates fakturamapping 12,450 SEK</td>
+        </tr>
+        <tr>
+          <td>4611</td>
+          <td class="proj-cell">M7093</td>
+          <td class="amount-cell">8,200 SEK</td>
+          <td style="font-size:0.8rem;">Finds Media/Prod New where Autonumber=7093 &rarr; creates fakturamapping 8,200 SEK</td>
+        </tr>
+        <tr>
+          <td>4611</td>
+          <td class="proj-cell">M9957</td>
+          <td class="amount-cell">34,099 SEK</td>
+          <td style="font-size:0.8rem;">Finds Media/Prod New where Autonumber=9957 &rarr; creates fakturamapping 34,099 SEK</td>
+        </tr>
+        <tr class="dim-row">
+          <td>4611</td>
+          <td class="proj-cell">M???</td>
+          <td class="amount-cell">&hellip;</td>
+          <td style="font-size:0.8rem;">One row per campaign; all resolved automatically</td>
+        </tr>
+      </table>
+      <p style="font-size:0.78rem; color:#888; margin-top:12px;">
+        One invoice &rarr; N sys.fakturamapping entries created automatically. Each M-number is a direct key into Airtable.
+        No client name matching, no channel type inference, no date matching required.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2>8 — What Needs to Change</h2>
+    <div class="card">
+      <div class="step-list">
+
+        <div class="step-item">
+          <div class="step-num step-num-new">1</div>
+          <div class="step-body">
+            <h4>Add <code>FortnoxProjectCode</code> field to Media/Prod New in Airtable</h4>
+            <p>
+              A text field storing the Fortnox project number for each campaign record (e.g. <code>M4329</code>).
+              This is the link between Airtable and Fortnox. Populated automatically when the project is created (step 2).
+            </p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num step-num-new">2</div>
+          <div class="step-body">
+            <h4>n8n: auto-create Fortnox project when a campaign is activated</h4>
+            <p>
+              When a Media/Prod New record becomes active, n8n calls <code>POST /3/projects</code> with:
+            </p>
+            <ul style="margin: 8px 0 8px 20px; font-size: 0.875rem; color: #555;">
+              <li><strong>Number</strong> — the M-number (e.g. <code>M4329</code>, or numeric <code>4329</code> if Fortnox rejects the prefix — confirm with one test call)</li>
+              <li><strong>Description</strong> — constructed name: <code>M4329 - [ClientName] - [CampaignType] - [Month]</code></li>
+              <li><strong>ContactId</strong> — Fortnox customer number as a plain string (e.g. <code>"10042"</code>), pulled from the linked FortnoxCustomer record. Not an object — Fortnox REST API takes plain ID strings for all relations.</li>
+              <li><strong>ContactType</strong> — <code>"CUSTOMER"</code></li>
+            </ul>
+            <p>
+              On success, the API returns the created project. n8n writes the project number back to the
+              <code>FortnoxProjectCode</code> field in Airtable. This write-back is a <strong>confirmation flag</strong>:
+              empty = project not yet in Fortnox (n8n will retry); populated = project exists (n8n skips).
+              It also shows the bookkeeper which code to use in the PR column.
+            </p>
+
+            <div style="margin-top: 16px; background: #f8f9fa; border-radius: 8px; padding: 16px 20px;">
+              <p style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #555; margin-bottom: 10px;">Trigger mechanism — two options</p>
+              <table style="font-size: 0.85rem;">
+                <thead>
+                  <tr>
+                    <th>Option</th>
+                    <th>How it works</th>
+                    <th>Consistency with current system</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>A — n8n polls Airtable</strong> <span class="tag tag-green">Recommended</span></td>
+                    <td>n8n Schedule trigger (e.g. every 15 min) queries Media/Prod New for records where <code>Status = Active</code> AND <code>FortnoxProjectCode</code> is empty. Processes each match, writes project number back.</td>
+                    <td>Identical to the existing Airtable → Fortnox push pattern already designed in the system: <code>Sync Fortnox</code> and <code>Order Status</code> fields on FortnoxOrder use the same write-queue flag approach — n8n polls, acts, marks as done. No new infrastructure.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>B — Airtable automation pushes to n8n webhook</strong></td>
+                    <td>Airtable native automation fires when Status changes to Active → calls an n8n Webhook node URL. n8n processes the payload immediately.</td>
+                    <td>Not used anywhere in the current system. Introduces a new pattern (Airtable as the caller, n8n as the listener). Near-real-time but adds Airtable automation maintenance overhead.</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p style="font-size: 0.85rem; color: #555; margin-top: 10px;">
+                <strong>Note:</strong> Fortnox does now support webhooks (section 8.4 of the integration docs), but only for integration lifecycle events (purchase, licence expiry, user invitations) — not for order or invoice events. Fortnox webhooks are not applicable here.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num step-num-new">3</div>
+          <div class="step-body">
+            <h4>Bookkeeper process: use M-number project codes when processing invoices</h4>
+            <p>
+              When processing a supplier invoice in Fortnox, the bookkeeper fills the <strong>PR column</strong>
+              on each accounting row with the M-number of the campaign. The Fortnox project list (auto-populated by step 2)
+              shows readable names: <em>"M4329 - Fritidscenter - Facebook/Instagram - 2022-05"</em> —
+              the bookkeeper selects from this list, no guessing required.
+              This is the only human input in the whole process.
+            </p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num step-num-new">4</div>
+          <div class="step-body">
+            <h4>n8n: parse SupplierInvoiceRows &rarr; create sys.fakturamapping</h4>
+            <p>
+              When n8n syncs a supplier invoice to Airtable, an additional automation runs:
+              (a) parse <code>SupplierInvoiceRows</code> JSON,
+              (b) filter to account <code>4xxx</code> rows,
+              (c) group by Project code,
+              (d) sum Debit per project,
+              (e) for each project code matching <code>M\d+</code>, look up the Media/Prod New record where Autonumber = that number,
+              (f) create one <code>sys.fakturamapping</code> record: link to FortnoxSupplierInvoice + link to Media/Prod New + Belopp ex moms = summed amount.
+              Rows with no project code, or unrecognised codes, are flagged in a review queue.
+            </p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <h4>Fallback: invoices with no project codes remain manual</h4>
+            <p>
+              Any invoice where the bookkeeper did not fill the PR column (or filled it with a non-M code)
+              is flagged with a status in Airtable indicating it needs manual allocation.
+              The existing manual sys.fakturamapping workflow is the fallback.
+              The field <code>Supplier Usually Needs Allocation</code> on FortnoxSupplier already identifies
+              which suppliers require allocation treatment.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <table style="margin-top:8px;">
+        <tr><th>Task</th><th>Who</th><th>Effort</th><th>Type</th></tr>
+        <tr>
+          <td>Add FortnoxProjectCode field to Media/Prod New</td>
+          <td>Developer</td>
+          <td><span class="tag tag-green">10 min</span></td>
+          <td><span class="tag tag-grey">One-time setup</span></td>
+        </tr>
+        <tr>
+          <td>n8n flow: Media/Prod New activation &rarr; POST /3/projects</td>
+          <td>Developer</td>
+          <td><span class="tag tag-orange">~1 day</span></td>
+          <td><span class="tag tag-grey">One-time build</span></td>
+        </tr>
+        <tr>
+          <td>Bookkeeper uses M-number project list in Fortnox PR column</td>
+          <td>Accounting</td>
+          <td><span class="tag tag-orange">Process change</span></td>
+          <td><span class="tag tag-blue">Ongoing per invoice</span></td>
+        </tr>
+        <tr>
+          <td>n8n flow: parse SupplierInvoiceRows &rarr; create fakturamapping</td>
+          <td>Developer</td>
+          <td><span class="tag tag-orange">~2 days</span></td>
+          <td><span class="tag tag-grey">One-time build</span></td>
+        </tr>
+        <tr>
+          <td>Backfill: create Fortnox projects for existing active campaigns</td>
+          <td>n8n automation</td>
+          <td><span class="tag tag-green">One-time batch run</span></td>
+          <td><span class="tag tag-grey">One-time</span></td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2>9 — Limitations and Edge Cases</h2>
+    <div class="card">
+      <table>
+        <tr><th>Situation</th><th>How handled</th></tr>
+        <tr>
+          <td>Invoice has no project codes (bookkeeper skipped PR column)</td>
+          <td>Flagged for manual allocation. Existing manual workflow applies.</td>
+        </tr>
+        <tr>
+          <td>Invoice row has a non-M project code (old-style client codes like "462")</td>
+          <td>Code not recognised as M-number &rarr; flagged for manual review.</td>
+        </tr>
+        <tr>
+          <td>One invoice covers campaigns that span multiple months</td>
+          <td>Staff creates multiple rows in Fortnox with the same M-number, or a single row tagged to the correct M-record. No issue — the M-number is the only key needed.</td>
+        </tr>
+        <tr>
+          <td>Platform import invoices (Facebook, LinkedIn, etc.)</td>
+          <td>Out of scope — these are Source B invoices, always allocated manually per existing workflow.</td>
+        </tr>
+        <tr>
+          <td>Campaign is cancelled before invoice arrives</td>
+          <td>Fortnox project still exists; n8n finds the Airtable record (now closed). Staff may need to handle status manually.</td>
+        </tr>
+        <tr>
+          <td>A single invoice row covers multiple campaigns (no per-campaign breakdown)</td>
+          <td>Bookkeeper must add one row per campaign in Fortnox when processing. This is already the expectation for the PR column workflow.</td>
+        </tr>
       </table>
     </div>
   </section>
 
   <hr>
   <p style="color:#aaa; font-size:0.78rem;">
-    Generated 2026-03-25 · Based on analysis of 11 Fortnox-sourced FortnoxSupplierInvoice records
-    (all verified via @url = api.fortnox.se/3/supplierinvoices/*, Created By = integration adgrabber) ·
-    Fortnox Project documentation: support.fortnox.se/produkthjalp/bokforing/projekt-pr ·
-    Airtable base appk463NGeDy17j9T
+    Generated 2026-03-26 &middot;
+    Research based on live inspection of Fortnox project register (326 projects), Airtable base appk463NGeDy17j9T,
+    FortnoxSupplierInvoice records (Hemnet invoice 365, Westcoast Digital invoice 390, Reklambossen invoice 468),
+    and Media/Prod New records for Fritidscenter and Atteviks &middot;
+    Fortnox Project API: <code>GET /3/projects</code>, <code>POST /3/projects</code> &middot;
+    Airtable media type table: <code>tblxLag0MUeQSdJb4</code> (41 predefined types)
   </p>
 
 </div>
