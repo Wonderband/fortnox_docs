@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fortnox OrderRow — Full Field Audit</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a1a; max-width: 1500px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 22px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+  h2 { font-size: 17px; margin-top: 32px; border-left: 4px solid; padding-left: 10px; }
+  h3 { font-size: 14px; margin-top: 20px; color: #444; }
+  p { line-height: 1.6; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+  th { background: #2c2c2c; color: #fff; padding: 8px 10px; text-align: left; }
+  td { padding: 7px 10px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+  tr:nth-child(even) { background: #fafafa; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .b-sync    { background: #d0ebff; color: #1864ab; }
+  .b-ops     { background: #fff3bf; color: #7d6608; }
+  .b-rollup  { background: #ffe0f0; color: #a61e4d; }
+  .b-link    { background: #d3f9d8; color: #1a5e2a; }
+  .b-system  { background: #e9ecef; color: #495057; }
+  .b-dev     { background: #e8e8e8; color: #555; }
+  .b-formula { background: #f3d9fa; color: #6a0dad; }
+  code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; font-size: 12px; font-family: monospace; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+  .summary-card { padding: 12px; border-radius: 6px; }
+  .summary-card .count { font-size: 24px; font-weight: 700; }
+  .summary-card .label { font-size: 12px; margin-top: 4px; }
+  .note { background: #fff9db; border-left: 3px solid #f08c00; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+  .info-note { background: #e7f5ff; border-left: 3px solid #339af0; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+  .warn-note { background: #fff0f6; border-left: 3px solid #e64980; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+  .field-id { font-size: 11px; color: #888; font-family: monospace; }
+  .cat-header { margin-top: 36px; }
+  .sub-section { margin-top: 20px; padding: 10px 0 0 0; border-top: 1px dashed #ccc; }
+  .sub-section-title { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 8px; }
+  .invalid { color: #c92a2a; font-size: 11px; font-weight: 600; }
+
+  h2.sync    { border-color: #1864ab; }
+  h2.ops     { border-color: #7d6608; }
+  h2.rollup  { border-color: #a61e4d; }
+  h2.link    { border-color: #1a5e2a; }
+  h2.system  { border-color: #868e96; }
+  h2.dev     { border-color: #aaa; }
+  h2.formula { border-color: #6a0dad; }
+</style>
+</head>
+<body>
+
+<h1>TABLE Fortnox OrderRow — Full Field Audit</h1>
+<p>
+  <strong>Table ID:</strong> <code>tbl4kQjfGdqF1TWkS</code> &nbsp;|&nbsp;
+  <strong>Base:</strong> Betaportal Adgrabber 2.0 (<code>appk463NGeDy17j9T</code>) &nbsp;|&nbsp;
+  <strong>Total fields: ~159</strong> &nbsp;|&nbsp;
+  <strong>Audit date:</strong> 2026-03-26
+</p>
+
+<p>Fortnox OrderRow is a <strong>hybrid table</strong> — it has two co-equal purposes: (1) a <strong>Fortnox sync table</strong> — n8n parses the <code>OrderRows</code> JSON blob from each FortnoxOrder record and upserts one record per row using <code>RowId</code> as the key; and (2) an <strong>Airtable-native operational layer</strong> — pricing adjustments, margin, allocation tracking, QA checks, and soft-deletion logic are all managed here by the team. Roughly 23 fields are Fortnox-side; the remaining ~136 are Airtable-native.</p>
+
+<div class="info-note">
+  <strong>Position in the allocation chain:</strong>
+  <code>FortnoxOrder → <strong>Fortnox OrderRow</strong> → sys.orderallocationmapping → Media / Prod New</code>
+  <br><br>
+  Each Fortnox OrderRow record represents one line item from a customer order. The FIELD <code>Line Item Allocation</code> (confusingly named — it points to TABLE <strong>sys.orderallocationmapping</strong>, not a field) distributes the row's value across one or more campaign records in Media / Prod New, split by month and allocation type. The full revenue side of P&L flows through this link.
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card" style="background:#d0ebff">
+    <div class="count">22 + 1⚠</div>
+    <div class="label"><strong>Fortnox-side fields (API-verified)</strong><br>22 confirmed mapped · <code>VATCode</code> in API but no matching Airtable field found — verify in n8n workflow</div>
+  </div>
+  <div class="summary-card" style="background:#fff3bf">
+    <div class="count">20</div>
+    <div class="label"><strong>Operational fields</strong><br>Pricing, margin, notes, soft-deletion, allocation suggestion, change tracking · incl. LineItem Source (n8n-written)</div>
+  </div>
+  <div class="summary-card" style="background:#d3f9d8">
+    <div class="count">6</div>
+    <div class="label"><strong>Link fields</strong><br>FortnoxOrder, Line Item Allocation (→ sys.orderallocationmapping), FortnoxArticle, Kampanjer, 2× Legacy Mediaköp/Prod, Legacy Kampanjer</div>
+  </div>
+  <div class="summary-card" style="background:#ffe0f0">
+    <div class="count">~56</div>
+    <div class="label"><strong>Rollup / lookup fields</strong><br>From FortnoxOrder, sys.orderallocationmapping, FortnoxArticle, legacy links</div>
+  </div>
+  <div class="summary-card" style="background:#f3d9fa">
+    <div class="count">~35</div>
+    <div class="label"><strong>Formula fields</strong><br>Financial calculations, QA checks, URL helpers, date helpers</div>
+  </div>
+  <div class="summary-card" style="background:#e9ecef">
+    <div class="count">11</div>
+    <div class="label"><strong>System / LMT fields</strong><br>6 scoped Last Modified Time fields + autonumber + 2× createdTime + createdBy</div>
+  </div>
+  <div class="summary-card" style="background:#e8e8e8">
+    <div class="count">~9</div>
+    <div class="label"><strong>Dev / legacy / backup fields</strong><br>Backup copies, legacy links, temp fields</div>
+  </div>
+  <div class="summary-card" style="background:#fce8e8">
+    <div class="count">9</div>
+    <div class="label"><strong>Invalid fields</strong> (broken rollups/lookups)<br>Target field deleted — return null</div>
+  </div>
+</div>
+
+<div class="warn-note">
+  <strong>9 invalid rollups / lookups (target field deleted):</strong>
+  <code>Outstanding Allocated Budgeted Hours</code>, <code>Actual Working Hours</code>, <code>Allocated Budgeted Hours</code>,
+  <code>Allocated But Not Mapped (Upplupna...)</code>, <code>Ek. utfall. Externkostnad...</code>,
+  <code>R_Order_Comment_status (from FortnoxOrder)</code>, <code>ArticleNumber Lookup</code>,
+  <code>Article Charge Type</code>, <code>Chargetype</code>. All return null and should be cleaned up.
+</div>
+
+<!-- ================================================================ CAT A -->
+<h2 class="sync cat-header">A — Fortnox-Side Fields &nbsp;<span class="badge b-sync">Origin: Fortnox / n8n sync</span></h2>
+
+<p>n8n parses the <code>OrderRows</code> JSON array from each FortnoxOrder and upserts one record per row using <strong><code>RowId</code> as the upsert key</strong> (no <code>@url</code> field on this table — RowId is the unique Fortnox-assigned identifier per row per order). <code>LineItem Source = "Fortnox"</code> on all live records confirms the Airtable-users push path has never been used.</p>
+
+<div class="note">
+  <strong>String vs number types for Fortnox values:</strong> Several fields that are numbers in the Fortnox API payload are stored as <code>singleLineText</code> in Airtable (e.g. <code>ContributionPercent</code>, <code>ContributionValue</code>, <code>DeliveredQuantity</code>, <code>OrderedQuantity</code>). Formula fields (<code>Delivered_QTY_integer</code>, <code>Ordered_QTY_integer copy</code>) convert these to numbers using <code>VALUE()</code> for use in calculations.
+</div>
+
+<table>
+  <tr><th>Field name</th><th>Airtable type</th><th>Fortnox source</th><th>Notes</th></tr>
+  <tr>
+    <td><strong>RowId</strong> <span class="field-id">fldgNVOdjmAuAS5xl</span></td>
+    <td>number</td>
+    <td><code>OrderRows[].RowId</code></td>
+    <td><strong>Upsert key.</strong> Fortnox-assigned unique ID for this row within the order. Used by n8n to match existing records. Also the primary component of the <code>ID</code> formula.</td>
+  </tr>
+  <tr>
+    <td><strong>ArticleNumber</strong> <span class="field-id">fldVw9sgZ0FLdLzaI</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].ArticleNumber</code></td>
+    <td>Fortnox article code (e.g. <code>"13"</code>). Used to link to FortnoxArticle record.</td>
+  </tr>
+  <tr>
+    <td><strong>Description</strong> <span class="field-id">fldfBcxbaXLPWRAQe</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].Description</code></td>
+    <td>Line item description as entered in Fortnox (e.g. <code>"Hyra"</code>). Free text. The team can put campaign details here.</td>
+  </tr>
+  <tr>
+    <td><strong>Price</strong> <span class="field-id">fldC9JLbV9nIcuo2M</span></td>
+    <td>number</td>
+    <td><code>OrderRows[].Price</code></td>
+    <td>Unit price ex-VAT. Used in Gross formula: <code>Price × DeliveredQuantity</code>.</td>
+  </tr>
+  <tr>
+    <td><strong>DeliveredQuantity</strong> <span class="field-id">flduvC9Jlxy8fSYEA</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].DeliveredQuantity</code></td>
+    <td>Delivered quantity as text. Converted to integer by <code>Delivered_QTY_integer</code> formula.</td>
+  </tr>
+  <tr>
+    <td><strong>OrderedQuantity</strong> <span class="field-id">fldv8yrOYUvswJnyQ</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].OrderedQuantity</code></td>
+    <td>Originally ordered quantity. Compared to Delivered in <code>Variance(QTY)</code>.</td>
+  </tr>
+  <tr>
+    <td><strong>Total</strong> <span class="field-id">fld4AHQzVP3pcYM7r</span></td>
+    <td>number</td>
+    <td><code>OrderRows[].Total</code></td>
+    <td>Row total as returned by Fortnox (Price × Qty, post-discount). Compared to Airtable-calculated <code>Total excl. VAT</code> in <code>variance</code> formula.</td>
+  </tr>
+  <tr>
+    <td><strong>Discount</strong> <span class="field-id">fld92ooCVhdUx8UQM</span></td>
+    <td>number</td>
+    <td><code>OrderRows[].Discount</code></td>
+    <td>Discount value from Fortnox (percentage or SEK depending on <code>DiscountType</code>).</td>
+  </tr>
+  <tr>
+    <td><strong>DiscountType</strong> <span class="field-id">fldjJ2hnUo2tzlHjU</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].DiscountType</code></td>
+    <td>Either <code>"PERCENT"</code> or <code>"AMOUNT"</code>. Always <code>"PERCENT"</code> in sample records.</td>
+  </tr>
+  <tr>
+    <td><strong>VAT</strong> <span class="field-id">fld7OcdN6wbv95kqm</span></td>
+    <td>number</td>
+    <td><code>OrderRows[].VAT</code></td>
+    <td>VAT rate for this row (e.g. <code>25</code> = 25%).</td>
+  </tr>
+  <tr>
+    <td><strong>VATCode</strong> <span class="field-id">—</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].VATCode</code></td>
+    <td><strong>⚠ Present in Fortnox API but not found as a mapped Airtable field.</strong> VATCode is the Fortnox VAT code string (e.g. <code>"MP1"</code>). Either n8n does not map it or it is stored under a different field name. Verify in the n8n sync workflow.</td>
+  </tr>
+  <tr>
+    <td><strong>AccountNumber</strong> <span class="field-id">fldkvQ2exel4EObVi</span></td>
+    <td>number</td>
+    <td><code>OrderRows[].AccountNumber</code></td>
+    <td>Fortnox accounting account number (e.g. <code>3001</code>). Revenue account. Always populated on Fortnox rows.</td>
+  </tr>
+  <tr>
+    <td><strong>ContributionPercent</strong> <span class="field-id">fldRD1hBxlFpHoq0X</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].ContributionPercent</code></td>
+    <td>Contribution margin percentage (e.g. <code>"100"</code>). Stored as text.</td>
+  </tr>
+  <tr>
+    <td><strong>ContributionValue</strong> <span class="field-id">fldDXxUGVnyYcykRI</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].ContributionValue</code></td>
+    <td>Contribution margin in SEK. Stored as text.</td>
+  </tr>
+  <tr>
+    <td><strong>CostCenter</strong> <span class="field-id">fldrwQ8bSaAEi49G7</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].CostCenter</code></td>
+    <td>Fortnox cost centre. Always empty — not used.</td>
+  </tr>
+  <tr>
+    <td><strong>Project</strong> <span class="field-id">fldllkmdvq4xLOhlt</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].Project</code></td>
+    <td><strong>Fortnox project code on this order row.</strong> Empty on all recent sample records — the same finding as on supplier invoice rows. If the bookkeeper tags the PR column in Fortnox, this would carry the project code. Currently unused.</td>
+  </tr>
+  <tr>
+    <td><strong>Unit</strong> <span class="field-id">fldZCIhCTO7Pxj5SS</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].Unit</code></td>
+    <td>Unit of measure (e.g. blank, <code>"st"</code>).</td>
+  </tr>
+  <tr>
+    <td><strong>ReservedQuantity</strong> <span class="field-id">fldcFMMTMADrjIcjs</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].ReservedQuantity</code></td>
+    <td>Reserved stock quantity. Always <code>"0"</code> for services.</td>
+  </tr>
+  <tr>
+    <td><strong>StockPointCode</strong> <span class="field-id">fldSLePEg0bel5Qwn</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].StockPointCode</code></td>
+    <td>Warehouse stock point. Always empty for services.</td>
+  </tr>
+  <tr>
+    <td><strong>StockPointId</strong> <span class="field-id">fldhnWIzlkynudq6P</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].StockPointId</code></td>
+    <td>Warehouse stock point ID. Always empty for services.</td>
+  </tr>
+  <tr>
+    <td><strong>HouseWork</strong> <span class="field-id">fldLXEYOVSGXnmSZ3</span></td>
+    <td>checkbox</td>
+    <td><code>OrderRows[].HouseWork</code></td>
+    <td>ROT/RUT flag. Always false.</td>
+  </tr>
+  <tr>
+    <td><strong>HouseWorkHoursToReport</strong> <span class="field-id">fldIN00FtIS1vwFX1</span></td>
+    <td>number</td>
+    <td><code>OrderRows[].HouseWorkHoursToReport</code></td>
+    <td>Always 0.</td>
+  </tr>
+  <tr>
+    <td><strong>HouseWorkType</strong> <span class="field-id">fld0NTx9VdjbmhkU8</span></td>
+    <td>singleLineText</td>
+    <td><code>OrderRows[].HouseWorkType</code></td>
+    <td>Always empty.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT B -->
+<h2 class="ops cat-header">B — Operational Fields &nbsp;<span class="badge b-ops">Maintained by staff in Airtable</span></h2>
+
+<p>These fields are added by the team on top of the Fortnox data. They represent Adgrabber-specific business logic: pricing adjustments, margin tracking, notes, and operational status. Some are written by staff; some are written by n8n automation (allocation suggestion).</p>
+
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Purpose</th></tr>
+  <tr>
+    <td><strong>LineItem Source</strong> <span class="field-id">fld9LnfgJFuHATduq</span></td>
+    <td>singleSelect</td>
+    <td><strong>Written by n8n — not a Fortnox API field.</strong> Options: <code>"Fortnox"</code> (written by n8n sync) or <code>"Airtable users"</code> (intended for manually-created rows). <code>"Fortnox"</code> on every record — the Airtable-users push path has never been used.</td>
+  </tr>
+  <tr>
+    <td><strong>Internal Name</strong> <span class="field-id">fldALsxBSKMaIxXtA</span></td>
+    <td>singleLineText</td>
+    <td>Staff-assigned internal description for the line item. Used in the <code>ID</code> formula as the third component.</td>
+  </tr>
+  <tr>
+    <td><strong>Our Margin</strong> <span class="field-id">fldL6YyRIrYxlcd36</span></td>
+    <td>percent</td>
+    <td>Adgrabber's margin on this line item. Used in <code>Total After Discount and Margin (Spend)</code> to calculate the net spend passed on to the client.</td>
+  </tr>
+  <tr>
+    <td><strong>Custom Price</strong> <span class="field-id">fldMOYYomfjIySNBb</span></td>
+    <td>number</td>
+    <td>Price override — allows adjusting the price beyond what Fortnox returned, for internal calculations.</td>
+  </tr>
+  <tr>
+    <td><strong>Custom Discount</strong> <span class="field-id">fldKQtkYhNJkaWXDr</span></td>
+    <td>currency (SEK)</td>
+    <td>Fixed SEK discount applied in addition to the Fortnox percentage discount. Part of <code>Total Discounts (Legacy)</code> formula.</td>
+  </tr>
+  <tr>
+    <td><strong>Type of work</strong> <span class="field-id">fld0V0EGNNIW5s4mu</span></td>
+    <td>singleSelect</td>
+    <td>Options: <code>"Media Purchase"</code> or <code>"Production"</code>. Classifies the line item for allocation routing — determines whether it links to a Mediaköp or Production record in Media/Prod New.</td>
+  </tr>
+  <tr>
+    <td><strong>Notes</strong> <span class="field-id">fldA404YAGNyb4BWL</span></td>
+    <td>multilineText</td>
+    <td>Free-text notes for the allocation team. Not synced to Fortnox.</td>
+  </tr>
+  <tr>
+    <td><strong>Supplier</strong> <span class="field-id">fldMvCiQN4qeey8NJ</span></td>
+    <td>singleLineText</td>
+    <td>Manually entered supplier name for this line item. Distinct from the linked supplier fields.</td>
+  </tr>
+  <tr>
+    <td><strong>Produktion</strong> <span class="field-id">fldAaEDvhdwIAPlSa</span></td>
+    <td>singleLineText</td>
+    <td>Production notes or reference. Free text.</td>
+  </tr>
+  <tr>
+    <td><strong>REFERENCE MNUMMER</strong> <span class="field-id">fldRWCKlbHTmfo4PA</span></td>
+    <td>singleLineText</td>
+    <td>Manual M-number reference (e.g. <code>"M4329"</code>). Staff enter the Media/Prod New M-number here when manually associating this row with a campaign. Precursor to the FortnoxProjectCode automation strategy.</td>
+  </tr>
+  <tr>
+    <td><strong>Supplier Information status</strong> <span class="field-id">fldcPbTVMVxcytZKs</span></td>
+    <td>singleLineText</td>
+    <td>Status field for supplier info completeness. Free text.</td>
+  </tr>
+  <tr>
+    <td><strong>Sub Orders Drafts</strong> <span class="field-id">flddeRThELPCfRLJs</span></td>
+    <td>singleLineText</td>
+    <td>Draft sub-order notes. Rarely used.</td>
+  </tr>
+  <tr>
+    <td><strong>Order Lookup</strong> <span class="field-id">fldZXVimcaKJJAbGq</span></td>
+    <td>singleLineText</td>
+    <td>Manual text copy of the order reference. Legacy operational field, predates lookup fields.</td>
+  </tr>
+  <tr>
+    <td><strong>Deleted</strong> <span class="field-id">fldsmN2J2CSDz2bsG</span></td>
+    <td>checkbox</td>
+    <td><strong>Soft-deletion flag.</strong> When an order row is deleted in Fortnox, n8n checks this and sets it to true rather than hard-deleting the Airtable record. Watched by scoped LMT fields <code>Last Modified 3</code> and <code>When deleted</code>. The formula <code>Did we allocate 100% of the budget?</code> also references this field.</td>
+  </tr>
+  <tr>
+    <td><strong>When is it changed/deleted in fortnox</strong> <span class="field-id">fldtt6aQz60fECbEU</span></td>
+    <td>date</td>
+    <td>Staff manually record the date when a row was changed or deleted in Fortnox. Used by the <code>is it changed/deleted today?</code> formula and the <code>CHANGED/DELETED TODAY IN FORTNOX</code> view.</td>
+  </tr>
+  <tr>
+    <td><strong>Deleted/Changed in fortnox</strong> <span class="field-id">fldmJ0KDVjFFc4X8m</span></td>
+    <td>singleSelect</td>
+    <td>Options: <code>"Deleted"</code> or <code>"Changed"</code>. Staff mark which type of Fortnox change occurred. Works together with <code>When is it changed/deleted in fortnox</code>.</td>
+  </tr>
+  <tr>
+    <td><strong>Run OrderAllocation Suggestion</strong> <span class="field-id">fldv1G088BCEQhW4H</span></td>
+    <td>singleSelect</td>
+    <td>Write-queue flag for the allocation suggestion automation. Options: <code>"Run"</code> / <code>"In progress"</code> / <code>"Finished"</code>. Staff set to <code>"Run"</code>; n8n processes and sets to <code>"Finished"</code>.</td>
+  </tr>
+  <tr>
+    <td><strong>OrderAllocation Suggestion</strong> <span class="field-id">fldfp9bByzX9y8Qkj</span></td>
+    <td>multilineText</td>
+    <td>n8n writes a suggested allocation here (which Media/Prod New records this row should be split across). Staff review and confirm or adjust before creating the actual sys.orderallocationmapping records.</td>
+  </tr>
+  <tr>
+    <td><strong>Article</strong> <span class="field-id">fldnVkU9r8kvlKxux</span></td>
+    <td>singleLineText</td>
+    <td>Older alternative article field — predates <code>ArticleNumber</code>. May carry the same value or a human-readable article name. Watched by <code>Fortnox details modified date</code> LMT.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT C -->
+<h2 class="link cat-header">C — Link Fields &nbsp;<span class="badge b-link">Airtable record links</span></h2>
+
+<table>
+  <tr><th>Field name</th><th>Linked table</th><th>Cardinality</th><th>Notes</th></tr>
+  <tr>
+    <td><strong>FortnoxOrder</strong> <span class="field-id">fldoiM43bPc9BQlB3</span></td>
+    <td>FortnoxOrder (<code>tblhNdAzxbWeNgEgW</code>)</td>
+    <td>Many-to-one</td>
+    <td>Link to the parent order. Populated by n8n during sync. The inverse field on FortnoxOrder is named <code>"Line Items"</code> (field ID <code>fldVSVcz2LO7uFQhL</code>) — the link field name does not match the table name.</td>
+  </tr>
+  <tr>
+    <td><strong>Line Item Allocation</strong> <span class="field-id">fldcGl9Dg0iXTZa5Y</span></td>
+    <td>sys.orderallocationmapping (<code>tblvru6tOgpB5yVQG</code>)</td>
+    <td>One-to-many</td>
+    <td><strong>The core allocation link.</strong> One order row maps to one or more sys.orderallocationmapping records — one per campaign per month. The link field name <em>"Line Item Allocation"</em> does NOT match the actual table name <em>"sys.orderallocationmapping"</em>. The inverse field on sys.orderallocationmapping is <code>fld22cM5PXTdunohm</code>. Watched by scoped LMT <code>Last Modified 2</code>.</td>
+  </tr>
+  <tr>
+    <td><strong>FortnoxArticle</strong> <span class="field-id">fldRu7ULXpixDHVsh</span></td>
+    <td>FortnoxArticle (<code>tbllLCePTMAsMqF3A</code>)</td>
+    <td>Many-to-one (prefer single)</td>
+    <td>Links this row to the Fortnox article/product record. Matched by n8n using <code>ArticleNumber</code>. Enables lookups of article description and media type classification.</td>
+  </tr>
+  <tr>
+    <td><strong>Kampanjer</strong> <span class="field-id">fldcA8W7kw5qmEPPr</span></td>
+    <td>Kampanjer (<code>tblIjif3TvPC5ZNZr</code>)</td>
+    <td>Many-to-many</td>
+    <td>Direct link to the parent campaign record. Populated manually by staff or via automation. Provides campaign-level context above the Media/Prod New level.</td>
+  </tr>
+  <tr>
+    <td><strong>Mediaköp / Production Legacy</strong> (×2)<br><span class="field-id">fldOnxHa3l7y4IZh8</span> / <span class="field-id">fldPixX2Xx4ZqjRVb</span></td>
+    <td>Legacy Mediaköp/Prod table (<code>tblmHFelJTFs8ypyT</code>)</td>
+    <td>Many-to-many</td>
+    <td>Two separate link fields to the same legacy campaign line table (the predecessor of Media / Prod New). Both are likely unused in current workflow — superseded by the sys.orderallocationmapping chain. The <code>%margin (from Mediaköp)</code> rollup pulls from the first one.</td>
+  </tr>
+  <tr>
+    <td><strong>Legacy Kampanjer</strong> <span class="field-id">fldQ6iR1KcuGjD5O8</span></td>
+    <td>Legacy Kampanjer (<code>tblmqPUcPCDJkpkcq</code>)</td>
+    <td>Many-to-many</td>
+    <td>Link to the old campaigns table. Legacy — superseded by the current <code>Kampanjer</code> link.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT D -->
+<h2 class="rollup cat-header">D — Rollup / Lookup Fields &nbsp;<span class="badge b-rollup">Aggregated from linked tables</span></h2>
+
+<div class="sub-section">
+<div class="sub-section-title">D1 — From FortnoxOrder (parent context)</div>
+<table>
+  <tr><th>Field name</th><th>What it pulls</th></tr>
+  <tr><td><strong>OrderDate (from FortnoxOrder)</strong> <span class="field-id">fldGakGrm4cbem5ou</span></td><td>Order date from the parent FortnoxOrder record.</td></tr>
+  <tr><td><strong>DeliveryDate (from FortnoxOrder)</strong> <span class="field-id">fldLir75m9kmdedjK</span></td><td>Delivery date — used in <code>Calculation 2</code> to derive the delivery year-month (<code>YYYY-MM</code>).</td></tr>
+  <tr><td><strong>Kunder (from Orders)</strong> <span class="field-id">fldzIqkeeswWMjjjN</span></td><td>Linked client record from the parent order. Key for identifying which client this revenue belongs to.</td></tr>
+  <tr><td><strong>Assigned For Allocation (from FortnoxOrder)</strong> <span class="field-id">fldfVI7J5itsMLuZU</span></td><td>The team member assigned to allocate this order's rows.</td></tr>
+  <tr><td><strong>Order Autonumber Lookup</strong> <span class="field-id">fldnmQ0ugmCikywBI</span></td><td>Airtable autonumber of the parent FortnoxOrder record.</td></tr>
+  <tr><td><strong>Order Number</strong> <span class="field-id">fldvErVvKumM7uoCd</span></td><td>Fortnox DocumentNumber of the parent order (e.g. <code>"5105"</code>).</td></tr>
+  <tr><td><strong>Order Number Text</strong> (formula) <span class="field-id">fldYztwYR74vaql64</span></td><td><code>ARRAYJOIN({Order Number})</code> — flattens the lookup array to a plain string for display.</td></tr>
+  <tr><td><strong>Cancelled (from FortnoxOrder)</strong> <span class="field-id">fldpo38fabOo4pV8d</span></td><td>Whether the parent order is cancelled. Referenced by <code>Did we allocate 100%?</code> formula.</td></tr>
+  <tr><td><strong>Order Invoice Status (from FortnoxOrder)</strong> <span class="field-id">fld8XRYVtauwsP7Ah</span></td><td>Invoice status of the parent order (e.g. <code>"Not invoiced"</code>).</td></tr>
+  <tr><td><strong>Variance (total excl. vat of order and row) (from FortnoxOrder)</strong> <span class="field-id">fldmhf16mn28RzogL</span></td><td>Variance check rolled up at the order level.</td></tr>
+  <tr><td><strong>RoundOff (from FortnoxOrder)</strong> <span class="field-id">fldXNFi19VBVYsyEU</span></td><td>Order-level rounding adjustment.</td></tr>
+  <tr><td><strong>Order Remarks</strong> <span class="field-id">fldHRJulM4l8NXt61</span></td><td>Free-text remarks from the parent FortnoxOrder (e.g. <code>"Hyra kontorsplats NOV"</code>).</td></tr>
+  <tr><td><strong>Customer Agreement</strong> <span class="field-id">fldGfTdoWrdtakg52</span></td><td>Linked agreement record from the parent order.</td></tr>
+  <tr><td><strong>Customer_Agreement Rollup (from FortnoxOrder)</strong> <span class="field-id">fldEOMtaSFqX9wor0</span></td><td>Count of agreements on the parent order.</td></tr>
+  <tr><td><strong>Did we allocate 100%? (from FortnoxOrder)</strong> <span class="field-id">fld42PMDeZ6xcsRgg</span> / <strong>orders that have deleted rows and allocations</strong> <span class="field-id">fldfVYHjNYqP2cpo4</span></td><td>Order-level allocation completeness check looked up from FortnoxOrder.</td></tr>
+  <tr><td><strong>Lan checking (from FortnoxOrder)</strong> <span class="field-id">fldQJv04leUCl1hSE</span></td><td>QA status from the parent order (e.g. <code>"To check and allocate"</code> → <code>"OK - Verified by Ida"</code>).</td></tr>
+  <tr><td><strong>Fortnox Invoice Invoice Date (from FortnoxOrder)</strong> <span class="field-id">fldQ970oCaQncfg0t</span></td><td>Invoice date from the linked FortnoxInvoice on the parent order.</td></tr>
+  <tr><td><strong>R_Avtalsinformation</strong> <span class="field-id">fldfXF099uAqHblgt</span></td><td>Contract/agreement information from the parent order.</td></tr>
+  <tr><td><strong>R_Order_Comment_status (from FortnoxOrder)</strong> <span class="field-id">fld6Pba3mpiVT0ahF</span> <span class="invalid">⚠ INVALID</span></td><td>Target field deleted. Returns null.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">D2 — From sys.orderallocationmapping (allocation results)</div>
+<p>These fields aggregate data from the <code>Line Item Allocation</code> link — they show how much of this row's budget has been allocated, spent, and to which campaigns.</p>
+<table>
+  <tr><th>Field name</th><th>What it shows</th></tr>
+  <tr><td><strong>ALLOCATED Budget (How much we allocate)</strong> <span class="field-id">fldU6XbZCIJiyNFi8</span></td><td>Sum of all allocation records' budget amounts for this row. Compared to <code>Total excl. VAT</code> to check if 100% allocated.</td></tr>
+  <tr><td><strong>ALLOCATED to Spend</strong> <span class="field-id">fldWqowWX5zGpItxs</span></td><td>Sum of "Pay for mediaköp" type allocations — the pre-committed media spend portion.</td></tr>
+  <tr><td><strong>Paid by Customer_ALLOCATION Brief. Customer Budget</strong> <span class="field-id">fld3TboIJjHVZzuRJ</span></td><td>The customer budget allocated across campaign records.</td></tr>
+  <tr><td><strong>Ek. budget. Intäkt</strong> <span class="field-id">fldwFohdczoyz7iAf</span></td><td>Canonical revenue figure rolled up from the linked Media/Prod New records via sys.orderallocationmapping.</td></tr>
+  <tr><td><strong>Actual amount spend (actual hours*rate/hr)</strong> <span class="field-id">fldhslxNyAy81JKAt</span></td><td>Actual spend rolled up from allocation records where hours and rate are tracked (production work).</td></tr>
+  <tr><td><strong>Type of allocation (from Line Item Allocation)</strong> <span class="field-id">fldyHBZeShYeiyPEI</span> / <strong>Type of allocation_Rollup</strong> <span class="field-id">fldrgrwbldXKVJofa</span></td><td>Allocation type(s) linked to this row. Used in the <code>Did we allocate 100%?</code> formula to handle the <em>"For info only / Krediterad på samma ordernummer"</em> special case.</td></tr>
+  <tr><td><strong>Supplier (from Line Item Allocation)</strong> <span class="field-id">fldYqliDNm7w4JR8r</span></td><td>Supplier name(s) from the linked allocation records.</td></tr>
+  <tr><td><strong>Mediaköp</strong> <span class="field-id">fldAjNxBeCDQ6dUAF</span> / <strong>Production</strong> <span class="field-id">fldEvPoDrUJvlrhzv</span></td><td>Direct lookup of the Media/Prod New record(s) linked via sys.orderallocationmapping — Mediaköp and Production types separately.</td></tr>
+  <tr><td><strong>Campaign Mediakop Lookup</strong> <span class="field-id">fldo9C894SjCWciu9</span></td><td>Campaign M-number lookup from linked Mediaköp records.</td></tr>
+  <tr><td><strong>Type</strong> <span class="field-id">fldpuKNf4R6fa5rhX</span></td><td>Allocation type text from sys.orderallocationmapping.</td></tr>
+  <tr><td><strong>Upplupna (from Line Item Allocation)</strong> <span class="field-id">fld8e2V3J0QLaTr5H</span></td><td>Accrual flag from allocation records.</td></tr>
+  <tr><td><strong>Brief typ (from Line Item Allocation)</strong> <span class="field-id">fldiQazPwmJ3q1q4y</span></td><td>Campaign type (Brief. Typ) from the linked Media/Prod New records.</td></tr>
+  <tr><td><strong>Count (Line Item Allocation)</strong> <span class="field-id">fldlVc4g9X4aOCxNp</span></td><td>Count of linked sys.orderallocationmapping records. 0 = not yet allocated.</td></tr>
+  <tr><td><strong>Count of Line items not equal to zero</strong> <span class="field-id">fldSxDvJqyRzD616M</span> / <strong>Count of allocation that are not deleted</strong> <span class="field-id">fld7VcSJ6l4B75iYY</span></td><td>Count of active (non-deleted) allocation records.</td></tr>
+  <tr><td><strong>TOTAL OF FOR INFO ONLY</strong> <span class="field-id">fld1z6vxtou1RlxKP</span></td><td>Sum of "For info only" allocation type amounts — excluded from allocation completeness check.</td></tr>
+  <tr><td><strong>Is there difference? Rollup</strong> <span class="field-id">fldI3LGtdkqEbOqAf</span></td><td>Checks whether the allocation total matches the row total.</td></tr>
+  <tr><td><strong>Delete (from Line Item Allocation)</strong> <span class="field-id">flde5ujwFwFmOwReX</span></td><td>Flags allocation records marked for deletion.</td></tr>
+  <tr><td><strong>Modified Date Rollup (from Line Item Allocation)</strong> <span class="field-id">fld3OlSDBVnMQscer</span></td><td>Latest modification date of linked allocation records. Used by <code>Is modification of orderrow&gt;than modification of allocation?</code> stale-data check.</td></tr>
+  <tr><td><strong>MP Rollup</strong> <span class="field-id">flddMpngYhLTF7S1D</span></td><td>Count of linked Media/Prod New (Mediaköp) records via allocations.</td></tr>
+  <tr><td><strong>checking</strong> <span class="field-id">fld8JjibjPuy1Q1eZ</span> (dev) / <strong>Dev checking Rollup</strong> <span class="field-id">fldrQXP6N60k4BNhf</span></td><td>Dev-era validation rollups — check whether allocations are complete and correctly linked.</td></tr>
+  <tr><td><strong>Dev field_Allocated budget</strong> <span class="field-id">fld2IaoZlzkac2DFr</span> / <strong>Dev field_Allocated budget_For Info only</strong> <span class="field-id">fld71TwGiglqPOJqv</span></td><td>Dev rollups used in the <code>Did we allocate 100%?</code> formula (referenced by field ID). Despite the "Dev" name they are load-bearing.</td></tr>
+  <tr><td><strong>Allocated But Not Mapped</strong> <span class="field-id">fldQIAch5FyBpjF7F</span> / <strong>Ek. utfall. Externkostnad</strong> <span class="field-id">fldm2VM2POHFZDnHw</span> / <strong>Outstanding Allocated Budgeted Hours</strong> <span class="field-id">fldT5vBADdMpPjGGX</span> / <strong>Actual Working Hours</strong> <span class="field-id">fldVMwyFsjQnXUOpx</span> / <strong>Allocated Budgeted Hours</strong> <span class="field-id">fldVl5CZ4J9VWQr5A</span> <span class="invalid">⚠ INVALID ×5</span></td><td>Target fields deleted in sys.orderallocationmapping. All return null.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">D3 — From FortnoxArticle</div>
+<table>
+  <tr><th>Field name</th><th>What it pulls</th></tr>
+  <tr><td><strong>Description (from FortnoxArticle)</strong> <span class="field-id">fldKvcCQhNDcXg5XS</span></td><td>Article description from the linked Fortnox article record (e.g. <code>"Övrig konsultation"</code>).</td></tr>
+  <tr><td><strong>ProductName Lookup</strong> <span class="field-id">fldxHLAoLtYVly85w</span></td><td>Product name from FortnoxArticle. Used by the <code>ProductName</code> formula and the <code>ID</code> formula.</td></tr>
+  <tr><td><strong>sys.mediatyp (from FortnoxArticle)</strong> <span class="field-id">fldEFhZgmICzcFAea</span> / <strong>Brief. Mediatype</strong> <span class="field-id">flda9E5BsFFoKWayE</span> / <strong>Brief typ Rollup</strong> <span class="field-id">fldAorxbaftSPlf0Z</span></td><td>Media type classification from the article record — links to the sys.mediatyp table (41 types). Three fields pulling the same value via different lookup paths.</td></tr>
+  <tr><td><strong>ArticleNumber Lookup</strong> <span class="field-id">fldIU36ccgKFtCUOy</span> / <strong>Article Charge Type</strong> <span class="field-id">fldXegasmrKkfN8FV</span> / <strong>Chargetype</strong> <span class="field-id">fldCNEK2dPQCFzVDD</span> <span class="invalid">⚠ INVALID ×3</span></td><td>Target fields deleted in FortnoxArticle. Return null.</td></tr>
+  <tr><td><strong>%margin (from Mediaköp)</strong> <span class="field-id">fldmMqppZ9173uTOf</span></td><td>Margin percentage from the linked legacy Mediaköp record. Legacy path.</td></tr>
+</table>
+</div>
+
+<!-- ================================================================ CAT E -->
+<h2 class="formula cat-header">E — Formula Fields &nbsp;<span class="badge b-formula">Computed in Airtable</span></h2>
+
+<div class="sub-section">
+<div class="sub-section-title">E1 — Financial calculations</div>
+<table>
+  <tr><th>Field name</th><th>Formula (summary)</th><th>Purpose</th></tr>
+  <tr><td><strong>Gross</strong> <span class="field-id">fldRY7MR1huagHDy1</span></td><td><code>Price × DeliveredQuantity</code></td><td>Line total before discount.</td></tr>
+  <tr><td><strong>Discount Value</strong> <span class="field-id">fld4vd7uI1Gw4eiB9</span></td><td>IF PERCENT: <code>PercentDiscount × Gross</code>, else <code>Discount (SEK)</code></td><td>Calculated discount in SEK.</td></tr>
+  <tr><td><strong>Total excl. VAT</strong> <span class="field-id">fldF2wy21OaJHEo17</span></td><td><code>Gross − DiscountValue</code></td><td>The Airtable-calculated net total. Compared to Fortnox's <code>Total</code> in the <code>variance</code> formula.</td></tr>
+  <tr><td><strong>Total After Discount and Margin (Spend)</strong> <span class="field-id">fldXAMhA0QwAXzuT4</span></td><td><code>Total excl. VAT × (1 − Our Margin)</code></td><td>Net spend after removing Adgrabber's margin — what is passed through to the client.</td></tr>
+  <tr><td><strong>Percentage Discount</strong> <span class="field-id">fldVWZQaiLXzcplyc</span></td><td>Normalises discount to a fraction</td><td>Used in further discount calculations.</td></tr>
+  <tr><td><strong>Percentage DIscount (e.g. 10)</strong> <span class="field-id">fldzuGsgsMOJFuASM</span></td><td><code>PercentageDiscount × 100</code></td><td>Human-readable display (e.g. <code>10</code> = 10%).</td></tr>
+  <tr><td><strong>Discount (% or SEK)</strong> <span class="field-id">fldCFeuIpnuWdEIV7</span></td><td>IF PERCENT: <code>"10%"</code>, else <code>"500 SEK"</code></td><td>Display field showing the discount in appropriate units.</td></tr>
+  <tr><td><strong>Total Discounts (Legacy)</strong> <span class="field-id">fld8u9SDjkZMp4SCr</span></td><td><code>(Gross × PercentDiscount) + CustomDiscount</code></td><td>Legacy combined discount formula. Superseded by <code>Discount Value</code>.</td></tr>
+  <tr><td><strong>Gross copy</strong> <span class="field-id">fld2bnjo1Oh4ukp7V</span></td><td><code>ROUNDUP(Price) × DeliveredQTY</code></td><td>Alternative Gross calculation with rounding. Dev/comparison field.</td></tr>
+  <tr><td><strong>Contribution (100+contribution percent)</strong> <span class="field-id">fld7orEtdrEDlqIsf</span></td><td><code>100 + VALUE(ContributionPercent)</code></td><td>Contribution index (200 = 100% margin).</td></tr>
+  <tr><td><strong>total allocated</strong> <span class="field-id">fld0q5gex6QcoYm7F</span></td><td>IF For-info-only type: <code>TotalExclVAT</code>, else <code>ALLOCATED to Spend</code></td><td>Allocation total adjusted for special-case rows.</td></tr>
+  <tr><td><strong>Outstanding (Not Allocated) Order budget</strong> <span class="field-id">fldQ5AZphq1g0XgGV</span> / <strong>Remaining total to allocate</strong> <span class="field-id">fldyUvEjEf6gelywY</span></td><td><code>ROUND(TotalExclVAT − AllocatedBudget, 0)</code> (if not For-info-only)</td><td>Two fields with identical formulas — how much of the row value is still unallocated. Both are load-bearing in QA views.</td></tr>
+  <tr><td><strong>total of For info only / Krediterad</strong> <span class="field-id">fldgtq66BFB3mf8dx</span></td><td>IF For-info-only: <code>TotalExclVAT</code>, else 0</td><td>Isolates the value of "For info only" rows for separate aggregation.</td></tr>
+  <tr><td><strong>variance (total excl vat - total)</strong> <span class="field-id">fldqrUCSvInnDdGAH</span></td><td><code>TotalExclVAT − Total</code></td><td>Cross-check between Airtable-calculated and Fortnox-returned totals. Should always be 0.</td></tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">E2 — QA and allocation completeness checks</div>
+<table>
+  <tr><th>Field name</th><th>Output</th><th>Logic</th></tr>
+  <tr>
+    <td><strong>Did we allocate 100% of the budget?</strong> <span class="field-id">fldSqcpv5TQRtKZUD</span></td>
+    <td>✅ / 🚧 / 🚫 / ⚠️</td>
+    <td>Multi-condition formula. <strong>✅</strong> = fully allocated or zero-value row. <strong>🚫</strong> = cancelled. <strong>⚠️ missing both/either type</strong> = allocations exist but not linked to Mediaköp or Production. <strong>⚠️ Someone deleted row with allocation</strong> = row soft-deleted but allocations remain. <strong>🚧</strong> = unallocated budget remaining. This is the primary QA signal for the allocation team.</td>
+  </tr>
+  <tr>
+    <td><strong>No article</strong> <span class="field-id">fldK0HQko52it9DDU</span></td>
+    <td><code>"No article"</code> or blank</td>
+    <td>Flags rows where <code>FortnoxArticle</code> link is empty. Used by the <code>No articles</code> view to catch rows that couldn't be matched to an article.</td>
+  </tr>
+  <tr>
+    <td><strong>Is modification of orderrow &gt; than modification of allocation?</strong> <span class="field-id">fld5RhYMwEimTY5c0</span></td>
+    <td>0 or 1</td>
+    <td>Compares <code>Fortnox details modified date</code> to <code>Modified Date Rollup (from Line Item Allocation)</code>. If 1, the order row was modified in Fortnox after the allocation was last touched — a signal that allocations may be stale.</td>
+  </tr>
+  <tr>
+    <td><strong>Variance(QTY)</strong> <span class="field-id">fldx9pg9ZQvQutR9n</span></td>
+    <td>number</td>
+    <td><code>OrderedQTY − DeliveredQTY</code>. Should be 0 for completed orders.</td>
+  </tr>
+  <tr>
+    <td><strong>Calculation</strong> <span class="field-id">fldPrILK4aEPUSLTv</span></td>
+    <td>0 or 1</td>
+    <td><code>ContributionValue = Gross</code>. Verifies Fortnox's contribution calculation matches the row gross.</td>
+  </tr>
+</table>
+</div>
+
+<div class="sub-section">
+<div class="sub-section-title">E3 — Display, URL and date helpers</div>
+<table>
+  <tr><th>Field name</th><th>Formula (summary)</th><th>Purpose</th></tr>
+  <tr><td><strong>ID</strong> <span class="field-id">fldVc2X9pzmjxkuu4</span></td><td><code>RowId &amp; "-" &amp; ProductName &amp; " " &amp; InternalName</code></td><td>Human-readable primary field. e.g. <code>"78947-13 - Övrig konsultation // "</code>.</td></tr>
+  <tr><td><strong>ProductName</strong> <span class="field-id">fldFfOo2URiksm707</span></td><td><code>ARRAYJOIN({ProductName Lookup})</code></td><td>Flattens the lookup array to a plain string for use in <code>ID</code>.</td></tr>
+  <tr><td><strong>Record ID</strong> <span class="field-id">fldKX3ax9rrsmKL44</span></td><td><code>RECORD_ID()</code></td><td>Airtable record ID as a plain text value.</td></tr>
+  <tr><td><strong>Interface page</strong> <span class="field-id">fldbfFZ2enXJVQmhm</span> / <strong>Order row details</strong> <span class="field-id">fldKsvwnHKOoAES0L</span></td><td>Airtable interface page URL</td><td>Two identical formula fields generating a direct URL to the line item interface page. Redundant.</td></tr>
+  <tr><td><strong>Calculation 2</strong> <span class="field-id">fldfT9CBaF4qCagCd</span></td><td><code>DATETIME_FORMAT(DeliveryDate, 'YYYY-MM')</code></td><td>Delivery year-month string. Used for month-based grouping and filtering.</td></tr>
+  <tr><td><strong>Ordered_QTY_integer copy</strong> <span class="field-id">fldyyPN49YhYMRKLK</span> / <strong>Delivered_QTY_integer</strong> <span class="field-id">fldVBIxMM5192xZnG</span></td><td><code>VALUE({OrderedQuantity})</code> / <code>VALUE({DeliveredQuantity})</code></td><td>Convert text-stored quantities to integers for arithmetic.</td></tr>
+  <tr><td><strong>When is it deleted?</strong> <span class="field-id">fldb1RU1KufJhsVDP</span></td><td>IF Deleted: <code>{When deleted}</code></td><td>Surfaces the deletion timestamp only for deleted records.</td></tr>
+  <tr><td><strong>today()</strong> <span class="field-id">fldP5VObE4Ii7yUV3</span></td><td><code>TODAY()</code></td><td>Today's date, used for comparing with other date fields in Fortnox-change detection views.</td></tr>
+  <tr><td><strong>is it changed/deleted today?</strong> <span class="field-id">fld11HYHPx7r33lLf</span></td><td><code>{When is it changed/deleted in fortnox} = TODAY()</code></td><td>Boolean for the <code>CHANGED/DELETED TODAY IN FORTNOX</code> view filter.</td></tr>
+  <tr><td><strong>Calculation 3</strong> <span class="field-id">fldLGUBFkoPeoaU4T</span></td><td><code>{Last Modified 3} = TODAY()</code></td><td>Flags records where the Deleted checkbox was toggled today.</td></tr>
+  <tr><td><strong>is after 2 sec</strong> <span class="field-id">fldDYPq4SpnZIRlwp</span></td><td><code>IS_AFTER(NOW(), DATEADD({When deleted}, 2, 'seconds'))</code></td><td>Dev-era timing check after soft-deletion. Returns <code>#ERROR!</code> on records where <code>When deleted</code> is null — should be cleaned up.</td></tr>
+  <tr><td><strong>Fortnox details modified date_FORMAT</strong> <span class="field-id">fldkEbkCGn5KcAigC</span></td><td><code>DATETIME_FORMAT({Fortnox details modified date}, 'YYYY-MM-DD')</code></td><td>Date-only string version of the Fortnox sync LMT, for display and filter use.</td></tr>
+</table>
+</div>
+
+<!-- ================================================================ CAT F -->
+<h2 class="system cat-header">F — System / LMT Fields &nbsp;<span class="badge b-system">Auto-managed by Airtable</span></h2>
+
+<p>This table has <strong>6 scoped Last Modified Time fields</strong> — more than any other Fortnox sync table. Each watches a specific subset of fields to signal different types of change without triggering loop re-sync.</p>
+
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Scope (fields watched)</th><th>Purpose</th></tr>
+  <tr>
+    <td><strong>Last Modified Time</strong> <span class="field-id">fldsOFOXme8JHsPcl</span></td>
+    <td>lastModifiedTime</td>
+    <td>~44 Fortnox data fields + operational fields</td>
+    <td>Main sync change detector. Used by the n8n sync view filter to pick up recently changed records.</td>
+  </tr>
+  <tr>
+    <td><strong>Fortnox details modified date</strong> <span class="field-id">fldvqfi6q0MQfDpUp</span></td>
+    <td>lastModifiedTime</td>
+    <td>~39 Fortnox payload fields only</td>
+    <td><strong>Loop prevention.</strong> Watches only fields that n8n itself writes. When n8n updates a record, this field bumps. On the next poll, n8n can compare this timestamp to skip its own recent writes.</td>
+  </tr>
+  <tr>
+    <td><strong>Last Modified</strong> <span class="field-id">fld2hLWBv9Xbyf1Fz</span></td>
+    <td>lastModifiedTime</td>
+    <td><code>Total</code> field only</td>
+    <td>Financial change signal — fires only when the Fortnox Total changes, indicating a price correction in Fortnox.</td>
+  </tr>
+  <tr>
+    <td><strong>Last Modified 2</strong> <span class="field-id">fldDr5FW9C7DX6jKT</span></td>
+    <td>lastModifiedTime</td>
+    <td><code>Line Item Allocation</code> link only</td>
+    <td>Allocation change detector — fires when a sys.orderallocationmapping record is linked or unlinked. Used to detect when allocation work was done on this row.</td>
+  </tr>
+  <tr>
+    <td><strong>Last Modified 3</strong> <span class="field-id">fldNfzAn3bWHthZED</span> / <strong>When deleted</strong> <span class="field-id">fldZwXFFyY11FZcQp</span></td>
+    <td>lastModifiedTime</td>
+    <td><code>Deleted</code> checkbox only</td>
+    <td>Soft-deletion detector. Both watch the same field — <code>Last Modified 3</code> returns a date, <code>When deleted</code> returns a datetime with UTC timezone. <code>Calculation 3</code> checks if deletion happened today.</td>
+  </tr>
+  <tr>
+    <td><strong>Last Modified 4</strong> <span class="field-id">fldK6fWbV5MbDWzgm</span></td>
+    <td>lastModifiedTime</td>
+    <td>All fields</td>
+    <td>Full-table audit/monitoring LMT. Watches everything. Used in the <code>Modified Time</code> view.</td>
+  </tr>
+  <tr>
+    <td><strong>Autonumber</strong> <span class="field-id">fldbBGgq2Z5iJhBiL</span></td>
+    <td>autoNumber</td>
+    <td>—</td>
+    <td>Sequential Airtable record number. Not related to Fortnox RowId.</td>
+  </tr>
+  <tr>
+    <td><strong>Created</strong> <span class="field-id">fldSVxp91tKvQIC4S</span> / <strong>Created 2</strong> <span class="field-id">fldZ3ziJQsMavLisu</span></td>
+    <td>createdTime</td>
+    <td>—</td>
+    <td>Two createdTime fields — same value, different date format (local vs ISO). Duplicate.</td>
+  </tr>
+  <tr>
+    <td><strong>Created By</strong> <span class="field-id">fldXmHSiCx1JUVuyf</span></td>
+    <td>createdBy</td>
+    <td>—</td>
+    <td>The user who created the record. <code>integration adgrabber</code> (the n8n service account) on all Fortnox-synced rows.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT G -->
+<h2 class="dev cat-header">G — Dev / Legacy / Backup Fields</h2>
+
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Why it's here</th></tr>
+  <tr>
+    <td><strong>Cost</strong> <span class="field-id">fld8ryJiFaCADDAfo</span></td>
+    <td>number</td>
+    <td><strong>⚠ Origin unconfirmed.</strong> <code>Cost</code> does not appear in the Fortnox OrderRows API schema. Always 0 in sample. Verify in n8n workflow before using or deleting.</td>
+  </tr>
+  <tr>
+    <td><strong>Dev Backup_Our Margin</strong> <span class="field-id">fldVpmj30eQ3DGPgz</span></td>
+    <td>percent</td>
+    <td>Backup copy of <code>Our Margin</code> before a change was applied. Not actively used.</td>
+  </tr>
+  <tr>
+    <td><strong>Dev Backup_Total After Discount and Margin (Spend)</strong> <span class="field-id">fldVfcpPXcefe88L7</span></td>
+    <td>number</td>
+    <td>Backup of the Spend total. Watched by <code>Fortnox details modified date</code> LMT — may need to be removed from that scope.</td>
+  </tr>
+  <tr>
+    <td><strong>FortnoxOrder copy</strong> <span class="field-id">fld46GKWyWbk7sD2H</span></td>
+    <td>singleLineText</td>
+    <td>Text copy of the FortnoxOrder link. Legacy field from before formula fields could reference link fields. Empty on all records.</td>
+  </tr>
+  <tr>
+    <td><strong>backup</strong> <span class="field-id">fldNWc78Zw23MqeOM</span></td>
+    <td>singleLineText</td>
+    <td>Unnamed backup field. No consistent data.</td>
+  </tr>
+  <tr>
+    <td><strong>Dev field_Allocated budget</strong> / <strong>Dev field_Allocated budget_For Info only</strong></td>
+    <td>rollup</td>
+    <td>Named "Dev" but referenced by the <code>Did we allocate 100%?</code> formula. Load-bearing despite the dev label — do not delete without updating the formula.</td>
+  </tr>
+  <tr>
+    <td><strong>Line item interface page button</strong> <span class="field-id">fldHyURdpxMuosQBJ</span></td>
+    <td>button</td>
+    <td>Airtable button field that opens the interface page URL. UI convenience only.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ SYNC VIEWS -->
+<h2 class="ops cat-header">Sync and Operational Views</h2>
+
+<table>
+  <tr><th>View name</th><th>View ID</th><th>Purpose</th></tr>
+  <tr><td><strong>Fortnox_OrderrowSync</strong></td><td><code>viwvckXL7m6mGjtDg</code></td><td>Primary n8n polling view. Filters by Last Modified Time window to detect recently changed records for re-sync.</td></tr>
+  <tr><td><strong>sync view</strong></td><td><code>viwPhQOKDEEyxnIQv</code></td><td>Second sync view — possibly used by a separate n8n workflow or for a different polling interval.</td></tr>
+  <tr><td><strong>CHANGED/DELETED TODAY IN FORTNOX</strong></td><td><code>viwQBDZAqM9B4TqxE</code></td><td>Filters by <code>is it changed/deleted today?</code>. Daily QA view for the team to catch rows that were modified in Fortnox and may need allocation review.</td></tr>
+  <tr><td><strong>When order with alloc is deleted / changed</strong></td><td><code>viw4oaf3X7bZAXova</code> / <code>viwdT09WvKKOcDAuc</code></td><td>Show rows where the parent order was deleted or changed in Fortnox but the row still has live allocations — requires manual review.</td></tr>
+  <tr><td><strong>Not Fully Allocated</strong></td><td><code>viwuXYIZd4MtS9qSO</code></td><td>All rows where <code>Did we allocate 100%? = 🚧</code>. Main work queue for the allocation team.</td></tr>
+  <tr><td><strong>No articles</strong> / <strong>No articles copy</strong></td><td><code>viw47C1hh7RjLfdNw</code></td><td>Rows where <code>FortnoxArticle</code> link is missing — n8n couldn't match the ArticleNumber to a known article.</td></tr>
+  <tr><td><strong>Deleted But Allocated</strong></td><td><code>viwwLNPMdfsCO492A</code></td><td>Soft-deleted rows that still have live allocation records. These represent accruals for work no longer on the order.</td></tr>
+</table>
+
+</body>
+</html>
