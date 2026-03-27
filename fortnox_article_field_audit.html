@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FortnoxArticle – Field Audit</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; color: #1a1a2e; background: #f4f6f9; padding: 24px; }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    h2 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+    h3 { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #444; text-transform: uppercase; letter-spacing: 0.5px; }
+    header { background: #fff; border: 1px solid #e0e4ed; border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; }
+    header dl { display: grid; grid-template-columns: 180px 1fr; gap: 6px 12px; margin-top: 14px; }
+    header dt { font-weight: 600; color: #555; }
+    header dd { color: #222; font-family: monospace; font-size: 13px; }
+    .card { background: #fff; border: 1px solid #e0e4ed; border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .stat-box { background: #f8f9fb; border: 1px solid #e0e4ed; border-radius: 6px; padding: 12px; text-align: center; }
+    .stat-box .num { font-size: 28px; font-weight: 700; color: #2d6cdf; }
+    .stat-box .lbl { font-size: 11px; color: #666; margin-top: 2px; }
+    .stat-box.green .num { color: #1a7a4a; }
+    .stat-box.amber .num { color: #b06000; }
+    .stat-box.red .num { color: #c0392b; }
+    .stat-box.grey .num { color: #888; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f0f2f7; text-align: left; padding: 8px 12px; font-weight: 600; border-bottom: 2px solid #dde2ee; color: #333; }
+    td { padding: 7px 12px; border-bottom: 1px solid #eef0f5; vertical-align: top; }
+    tr:hover td { background: #fafbff; }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge-active { background: #d4edda; color: #155724; }
+    .badge-sparse { background: #fff3cd; color: #856404; }
+    .badge-zero   { background: #e2e3e5; color: #383d41; }
+    .badge-empty  { background: #f8d7da; color: #721c24; }
+    .badge-computed { background: #d1ecf1; color: #0c5460; }
+    .badge-link   { background: #e8d5f5; color: #4a0e70; }
+    .badge-internal { background: #ffeaa7; color: #6c4f00; }
+    .badge-anomaly { background: #ffe0b2; color: #7f3a00; }
+    .pct { font-family: monospace; font-weight: 600; }
+    .pct-hi { color: #1a7a4a; }
+    .pct-mid { color: #b06000; }
+    .pct-lo { color: #888; }
+    .pct-zero { color: #c0392b; }
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 12px; margin-top: 4px; background: #f0f2f7; border-bottom: 1px solid #dde2ee; color: #555; }
+    .warn { color: #c05000; font-weight: 600; }
+    .mono { font-family: monospace; font-size: 12px; }
+    .note-text { color: #555; font-size: 12px; }
+    a { color: #2d6cdf; text-decoration: none; }
+    .api-verified { font-size: 11px; color: #1a7a4a; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>FortnoxArticle — Field-Level Audit</h1>
+  <dl>
+    <dt>Airtable table</dt>       <dd>FortnoxArticle &nbsp;·&nbsp; <span class="mono">tbllLCePTMAsMqF3A</span></dd>
+    <dt>Base</dt>                 <dd>Production &nbsp;·&nbsp; <span class="mono">appk463NGeDy17j9T</span></dd>
+    <dt>Fortnox endpoint</dt>     <dd>GET /3/articles/{ArticleNumber}</dd>
+    <dt>Sync direction</dt>       <dd>Fortnox → Airtable (read-only mirror)</dd>
+    <dt>Upsert key</dt>           <dd>@url</dd>
+    <dt>Sample size</dt>          <dd>30 records (population rates)</dd>
+    <dt>Audit date</dt>           <dd>2026-03-27</dd>
+  </dl>
+</header>
+
+<!-- ─── SUMMARY ─── -->
+<div class="card">
+  <h2>Summary</h2>
+  <div class="summary-grid">
+    <div class="stat-box"><div class="num">65</div><div class="lbl">Total fields</div></div>
+    <div class="stat-box green"><div class="num">45</div><div class="lbl">Fortnox API fields (Section A)</div></div>
+    <div class="stat-box green"><div class="num">17</div><div class="lbl">A1 — Active (≥10%)</div></div>
+    <div class="stat-box amber"><div class="num">1</div><div class="lbl">A2 — Sparse (&lt;10%)</div></div>
+    <div class="stat-box grey"><div class="num">7</div><div class="lbl">A3 — Structural zeros/false</div></div>
+    <div class="stat-box red"><div class="num">20</div><div class="lbl">A4 — Always empty</div></div>
+    <div class="stat-box"><div class="num">10</div><div class="lbl">C — Computed / rollup</div></div>
+    <div class="stat-box"><div class="num">6</div><div class="lbl">D — Link fields</div></div>
+    <div class="stat-box"><div class="num">3</div><div class="lbl">E — Internal</div></div>
+    <div class="stat-box amber"><div class="num">1</div><div class="lbl">G — Anomaly ⚠</div></div>
+  </div>
+  <p class="note-text">
+    All 45 Fortnox API fields verified against the <em>fortnox_Article</em> schema from
+    <a href="https://apps.fortnox.se/apidocs">apps.fortnox.se/apidocs</a>
+    (GET /3/articles/{ArticleNumber}).
+    Coverage is complete: every API field has a corresponding Airtable field.
+    One Airtable field (<code>CommodityCode</code>) is not present in the Fortnox Article schema — see Section G.
+  </p>
+</div>
+
+<!-- ─── SECTION A ─── -->
+<div class="card">
+  <h2>Section A — Fortnox API Fields <span class="api-verified">✓ All 45 verified against API</span></h2>
+
+  <!-- A1 Active -->
+  <div class="section-label">A1 — Active &nbsp;·&nbsp; populated in ≥10% of sampled records &nbsp;·&nbsp; 17 fields</div>
+  <table>
+    <thead><tr><th>Field name</th><th>Airtable type</th><th>Population</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">@url</td>          <td>URL</td>           <td><span class="pct pct-hi">100%</span></td><td>Fortnox canonical URL for the article; upsert key</td></tr>
+      <tr><td class="mono">ArticleNumber</td> <td>Single line</td>   <td><span class="pct pct-hi">100%</span></td><td>Fortnox article identifier (≤50 chars)</td></tr>
+      <tr><td class="mono">Description</td>   <td>Single line</td>   <td><span class="pct pct-hi">100%</span></td><td>Article description (required field in API)</td></tr>
+      <tr><td class="mono">EUAccount</td>     <td>Number</td>        <td><span class="pct pct-hi">100%</span></td><td>EU intra-community sales account</td></tr>
+      <tr><td class="mono">EUVATAccount</td>  <td>Number</td>        <td><span class="pct pct-hi">100%</span></td><td>EU VAT account</td></tr>
+      <tr><td class="mono">ExportAccount</td> <td>Number</td>        <td><span class="pct pct-hi">100%</span></td><td>Export sales account</td></tr>
+      <tr><td class="mono">PurchaseAccount</td><td>Number</td>       <td><span class="pct pct-hi">100%</span></td><td>Purchase ledger account</td></tr>
+      <tr><td class="mono">SalesAccount</td>  <td>Number</td>        <td><span class="pct pct-hi">100%</span></td><td>Sales ledger account</td></tr>
+      <tr><td class="mono">Type</td>          <td>Single line</td>   <td><span class="pct pct-hi">100%</span></td><td>Article type: STOCK or SERVICE</td></tr>
+      <tr><td class="mono">VAT</td>           <td>Number</td>        <td><span class="pct pct-hi">100%</span></td><td>VAT rate</td></tr>
+      <tr><td class="mono">Active</td>        <td>Checkbox</td>      <td><span class="pct pct-hi">50%</span></td> <td>Whether article is active in Fortnox</td></tr>
+      <tr><td class="mono">SalesPrice</td>    <td>Currency</td>      <td><span class="pct pct-hi">33%</span></td> <td>Default sales price</td></tr>
+      <tr><td class="mono">ConstructionAccount</td><td>Number</td>   <td><span class="pct pct-mid">17%</span></td><td>Construction (ROT) account</td></tr>
+      <tr><td class="mono">PurchasePrice</td> <td>Currency</td>      <td><span class="pct pct-mid">17%</span></td><td>Standard purchase price</td></tr>
+      <tr><td class="mono">ReservedQuantity</td><td>Number</td>      <td><span class="pct pct-mid">17%</span></td><td>Quantity reserved on orders</td></tr>
+      <tr><td class="mono">SupplierName</td>  <td>Single line</td>   <td><span class="pct pct-mid">17%</span></td><td>Default supplier name</td></tr>
+      <tr><td class="mono">SupplierNumber</td><td>Single line</td>   <td><span class="pct pct-mid">17%</span></td><td>Default supplier number (links to Fortnox Suppliers)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- A2 Sparse -->
+  <div class="section-label">A2 — Contextually populated &nbsp;·&nbsp; present but sparse (&lt;10%, &gt;0%) &nbsp;·&nbsp; 1 field</div>
+  <table>
+    <thead><tr><th>Field name</th><th>Airtable type</th><th>Population</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">Unit</td><td>Single line</td><td><span class="pct pct-lo">7%</span></td><td>Unit of measure (e.g. "st", "tim"). Only set when article has a specific unit.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- A3 Structural zeros/false -->
+  <div class="section-label">A3 — Structural zeros / false &nbsp;·&nbsp; Fortnox sends a value (0 or false) but field appears empty in Airtable &nbsp;·&nbsp; 7 fields</div>
+  <table>
+    <thead><tr><th>Field name</th><th>Airtable type</th><th>Population</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">Bulky</td>             <td>Checkbox</td><td><span class="pct pct-zero">0%</span></td><td>Fortnox returns false; unchecked Airtable checkbox appears empty</td></tr>
+      <tr><td class="mono">DisposableQuantity</td><td>Number</td>  <td><span class="pct pct-zero">0%</span></td><td>Returns 0.0 for non-stock articles (TYPE=SERVICE)</td></tr>
+      <tr><td class="mono">Expired</td>           <td>Checkbox</td><td><span class="pct pct-zero">0%</span></td><td>Fortnox returns false for all active articles; unchecked shows as empty</td></tr>
+      <tr><td class="mono">Housework</td>         <td>Checkbox</td><td><span class="pct pct-zero">0%</span></td><td>Fortnox returns false; none of the company's articles are housework-classified</td></tr>
+      <tr><td class="mono">QuantityInStock</td>   <td>Number</td>  <td><span class="pct pct-zero">0%</span></td><td>Returns 0.0 for SERVICE-type articles; company does not hold physical stock</td></tr>
+      <tr><td class="mono">StockGoods</td>        <td>Checkbox</td><td><span class="pct pct-zero">0%</span></td><td>Fortnox returns false for SERVICE articles</td></tr>
+      <tr><td class="mono">WebshopArticle</td>    <td>Checkbox</td><td><span class="pct pct-zero">0%</span></td><td>Fortnox returns false; company does not use Fortnox webshop</td></tr>
+    </tbody>
+  </table>
+
+  <!-- A4 Always empty -->
+  <div class="section-label">A4 — Always empty &nbsp;·&nbsp; 0 of 30 records populated &nbsp;·&nbsp; 20 fields</div>
+  <table>
+    <thead><tr><th>Field name</th><th>Airtable type</th><th>Population</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">CostCalculationMethod</td>  <td>Single line</td><td><span class="pct pct-zero">0%</span></td><td>Stock cost method (FIFO etc.); not applicable for SERVICE articles</td></tr>
+      <tr><td class="mono">DefaultStockLocation</td>   <td>Single line</td><td><span class="pct pct-zero">0%</span></td><td>Default stock location; not used (no physical warehouse)</td></tr>
+      <tr><td class="mono">DefaultStockPoint</td>      <td>Single line</td><td><span class="pct pct-zero">0%</span></td><td>Default stock point; not used</td></tr>
+      <tr><td class="mono">Depth</td>                  <td>Number</td>     <td><span class="pct pct-zero">0%</span></td><td>Physical depth (mm); irrelevant for service articles</td></tr>
+      <tr><td class="mono">DirectCost</td>             <td>Currency</td>   <td><span class="pct pct-zero">0%</span></td><td>Direct cost component; not configured</td></tr>
+      <tr><td class="mono">EAN</td>                    <td>Single line</td><td><span class="pct pct-zero">0%</span></td><td>EAN barcode; not used for media/advertising services</td></tr>
+      <tr><td class="mono">FreightCost</td>            <td>Currency</td>   <td><span class="pct pct-zero">0%</span></td><td>Freight cost component; not configured</td></tr>
+      <tr><td class="mono">Height</td>                 <td>Number</td>     <td><span class="pct pct-zero">0%</span></td><td>Physical height (mm); irrelevant for service articles</td></tr>
+      <tr><td class="mono">HouseworkType</td>          <td>Single line</td><td><span class="pct pct-zero">0%</span></td><td>Housework category enum; Housework=false so type is null</td></tr>
+      <tr><td class="mono">Manufacturer</td>           <td>Single line</td><td><span class="pct pct-zero">0%</span></td><td>Manufacturer name; not applicable for service offerings</td></tr>
+      <tr><td class="mono">ManufacturerArticleNumber</td><td>Single line</td><td><span class="pct pct-zero">0%</span></td><td>Manufacturer's article number; not applicable</td></tr>
+      <tr><td class="mono">Note</td>                   <td>Long text</td>  <td><span class="pct pct-zero">0%</span></td><td>Free-text note on article; none populated</td></tr>
+      <tr><td class="mono">OtherCost</td>              <td>Currency</td>   <td><span class="pct pct-zero">0%</span></td><td>Other cost component; not configured</td></tr>
+      <tr><td class="mono">StockAccount</td>           <td>Number</td>     <td><span class="pct pct-zero">0%</span></td><td>Stock valuation account; not applicable (SERVICE type)</td></tr>
+      <tr><td class="mono">StockChangeAccount</td>     <td>Number</td>     <td><span class="pct pct-zero">0%</span></td><td>Stock movement account; not applicable</td></tr>
+      <tr><td class="mono">StockPlace</td>             <td>Single line</td><td><span class="pct pct-zero">0%</span></td><td>Storage location; not applicable</td></tr>
+      <tr><td class="mono">StockValue</td>             <td>Currency</td>   <td><span class="pct pct-zero">0%</span></td><td>Total stock value; 0 for all SERVICE articles</td></tr>
+      <tr><td class="mono">StockWarning</td>           <td>Number</td>     <td><span class="pct pct-zero">0%</span></td><td>Low-stock warning threshold; not configured</td></tr>
+      <tr><td class="mono">Weight</td>                 <td>Number</td>     <td><span class="pct pct-zero">0%</span></td><td>Physical weight (g); irrelevant for service articles</td></tr>
+      <tr><td class="mono">Width</td>                  <td>Number</td>     <td><span class="pct pct-zero">0%</span></td><td>Physical width (mm); irrelevant for service articles</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── SECTION C — Computed ─── -->
+<div class="card">
+  <h2>Section C — Airtable Computed Fields &nbsp;<span style="font-size:12px;font-weight:400;color:#555">(formula, rollup, lookup, auto-generated)</span></h2>
+  <table>
+    <thead><tr><th>Field name</th><th>Type</th><th>Population</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">Name</td>                    <td><span class="badge badge-computed">Formula</span></td>    <td><span class="pct pct-hi">100%</span></td><td>Display label formula (combines ArticleNumber + Description)</td></tr>
+      <tr><td class="mono">OrderDate rollup</td>        <td><span class="badge badge-computed">Rollup</span></td>     <td><span class="pct pct-mid">47%</span></td> <td>Earliest order date from linked FortnoxOrderRows</td></tr>
+      <tr><td class="mono">DeliveryDate rollup</td>     <td><span class="badge badge-computed">Rollup</span></td>     <td><span class="pct pct-mid">47%</span></td> <td>Delivery date rolled up from linked FortnoxOrderRows</td></tr>
+      <tr><td class="mono">Mediatyp Rollup</td>         <td><span class="badge badge-computed">Rollup</span></td>     <td><span class="pct pct-hi">83%</span></td> <td>Media type name rolled up from sys.mediatyp link</td></tr>
+      <tr><td class="mono">Count (FortnoxOrderRows)</td><td><span class="badge badge-computed">Rollup</span></td>     <td><span class="pct pct-hi">83%</span></td> <td>Count of linked order rows</td></tr>
+      <tr><td class="mono">Invoice Rows Total</td>      <td><span class="badge badge-computed">Rollup</span></td>     <td><span class="pct pct-zero">0%</span></td> <td>Total value from linked FortnoxInvoiceRow records; empty because FortnoxInvoiceRow is never populated</td></tr>
+      <tr><td class="mono">Invoice rows count</td>      <td><span class="badge badge-computed">Rollup</span></td>     <td><span class="pct pct-zero">0%</span></td> <td>Count of linked FortnoxInvoiceRow records; always 0</td></tr>
+      <tr><td class="mono">Fortnox OrderRow copy</td>   <td><span class="badge badge-computed">Lookup</span></td>    <td><span class="pct pct-zero">0%</span></td> <td>Field copy from FortnoxOrderRows; appears unused</td></tr>
+      <tr><td class="mono">Last Modified Time</td>      <td><span class="badge badge-computed">Auto</span></td>      <td><span class="pct pct-hi">100%</span></td><td>Airtable system field — timestamp of last record modification</td></tr>
+      <tr><td class="mono">Created Time</td>            <td><span class="badge badge-computed">Auto</span></td>      <td><span class="pct pct-hi">100%</span></td><td>Airtable system field — record creation timestamp</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── SECTION D — Links ─── -->
+<div class="card">
+  <h2>Section D — Airtable Relationship Links</h2>
+  <table>
+    <thead><tr><th>Field name</th><th>Links to</th><th>Population</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono">FortnoxOrderRows</td>
+        <td>FortnoxOrderRows table</td>
+        <td><span class="pct pct-hi">83%</span></td>
+        <td>Articles that appear on at least one order row are linked here via the n8n sync flow</td>
+      </tr>
+      <tr>
+        <td class="mono">sys.mediatyp</td>
+        <td>Media type lookup table</td>
+        <td><span class="pct pct-mid">40%</span></td>
+        <td>Maps articles to an internal media type classification; linked manually or via automation</td>
+      </tr>
+      <tr>
+        <td class="mono">Order Template</td>
+        <td>Order template table</td>
+        <td><span class="pct pct-lo">3%</span></td>
+        <td>Links article to an order template; sparse usage</td>
+      </tr>
+      <tr>
+        <td class="mono">FortnoxInvoiceRow</td>
+        <td>FortnoxInvoiceRow table</td>
+        <td><span class="pct pct-zero">0%</span></td>
+        <td>FortnoxInvoiceRow table is always empty (invoice row-parsing flow never activated) — all linked records are null</td>
+      </tr>
+      <tr>
+        <td class="mono">Charge Type</td>
+        <td>Charge type lookup table</td>
+        <td><span class="pct pct-zero">0%</span></td>
+        <td>Internal charge classification link; never populated in practice</td>
+      </tr>
+      <tr>
+        <td class="mono">Invoice</td>
+        <td>FortnoxInvoice table</td>
+        <td><span class="pct pct-zero">0%</span></td>
+        <td>Direct article-to-invoice link; not populated — invoice association goes through order rows instead</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── SECTION E — Internal ─── -->
+<div class="card">
+  <h2>Section E — Internal / Operational Fields</h2>
+  <table>
+    <thead><tr><th>Field name</th><th>Type</th><th>Population</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono">Last Modified</td>
+        <td><span class="badge badge-internal">Internal</span></td>
+        <td><span class="pct pct-mid">40%</span></td>
+        <td>Manual or trigger-written timestamp for loop-prevention or tracking; not a Fortnox API field</td>
+      </tr>
+      <tr>
+        <td class="mono">Adgrabber Comments</td>
+        <td><span class="badge badge-internal">Internal</span></td>
+        <td><span class="pct pct-zero">0%</span></td>
+        <td>Free-text comment field for internal team notes on articles; never used in sample</td>
+      </tr>
+      <tr>
+        <td class="mono">% Charges</td>
+        <td><span class="badge badge-internal">Internal</span></td>
+        <td><span class="pct pct-zero">0%</span></td>
+        <td>Charge percentage field; purpose unclear, never populated in sample</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── SECTION G — Anomalies ─── -->
+<div class="card">
+  <h2>Section G — Anomalies &nbsp;<span style="font-size:12px;font-weight:400;color:#c05000">⚠ Fields in Airtable not found in Fortnox Article API schema</span></h2>
+  <table>
+    <thead><tr><th>Field name</th><th>Airtable type</th><th>Population</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono">CommodityCode</td>
+        <td>Single line</td>
+        <td><span class="pct pct-zero">0%</span></td>
+        <td><span class="badge badge-anomaly">⚠ Not in API schema</span></td>
+        <td>
+          The <em>fortnox_Article</em> schema (verified via Fortnox API docs) does not include a
+          <code>CommodityCode</code> field. The field is present in Airtable but has never been populated
+          in the sampled records. Possible explanations: (1) legacy field added anticipating future use,
+          (2) field intended for a different Fortnox resource (e.g. export declarations), or
+          (3) mapped from a custom/extended API feature not reflected in the current schema.
+          Action: verify against the n8n sync workflow and remove if not mapped.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── API FIELD COVERAGE ─── -->
+<div class="card">
+  <h2>Fortnox API Field Coverage</h2>
+  <p class="note-text" style="margin-bottom:12px">
+    The Fortnox Article API (<code>fortnox_Article</code> schema, GET /3/articles/{ArticleNumber}) returns
+    <strong>45 fields</strong>. All 45 are present in the FortnoxArticle Airtable table.
+    No API fields are missing from Airtable.
+  </p>
+  <table>
+    <thead><tr><th>Fortnox API field</th><th>Airtable field</th><th>Coverage</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">@url</td>                   <td class="mono">@url</td>                   <td>✓</td></tr>
+      <tr><td class="mono">Active</td>                 <td class="mono">Active</td>                 <td>✓</td></tr>
+      <tr><td class="mono">ArticleNumber</td>          <td class="mono">ArticleNumber</td>          <td>✓</td></tr>
+      <tr><td class="mono">Bulky</td>                  <td class="mono">Bulky</td>                  <td>✓</td></tr>
+      <tr><td class="mono">ConstructionAccount</td>    <td class="mono">ConstructionAccount</td>    <td>✓</td></tr>
+      <tr><td class="mono">CostCalculationMethod</td>  <td class="mono">CostCalculationMethod</td>  <td>✓</td></tr>
+      <tr><td class="mono">DefaultStockLocation</td>   <td class="mono">DefaultStockLocation</td>   <td>✓</td></tr>
+      <tr><td class="mono">DefaultStockPoint</td>      <td class="mono">DefaultStockPoint</td>      <td>✓</td></tr>
+      <tr><td class="mono">Depth</td>                  <td class="mono">Depth</td>                  <td>✓</td></tr>
+      <tr><td class="mono">Description</td>            <td class="mono">Description</td>            <td>✓</td></tr>
+      <tr><td class="mono">DirectCost</td>             <td class="mono">DirectCost</td>             <td>✓</td></tr>
+      <tr><td class="mono">DisposableQuantity</td>     <td class="mono">DisposableQuantity</td>     <td>✓</td></tr>
+      <tr><td class="mono">EAN</td>                    <td class="mono">EAN</td>                    <td>✓</td></tr>
+      <tr><td class="mono">EUAccount</td>              <td class="mono">EUAccount</td>              <td>✓</td></tr>
+      <tr><td class="mono">EUVATAccount</td>           <td class="mono">EUVATAccount</td>           <td>✓</td></tr>
+      <tr><td class="mono">Expired</td>                <td class="mono">Expired</td>                <td>✓</td></tr>
+      <tr><td class="mono">ExportAccount</td>          <td class="mono">ExportAccount</td>          <td>✓</td></tr>
+      <tr><td class="mono">FreightCost</td>            <td class="mono">FreightCost</td>            <td>✓</td></tr>
+      <tr><td class="mono">Height</td>                 <td class="mono">Height</td>                 <td>✓</td></tr>
+      <tr><td class="mono">Housework</td>              <td class="mono">Housework</td>              <td>✓</td></tr>
+      <tr><td class="mono">HouseworkType</td>          <td class="mono">HouseworkType</td>          <td>✓</td></tr>
+      <tr><td class="mono">Manufacturer</td>           <td class="mono">Manufacturer</td>           <td>✓</td></tr>
+      <tr><td class="mono">ManufacturerArticleNumber</td><td class="mono">ManufacturerArticleNumber</td><td>✓</td></tr>
+      <tr><td class="mono">Note</td>                   <td class="mono">Note</td>                   <td>✓</td></tr>
+      <tr><td class="mono">OtherCost</td>              <td class="mono">OtherCost</td>              <td>✓</td></tr>
+      <tr><td class="mono">PurchaseAccount</td>        <td class="mono">PurchaseAccount</td>        <td>✓</td></tr>
+      <tr><td class="mono">PurchasePrice</td>          <td class="mono">PurchasePrice</td>          <td>✓</td></tr>
+      <tr><td class="mono">QuantityInStock</td>        <td class="mono">QuantityInStock</td>        <td>✓</td></tr>
+      <tr><td class="mono">ReservedQuantity</td>       <td class="mono">ReservedQuantity</td>       <td>✓</td></tr>
+      <tr><td class="mono">SalesAccount</td>           <td class="mono">SalesAccount</td>           <td>✓</td></tr>
+      <tr><td class="mono">SalesPrice</td>             <td class="mono">SalesPrice</td>             <td>✓</td></tr>
+      <tr><td class="mono">StockAccount</td>           <td class="mono">StockAccount</td>           <td>✓</td></tr>
+      <tr><td class="mono">StockChangeAccount</td>     <td class="mono">StockChangeAccount</td>     <td>✓</td></tr>
+      <tr><td class="mono">StockGoods</td>             <td class="mono">StockGoods</td>             <td>✓</td></tr>
+      <tr><td class="mono">StockPlace</td>             <td class="mono">StockPlace</td>             <td>✓</td></tr>
+      <tr><td class="mono">StockValue</td>             <td class="mono">StockValue</td>             <td>✓</td></tr>
+      <tr><td class="mono">StockWarning</td>           <td class="mono">StockWarning</td>           <td>✓</td></tr>
+      <tr><td class="mono">SupplierName</td>           <td class="mono">SupplierName</td>           <td>✓</td></tr>
+      <tr><td class="mono">SupplierNumber</td>         <td class="mono">SupplierNumber</td>         <td>✓</td></tr>
+      <tr><td class="mono">Type</td>                   <td class="mono">Type</td>                   <td>✓</td></tr>
+      <tr><td class="mono">Unit</td>                   <td class="mono">Unit</td>                   <td>✓</td></tr>
+      <tr><td class="mono">VAT</td>                    <td class="mono">VAT</td>                    <td>✓</td></tr>
+      <tr><td class="mono">WebshopArticle</td>         <td class="mono">WebshopArticle</td>         <td>✓</td></tr>
+      <tr><td class="mono">Weight</td>                 <td class="mono">Weight</td>                 <td>✓</td></tr>
+      <tr><td class="mono">Width</td>                  <td class="mono">Width</td>                  <td>✓</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer style="margin-top:24px; text-align:center; font-size:11px; color:#aaa;">
+  FortnoxArticle field audit · Production base appk463NGeDy17j9T · 2026-03-27
+</footer>
+
+</body>
+</html>
