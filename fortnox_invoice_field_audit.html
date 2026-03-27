@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FortnoxInvoice — Full Field Audit</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a1a; max-width: 1500px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 22px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+  h2 { font-size: 17px; margin-top: 32px; border-left: 4px solid; padding-left: 10px; }
+  h3 { font-size: 14px; margin-top: 20px; color: #444; }
+  p { line-height: 1.6; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+  th { background: #2c2c2c; color: #fff; padding: 8px 10px; text-align: left; }
+  td { padding: 7px 10px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+  tr:nth-child(even) { background: #fafafa; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .b-sync    { background: #d0ebff; color: #1864ab; }
+  .b-ops     { background: #fff3bf; color: #7d6608; }
+  .b-rollup  { background: #ffe0f0; color: #a61e4d; }
+  .b-link    { background: #d3f9d8; color: #1a5e2a; }
+  .b-system  { background: #e9ecef; color: #495057; }
+  .b-dev     { background: #e8e8e8; color: #555; }
+  .b-formula { background: #f3d9fa; color: #6a0dad; }
+  .b-warn    { background: #fff0f6; color: #c92a2a; }
+  .b-empty   { background: #f1f3f5; color: #868e96; }
+  code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; font-size: 12px; font-family: monospace; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+  .summary-card { padding: 12px; border-radius: 6px; }
+  .summary-card .count { font-size: 24px; font-weight: 700; }
+  .summary-card .label { font-size: 12px; margin-top: 4px; }
+  .note { background: #fff9db; border-left: 3px solid #f08c00; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+  .info-note { background: #e7f5ff; border-left: 3px solid #339af0; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+  .warn-note { background: #fff0f6; border-left: 3px solid #e64980; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+  .field-id { font-size: 11px; color: #888; font-family: monospace; }
+  .cat-header { margin-top: 36px; }
+  .sub-section { margin-top: 20px; padding: 10px 0 0 0; border-top: 1px dashed #ccc; }
+  .sub-section-title { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 8px; }
+
+  h2.sync    { border-color: #1864ab; }
+  h2.ops     { border-color: #7d6608; }
+  h2.rollup  { border-color: #a61e4d; }
+  h2.link    { border-color: #1a5e2a; }
+  h2.system  { border-color: #868e96; }
+  h2.dev     { border-color: #aaa; }
+  h2.formula { border-color: #6a0dad; }
+</style>
+</head>
+<body>
+
+<h1>TABLE FortnoxInvoice — Full Field Audit</h1>
+<p>
+  <strong>Table ID:</strong> <code>tblOLaZyIaVJP6h6V</code> &nbsp;|&nbsp;
+  <strong>Base:</strong> Betaportal Adgrabber 2.0 (<code>appk463NGeDy17j9T</code>) &nbsp;|&nbsp;
+  <strong>Total fields: 108</strong> &nbsp;|&nbsp;
+  <strong>Audit date:</strong> 2026-03-26 &nbsp;|&nbsp;
+  <strong>Data sample:</strong> 30 records (prod)
+</p>
+
+<p>FortnoxInvoice is the <strong>customer-side invoice table</strong>. n8n polls <code>GET /3/invoices</code> and upserts records using <code>@url</code> as the upsert key. These are invoices Adgrabber sends to its clients — they are generated in Fortnox from orders and flow into Airtable as read-only mirrors. The table sits at the end of the revenue chain: <code>FortnoxOrder → FortnoxInvoice → (payment)</code>. There is no Airtable → Fortnox push direction for this table.</p>
+
+<div class="info-note">
+  <strong>Key architecture note — two order linkage fields:</strong> FortnoxInvoice links to FortnoxOrder via two separate mechanisms: (1) FIELD <code>FortnoxOrder</code> — a direct multipleRecordLinks field pointing to <code>tblhNdAzxbWeNgEgW</code>, populated by n8n during sync (<code>prefersSingleRecordLink: true</code> — enforced 1:1 in the UI); and (2) FIELD <code>OrderReference</code> — a plain text field containing the Fortnox order DocumentNumber (e.g. <code>"2670"</code>), copied directly from the Fortnox API payload. The link field is the authoritative Airtable connection; <code>OrderReference</code> is the raw Fortnox value. This table also has a child-record table: <strong>FortnoxInvoiceRow</strong> (<code>tblDkNRTKMTpMTLK3</code>) — individual line items parsed from the <code>InvoiceRows</code> JSON blob, linked via FIELD <code>FortnoxInvoiceRow</code>.
+</div>
+
+<!-- Summary grid -->
+<div class="summary-grid">
+  <div class="summary-card" style="background:#d0ebff">
+    <div class="count" style="font-size:14px">A1: 47 &nbsp;·&nbsp; A2: 9 &nbsp;·&nbsp; A3: 20 &nbsp;·&nbsp; A4: 13 &nbsp;·&nbsp; A-leg: 2</div>
+    <div class="label"><strong>Fortnox-side fields (91 total, all verified in API schema)</strong><br>
+      A1: Active (47) &nbsp;·&nbsp; A2: Sparse (9) &nbsp;·&nbsp; A3: Structural zeros (20) &nbsp;·&nbsp; A4: Always empty (13) &nbsp;·&nbsp; A-legacy: superseded (2)
+    </div>
+  </div>
+  <div class="summary-card" style="background:#d3f9d8">
+    <div class="count">3</div>
+    <div class="label"><strong>Link fields</strong><br>FortnoxOrder, FortnoxCustomer, FortnoxInvoiceRow</div>
+  </div>
+  <div class="summary-card" style="background:#ffe0f0">
+    <div class="count">2</div>
+    <div class="label"><strong>Rollups / lookups</strong><br>invoice count (from FortnoxOrder), CustomerNumber Lookup</div>
+  </div>
+  <div class="summary-card" style="background:#e9ecef">
+    <div class="count">3</div>
+    <div class="label"><strong>System fields</strong><br>Airtable Created Time, Last Modified Time, Invoice AutoNumber</div>
+  </div>
+  <div class="summary-card" style="background:#f3d9fa">
+    <div class="count">2</div>
+    <div class="label"><strong>Formula fields</strong><br>ID (display key), view (record URL)</div>
+  </div>
+  <div class="summary-card" style="background:#e8e8e8">
+    <div class="count">7</div>
+    <div class="label"><strong>Dev / legacy / n8n-operational fields</strong><br>Customer, Order, FortnoxOrder copy, OrderReference copy, InvoiceReference, RecordID, Fortnox API Data</div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Why 94 Fortnox-side fields?</strong> The Fortnox Invoice API object is unusually large — it bundles customer details, delivery address, payment terms, accounting codes, VAT breakdowns, boolean flags, and extended metadata into one payload. n8n maps every field from the payload into Airtable regardless of whether the data is meaningful for Adgrabber's use case. Of the 94 fields, only 49 carry active data; 33 are either always-zero constants or always empty.
+</div>
+
+<!-- ================================================================ CAT A -->
+<h2 class="sync cat-header">A — Fortnox-Side Fields &nbsp;<span class="badge b-sync">Origin: Fortnox / n8n sync</span></h2>
+
+<p>n8n polls <code>GET /3/invoices</code> and upserts records using <strong><code>@url</code> as the upsert key</strong>. Manual edits to A-fields in Airtable will be overwritten on the next sync. All invoice data changes must be made in Fortnox.</p>
+
+<div class="note">
+  <strong>Boolean fields:</strong> Fortnox returns booleans as JSON values but n8n stores them as the string <code>"true"</code> or <code>"false"</code> in Airtable singleSelect or multilineText fields. <code>InvoiceRows</code> is the full invoice line-item array serialized as a JSON string. <code>EDIInformation</code> and <code>EmailInformation</code> are also stored as JSON strings.
+</div>
+
+<!-- A1: ACTIVE -->
+<h3>A1 — Active fields &nbsp;<span class="badge b-sync">49 fields · always or nearly always populated</span></h3>
+<p style="font-size:12px;color:#555">These fields carry real data on every sync. Population rate ≥ 80% in the 30-record prod sample.</p>
+
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Notes</th></tr>
+
+  <!-- Identifiers -->
+  <tr><td colspan="3" style="background:#f0f4ff;font-weight:600;font-size:12px">Identifiers &amp; sync keys</td></tr>
+  <tr><td><strong>@url</strong> <span class="field-id">fldh69hzGmJ865icr</span></td><td>singleLineText</td><td><strong>Primary upsert key.</strong> Fortnox REST API self-link, e.g. <code>https://api.fortnox.se/3/invoices/2473</code>. n8n uses this to match existing records during sync.</td></tr>
+  <tr><td><strong>@urlTaxReductionList</strong> <span class="field-id">fldJJVoloCswLVFLl</span></td><td>singleLineText</td><td>API link to the tax reduction list resource for this invoice. Populated on all records.</td></tr>
+  <tr><td><strong>DocumentNumber</strong> <span class="field-id">fld7WYTA5CbKYm1tB</span></td><td>multilineText</td><td>Fortnox invoice number (e.g. <code>"2473"</code>). Primary Fortnox identifier. Also used in the <code>ID</code> formula as the prefix.</td></tr>
+
+  <!-- Financial -->
+  <tr><td colspan="3" style="background:#f0f4ff;font-weight:600;font-size:12px">Financial amounts</td></tr>
+  <tr><td><strong>Total</strong> <span class="field-id">fldvOCXSmR3f1b2I4</span></td><td>number</td><td>Invoice total including VAT (SEK).</td></tr>
+  <tr><td><strong>Net</strong> <span class="field-id">fld70SkVXm0LvpG14</span></td><td>number</td><td>Invoice total excluding VAT.</td></tr>
+  <tr><td><strong>TotalToPay</strong> <span class="field-id">fldeCw70DbnJ4guPp</span></td><td>number</td><td>Amount remaining to pay (after any credits applied).</td></tr>
+  <tr><td><strong>TotalVAT</strong> <span class="field-id">fld61OEgsb6xUsCsS</span></td><td>number</td><td>VAT portion of the total.</td></tr>
+  <tr><td><strong>Gross</strong> <span class="field-id">fldDdPeiVzV6jSkgJ</span></td><td>number</td><td>Gross amount before discounts or round-off.</td></tr>
+  <tr><td><strong>Balance</strong> <span class="field-id">fldHHrBcCe7TaSJAB</span></td><td>number</td><td>Outstanding balance. 0 = fully paid.</td></tr>
+  <tr><td><strong>RoundOff</strong> <span class="field-id">fldiXWfW3btVcnlt7</span></td><td>number</td><td>Rounding adjustment applied to the invoice total.</td></tr>
+  <tr><td><strong>VoucherNumber</strong> <span class="field-id">fldcxayi6NoeXeajG</span></td><td>number</td><td>Accounting voucher number in Fortnox. Assigned when invoice is booked.</td></tr>
+  <tr><td><strong>VoucherSeries</strong> <span class="field-id">fldbfPlJFxErcJukI</span></td><td>multilineText</td><td>Voucher series letter (e.g. <code>"B"</code>). Accounting classification in Fortnox.</td></tr>
+  <tr><td><strong>VoucherYear</strong> <span class="field-id">fldv5yZYb0Bnx0rBy</span></td><td>number</td><td>Fiscal year the voucher belongs to.</td></tr>
+  <tr><td><strong>Reminders</strong> <span class="field-id">fldjIPS8DrsIeDJ9o</span></td><td>number</td><td>Number of payment reminders sent. Populated on all records.</td></tr>
+
+  <!-- Status flags -->
+  <tr><td colspan="3" style="background:#f0f4ff;font-weight:600;font-size:12px">Status flags</td></tr>
+  <tr><td><strong>Booked</strong> <span class="field-id">fldVPDvziFsGCEWUj</span></td><td>singleSelect</td><td><code>"true"</code> = invoice has been posted to the Fortnox ledger. All sample records are booked.</td></tr>
+  <tr><td><strong>Cancelled</strong> <span class="field-id">fldEubugbVgpWwh6c</span></td><td>singleSelect</td><td><code>"true"</code> = invoice has been cancelled in Fortnox.</td></tr>
+  <tr><td><strong>Sent</strong> <span class="field-id">fldqPDyuJqO5NfTDg</span></td><td>singleSelect</td><td><code>"true"</code> = invoice has been sent to the customer.</td></tr>
+  <tr><td><strong>NotCompleted</strong> <span class="field-id">fldCpXk5K5LdC5hu3</span></td><td>singleSelect</td><td><code>"true"</code> = invoice is a draft. All sample records show <code>"false"</code>.</td></tr>
+  <tr><td><strong>Credit</strong> <span class="field-id">flde5UrWFXky8HHB2</span></td><td>multilineText</td><td><code>"false"</code> = regular invoice. <code>"true"</code> = this record is a credit note.</td></tr>
+  <tr><td><strong>CreditInvoiceReference</strong> <span class="field-id">fldgDl5JFmgEVeFiJ</span></td><td>multilineText</td><td>DocumentNumber of any credit note issued against this invoice. Present on all records; <code>"0"</code> or empty string when not applicable.</td></tr>
+
+  <!-- Dates -->
+  <tr><td colspan="3" style="background:#f0f4ff;font-weight:600;font-size:12px">Dates</td></tr>
+  <tr><td><strong>InvoiceDate</strong> <span class="field-id">fld1oa3jq4OG2HaYa</span></td><td>date</td><td>Date the invoice was issued.</td></tr>
+  <tr><td><strong>DueDate</strong> <span class="field-id">fldKcFnqS0ACbjAzz</span></td><td>date</td><td>Payment due date.</td></tr>
+  <tr><td><strong>FinalPayDate</strong> <span class="field-id">fldTkoKP6OW1VtsJM</span></td><td>date</td><td>Final payment date recorded by Fortnox when balance reaches 0.</td></tr>
+  <tr><td><strong>DeliveryDate</strong> <span class="field-id">fldvgsNAbqqCQcf9j</span></td><td>date</td><td>Service delivery date. Used as the invoice period reference for campaigns.</td></tr>
+  <tr><td><strong>OutboundDate</strong> <span class="field-id">fldCdCvnGC1KxWa5w</span></td><td>date</td><td>Date the invoice was dispatched.</td></tr>
+
+  <!-- References & metadata -->
+  <tr><td colspan="3" style="background:#f0f4ff;font-weight:600;font-size:12px">References &amp; metadata</td></tr>
+  <tr><td><strong>OrderReference</strong> <span class="field-id">fldpSbruV7k3SL0j6</span></td><td>singleLineText</td><td>Fortnox order DocumentNumber this invoice was generated from (e.g. <code>"2670"</code>). The <code>FortnoxOrder</code> link field is the Airtable relation built on top of this.</td></tr>
+  <tr><td><strong>InvoiceType</strong> <span class="field-id">fldPr9PEJylODJEDj</span></td><td>multilineText</td><td>Invoice type string from Fortnox. Value <code>"INVOICE"</code> on all sample records. Credit notes would show a different value.</td></tr>
+  <tr><td><strong>OurReference</strong> <span class="field-id">fldfuZqw1k3BhRffb</span></td><td>multilineText</td><td>Adgrabber account manager name on the invoice (e.g. <code>"Fanny Volmerdal"</code>).</td></tr>
+  <tr><td><strong>YourReference</strong> <span class="field-id">fldfPjOvJS83yUbYE</span></td><td>multilineText</td><td>Client contact name on the invoice. Populated on ~90% of records.</td></tr>
+  <tr><td><strong>Comments</strong> <span class="field-id">fldqF5US7tmoAFV4T</span></td><td>multilineText</td><td>Customer-facing comments on the invoice. Populated on ~90% of records.</td></tr>
+  <tr><td><strong>OCR</strong> <span class="field-id">fldS4jY7iWR5k2d8p</span></td><td>multilineText</td><td>OCR payment reference number (Swedish bank transfer reference). Populated on all records.</td></tr>
+  <tr><td><strong>Currency</strong> <span class="field-id">fldojO18852etOlU2</span></td><td>multilineText</td><td>Invoice currency code. Always <code>"SEK"</code>.</td></tr>
+  <tr><td><strong>PriceList</strong> <span class="field-id">fldqJ39v6wLT7wdx2</span></td><td>multilineText</td><td>Fortnox price list code used for this invoice.</td></tr>
+  <tr><td><strong>TermsOfPayment</strong> <span class="field-id">fldc2580t14j5oHmb</span></td><td>multilineText</td><td>Payment terms code (e.g. net 30).</td></tr>
+  <tr><td><strong>AccountingMethod</strong> <span class="field-id">fldvRDWDcxBOmYub4</span></td><td>multilineText</td><td>Accounting method (<code>"ACCRUAL"</code> or <code>"CASH"</code>).</td></tr>
+  <tr><td><strong>Language</strong> <span class="field-id">fldtrl04iwaCILTbP</span></td><td>multilineText</td><td>Invoice language code.</td></tr>
+  <tr><td><strong>PrintTemplate</strong> <span class="field-id">fldgoKeHruTACwarC</span></td><td>multilineText</td><td>Fortnox print template used for this invoice.</td></tr>
+
+  <!-- Customer -->
+  <tr><td colspan="3" style="background:#f0f4ff;font-weight:600;font-size:12px">Customer data</td></tr>
+  <tr><td><strong>CustomerName</strong> <span class="field-id">fldRrp6EjezagjINJ</span></td><td>singleLineText</td><td>Customer name from Fortnox. Used in the <code>ID</code> formula.</td></tr>
+  <tr><td><strong>CustomerNumber</strong> <span class="field-id">fldUa7GFzKwCyKx7L</span></td><td>multilineText</td><td>Fortnox customer number (e.g. <code>"1082"</code>). The <code>FortnoxCustomer</code> link is built on top of this.</td></tr>
+  <tr><td><strong>OrganisationNumber</strong> <span class="field-id">fldzUbjO0EZWC5d3M</span></td><td>multilineText</td><td>Swedish org number of the customer (e.g. <code>"556401-6872"</code>).</td></tr>
+  <tr><td><strong>Address1</strong> <span class="field-id">fld8t5874cOIssOsB</span></td><td>multilineText</td><td>Customer billing address line 1. Populated on ~97% of records.</td></tr>
+  <tr><td><strong>City</strong> <span class="field-id">fldPnQbrHfuhbx9LE</span></td><td>multilineText</td><td>City. Populated on ~97% of records.</td></tr>
+  <tr><td><strong>ZipCode</strong> <span class="field-id">fld2VpITx2HY8gbVV</span></td><td>multilineText</td><td>Postal code. Populated on ~97% of records.</td></tr>
+  <tr><td><strong>Country</strong> <span class="field-id">fldz47NaRXyq38qr0</span></td><td>multilineText</td><td>Country. Always <code>"Sverige"</code>.</td></tr>
+  <tr><td><strong>Phone1</strong> <span class="field-id">fld3gwUUAB4pYg3kD</span></td><td>multilineText</td><td>Phone number. Populated on ~80% of records.</td></tr>
+
+  <!-- Data blobs -->
+  <tr><td colspan="3" style="background:#f0f4ff;font-weight:600;font-size:12px">Data blobs</td></tr>
+  <tr><td><strong>InvoiceRows</strong> <span class="field-id">fld7D7YNwyOK0B1CT</span></td><td>multilineText</td><td><strong>Full invoice line-item array from Fortnox, serialised as JSON.</strong> Each element: <code>AccountNumber</code>, <code>ArticleNumber</code>, <code>Description</code>, <code>Price</code>, <code>Total</code>, <code>VAT</code>, <code>DeliveredQuantity</code>, <code>Project</code> (per-row project code — the mechanism for campaign revenue attribution), <code>CostCenter</code>, <code>RowId</code>, and others. The linked <strong>FortnoxInvoiceRow</strong> table stores these rows as individual records.</td></tr>
+  <tr><td><strong>EmailInformation</strong> <span class="field-id">fldJ3gkzBeBOtwBoS</span></td><td>multilineText</td><td>Invoice email settings as JSON: from/to/cc/bcc, subject, body. Contains the address the invoice was sent to.</td></tr>
+</table>
+
+<!-- A2: SPARSE -->
+<div class="sub-section">
+<h3>A2 — Contextually populated fields &nbsp;<span class="badge b-ops">10 fields · present on some records only</span></h3>
+<p style="font-size:12px;color:#555">These fields carry real data but are not filled on every invoice. Population rate 3–47% in the 30-record sample.</p>
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Population</th><th>Notes</th></tr>
+  <tr><td><strong>Remarks</strong> <span class="field-id">fldIo9syVEDB9X50g</span></td><td>multilineText</td><td>~47%</td><td>Internal remarks. Occasionally used by Adgrabber staff in Fortnox.</td></tr>
+  <tr><td><strong>Address2</strong> <span class="field-id">fldsYD9EIhDFWGZCE</span></td><td>multilineText</td><td>~23%</td><td>Billing address line 2. Present when the customer has a care-of or floor/suite line.</td></tr>
+  <tr><td><strong>YourOrderNumber</strong> <span class="field-id">fldAwtus8Sl5iS1lQ</span></td><td>multilineText</td><td>~20%</td><td>Client's own purchase order number. Present on ~1 in 5 invoices where the client requires a PO reference.</td></tr>
+  <tr><td><strong>DeliveryAddress1</strong> <span class="field-id">fldnhgf11UblojC7R</span></td><td>multilineText</td><td>~7%</td><td>Delivery address line 1. Used only when a physical delivery address differs from billing.</td></tr>
+  <tr><td><strong>DeliveryCity</strong> <span class="field-id">fld8t4ye31yC4VrHK</span></td><td>multilineText</td><td>~7%</td><td>Delivery city.</td></tr>
+  <tr><td><strong>DeliveryName</strong> <span class="field-id">fldGJkf7kMAoS8EUT</span></td><td>multilineText</td><td>~7%</td><td>Delivery recipient name.</td></tr>
+  <tr><td><strong>DeliveryZipCode</strong> <span class="field-id">fldv8Q7Vcn3i9X5tF</span></td><td>multilineText</td><td>~7%</td><td>Delivery postal code.</td></tr>
+  <tr><td><strong>Phone2</strong> <span class="field-id">fldyY3m3180PVY4cG</span></td><td>multilineText</td><td>~7%</td><td>Secondary phone. Rarely set on customer records in Fortnox.</td></tr>
+  <tr><td><strong>Project</strong> <span class="field-id">fldfkuMey0qzcFBX6</span></td><td>multilineText</td><td>~3%</td><td>Fortnox project code at the <em>invoice header level</em>. Almost never set — project attribution is done at the row level inside the <code>InvoiceRows</code> JSON blob, not at the header.</td></tr>
+</table>
+</div>
+
+<!-- A3: STRUCTURAL ZEROS -->
+<div class="sub-section">
+<h3>A3 — Structural zeros / N/A for Adgrabber &nbsp;<span class="badge b-empty">20 fields · Fortnox sends them, always 0 or constant-false</span></h3>
+<p style="font-size:12px;color:#555">These fields are present in every Fortnox payload and are mapped by n8n, but they are always 0, <code>"false"</code>, or a trivially empty value because Adgrabber is a Swedish media agency — no physical goods, no ROT/RUT, no EDI, all-SEK invoicing.</p>
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Constant value</th><th>Reason always zero/N/A</th></tr>
+  <tr><td><strong>Freight</strong> <span class="field-id">fld7X28LnESJoWkoY</span></td><td>number</td><td>0</td><td>No physical goods shipped.</td></tr>
+  <tr><td><strong>FreightVAT</strong> <span class="field-id">fldvmXHYYdBCjX00Z</span></td><td>number</td><td>0</td><td>VAT on freight — always 0.</td></tr>
+  <tr><td><strong>AdministrationFee</strong> <span class="field-id">fldaX6IrvV3fWza54</span></td><td>number</td><td>0</td><td>Not charged.</td></tr>
+  <tr><td><strong>AdministrationFeeVAT</strong> <span class="field-id">fld68WZV8bx4cWc31</span></td><td>number</td><td>0</td><td>VAT on administration fee — always 0.</td></tr>
+  <tr><td><strong>BasisTaxReduction</strong> <span class="field-id">fld0B3LxQcTcUvZQr</span></td><td>number</td><td>0</td><td>ROT/RUT tax reduction basis — not applicable for media services.</td></tr>
+  <tr><td><strong>TimeBasisReference</strong> <span class="field-id">fldzJho5RILaseo8T</span></td><td>number</td><td>0</td><td>Time-billing reference. Not used.</td></tr>
+  <tr><td><strong>ContributionPercent</strong> <span class="field-id">fldnpT0vjqRkCID7X</span></td><td>number</td><td>computed</td><td>Contribution margin percentage. Fortnox calculates it but Adgrabber does not use this figure from the invoice table.</td></tr>
+  <tr><td><strong>ContributionValue</strong> <span class="field-id">fldMKeekeciOKCm9W</span></td><td>number</td><td>computed</td><td>Contribution margin in SEK. Same as above — not consumed downstream.</td></tr>
+  <tr><td><strong>CurrencyRate</strong> <span class="field-id">fld0fxZ6uk6TKHx7t</span></td><td>number</td><td>1</td><td>Always 1 — all invoices are in SEK.</td></tr>
+  <tr><td><strong>CurrencyUnit</strong> <span class="field-id">fld79o0s9eDwmb3Bx</span></td><td>number</td><td>1</td><td>Always 1 — all invoices are in SEK.</td></tr>
+  <tr><td><strong>HouseWork</strong> <span class="field-id">fldATNMgUbLNzQ6y4</span></td><td>singleSelect</td><td>"false"</td><td>ROT/RUT household work flag — never applicable.</td></tr>
+  <tr><td><strong>EUQuarterlyReport</strong> <span class="field-id">fldmXp1q6EWE4V6Pq</span></td><td>singleSelect</td><td>"false"</td><td>EU intra-community sales flag — all clients are Swedish.</td></tr>
+  <tr><td><strong>VATIncluded</strong> <span class="field-id">fld7B4jIU0iqMrD66</span></td><td>singleSelect</td><td>"false"</td><td>All Adgrabber invoices are priced ex-VAT.</td></tr>
+  <tr><td><strong>WarehouseReady</strong> <span class="field-id">fld1mbkXJdkQooJEv</span></td><td>singleSelect</td><td>"false"</td><td>Warehouse dispatch flag — no warehouse operations.</td></tr>
+  <tr><td><strong>NoxFinans</strong> <span class="field-id">flduunlbLSAHbXgmE</span></td><td>singleSelect</td><td>"false"</td><td>Fortnox Finans (invoice factoring) — not used.</td></tr>
+  <tr><td><strong>ContractReference</strong> <span class="field-id">fldyrH9UFv9fB0YWi</span></td><td>singleLineText</td><td>"0"</td><td>Contract reference. Always <code>"0"</code> — not used in this workflow.</td></tr>
+  <tr><td><strong>TaxReductionType</strong> <span class="field-id">fld4iiG6CO8SCsRky</span></td><td>multilineText</td><td>""</td><td>ROT/RUT tax reduction type. Always an empty string from Fortnox — not applicable.</td></tr>
+  <tr><td><strong>EDIInformation</strong> <span class="field-id">fldFbw2SRsAokXwlV</span></td><td>multilineText</td><td>JSON "{}"</td><td>EDI settings as JSON. All sub-fields are empty strings in every record. Fortnox always includes this object in the payload.</td></tr>
+  <tr><td><strong>Labels</strong> <span class="field-id">fldUtBj3xsy9LyUSb</span></td><td>multilineText</td><td>"[]"</td><td>Fortnox labels array as JSON. Always an empty array — no labels are used on invoices.</td></tr>
+  <tr><td><strong>OfferReference</strong> <span class="field-id">fldBBwIjXrWPQD4T2</span></td><td>multilineText</td><td>""</td><td>Fortnox offer/quote reference. Always empty — invoices are generated directly from orders, not from quotes.</td></tr>
+</table>
+</div>
+
+<!-- A4: ALWAYS EMPTY -->
+<div class="sub-section">
+<h3>A4 — Always empty &nbsp;<span class="badge b-warn">13 fields · 0% populated in prod sample</span></h3>
+<p style="font-size:12px;color:#555">These fields are present in the Airtable schema because Fortnox returns them in the API object, but n8n never writes a value — or Fortnox itself always returns null for Adgrabber's invoices. No record in the 30-record prod sample had any data here.</p>
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Why always empty</th></tr>
+  <tr><td><strong>CostCenter</strong> <span class="field-id">fldJxI5IfUlHqpNV5</span></td><td>multilineText</td><td>Fortnox cost centre. Not used in this workflow — project codes are used instead.</td></tr>
+  <tr><td><strong>LastRemindDate</strong> <span class="field-id">fld2srHs7lS0wfNtt</span></td><td>date</td><td>Date of the last payment reminder sent. No reminders recorded in sample despite <code>Reminders</code> count field being populated.</td></tr>
+  <tr><td><strong>PaymentWay</strong> <span class="field-id">fld8KLJuFY7qqsELt</span></td><td>multilineText</td><td>Payment method. Not set on any invoice — Fortnox does not track payment channel for standard bank transfers.</td></tr>
+  <tr><td><strong>TaxReduction</strong> <span class="field-id">fldZ4NMbyopqrBzUH</span></td><td>singleSelect</td><td>ROT/RUT tax reduction flag. Never applicable — see A3 for <code>HouseWork</code> and <code>BasisTaxReduction</code>.</td></tr>
+  <tr><td><strong>TermsOfDelivery</strong> <span class="field-id">fldBYXNiK5L48M6xL</span></td><td>multilineText</td><td>Delivery terms (e.g. EXW, DAP). Not applicable for services.</td></tr>
+  <tr><td><strong>WayOfDelivery</strong> <span class="field-id">fldJtVBEI21PTy5gn</span></td><td>multilineText</td><td>Delivery method. Not applicable for services.</td></tr>
+  <tr><td><strong>InvoicePeriodStart</strong> <span class="field-id">fldKnu2RYMdUgoWuJ</span></td><td>multilineText</td><td rowspan="3">Invoice period fields for recurring/subscription billing. Not used — campaign invoices use <code>DeliveryDate</code> instead.</td></tr>
+  <tr><td><strong>InvoicePeriodEnd</strong> <span class="field-id">fldHFmBpHwYHxXfX4</span></td><td>multilineText</td></tr>
+  <tr><td><strong>InvoicePeriodReference</strong> <span class="field-id">fldChBSM2eZwr9adO</span></td><td>multilineText</td></tr>
+  <tr><td><strong>ExternalInvoiceReference1</strong> <span class="field-id">fld0f8oxo7E8m8V5T</span></td><td>multilineText</td><td rowspan="2">External system reference fields. Intended for ERP integration references. Never populated — invoices are created natively in Fortnox.</td></tr>
+  <tr><td><strong>ExternalInvoiceReference2</strong> <span class="field-id">fld8Bs7Ds3eNzvWWl</span></td><td>multilineText</td></tr>
+  <tr><td><strong>DeliveryAddress2</strong> <span class="field-id">fldv6BcRFC4CkzDZC</span></td><td>singleLineText</td><td rowspan="2">Secondary delivery address fields. Only <code>DeliveryAddress1/City/Name/ZipCode</code> appear occasionally (A2); the country and address line 2 are never set.</td></tr>
+  <tr><td><strong>DeliveryCountry</strong> <span class="field-id">fldZlZHkLaIiPL0N3</span></td><td>multilineText</td></tr>
+</table>
+</div>
+
+<!-- A-LEGACY -->
+<div class="sub-section">
+<h3>A-legacy — Superseded URL fields &nbsp;<span class="badge b-dev">2 fields · replaced by newer versions, always empty</span></h3>
+<p style="font-size:12px;color:#555">These are earlier versions of URL fields that were replaced when the sync workflow was updated. Both are always empty — the active fields carry the same data.</p>
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Replaced by</th><th>Notes</th></tr>
+  <tr><td><strong>API URL</strong> <span class="field-id">fldDTteFitEn3b1ii</span></td><td>multilineText</td><td><code>@url</code></td><td>Earlier copy of the Fortnox API self-link. Superseded when the sync workflow standardised on the <code>@url</code> singleLineText field. Always empty.</td></tr>
+  <tr><td><strong>urlTaxReductionList</strong> <span class="field-id">fldRUhkaekKi9S955</span></td><td>multilineText</td><td><code>@urlTaxReductionList</code></td><td>Earlier multilineText version of the tax reduction URL. Superseded by the singleLineText <code>@urlTaxReductionList</code> field. Always empty.</td></tr>
+</table>
+</div>
+
+<!-- ================================================================ CAT B -->
+<h2 class="link cat-header">B — Link Fields &nbsp;<span class="badge b-link">Airtable record links</span></h2>
+
+<table>
+  <tr><th>Field name</th><th>Linked table</th><th>Cardinality</th><th>Notes</th></tr>
+  <tr>
+    <td><strong>FortnoxOrder</strong> <span class="field-id">fldq2Nd1CRaYcO6P9</span></td>
+    <td>FortnoxOrder (<code>tblhNdAzxbWeNgEgW</code>)</td>
+    <td>Many-to-one (prefer single)</td>
+    <td>Links this invoice to the parent order. Populated by n8n during sync using <code>OrderReference</code> (the Fortnox order DocumentNumber) to find the matching FortnoxOrder record. <code>prefersSingleRecordLink: true</code> — UI enforces one linked record. Inverse field in FortnoxOrder is <code>fldUJeNIooddiOBYq</code>.</td>
+  </tr>
+  <tr>
+    <td><strong>FortnoxCustomer</strong> <span class="field-id">fldT7BpZVkuGxoLUz</span></td>
+    <td>FortnoxCustomer (<code>tblDF3Ff0KJ3pN6aG</code>)</td>
+    <td>Many-to-one (prefer single)</td>
+    <td>Links to the Airtable FortnoxCustomer record for the invoiced client. Populated by n8n. Inverse field in FortnoxCustomer is <code>fldjitfu9WBhjl6Wp</code>.</td>
+  </tr>
+  <tr>
+    <td><strong>FortnoxInvoiceRow</strong> <span class="field-id">fld5TRRyDTNzCAzps</span></td>
+    <td>FortnoxInvoiceRow (<code>tblDkNRTKMTpMTLK3</code>)</td>
+    <td>One-to-many</td>
+    <td>Links to individual invoice row records parsed from the <code>InvoiceRows</code> JSON blob. Inverse field in FortnoxInvoiceRow is <code>fldMX4CzQwWJPIUxs</code>. <strong>FortnoxInvoiceRow table is empty in prod</strong> — the row parsing flow has never been activated.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT C -->
+<h2 class="rollup cat-header">C — Rollup / Lookup Fields &nbsp;<span class="badge b-rollup">Aggregated from linked tables</span></h2>
+
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Source</th><th>Notes</th></tr>
+  <tr>
+    <td><strong>invoice count (from FortnoxOrder)</strong> <span class="field-id">fldon5F0vSRkdkuXz</span></td>
+    <td>multipleLookupValues → number</td>
+    <td>Via <code>FortnoxOrder</code> link → <code>fld502cJJwfi8VxUz</code> in FortnoxOrder</td>
+    <td>Lookups the invoice count field from the linked FortnoxOrder record. Populated on all records. Used to show how many invoices exist for the parent order.</td>
+  </tr>
+  <tr>
+    <td><strong>CustomerNumber Lookup</strong> <span class="field-id">fldnSS1cAET7AtcEr</span></td>
+    <td>number (precision 0)</td>
+    <td>—</td>
+    <td>Named as a lookup but defined as a plain number field in the schema. Empty on all sample records. Legacy field from an earlier workflow where CustomerNumber was stored numerically. The active version is the text field <code>CustomerNumber</code>.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT D -->
+<h2 class="system cat-header">D — Airtable System Fields &nbsp;<span class="badge b-system">Auto-managed by Airtable</span></h2>
+
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Notes</th></tr>
+  <tr>
+    <td><strong>Invoice AutoNumber</strong> <span class="field-id">fld7naiNdmkXosc6t</span></td>
+    <td>number (autonumber)</td>
+    <td>Airtable-assigned sequential record number. Not related to Fortnox <code>DocumentNumber</code>. Used internally.</td>
+  </tr>
+  <tr>
+    <td><strong>Airtable Created Time</strong> <span class="field-id">fldkF5CJdAwuBNGbr</span></td>
+    <td>dateTime</td>
+    <td>Timestamp when the Airtable record was created (by n8n on first sync).</td>
+  </tr>
+  <tr>
+    <td><strong>Last Modified Time</strong> <span class="field-id">fldsVEZVh5W5UoYhR</span></td>
+    <td>lastModifiedTime</td>
+    <td>Watches all fields (no scope restriction). Used by n8n's sync view filter to detect recently changed records and skip re-processing of its own writes. Core to the loop-prevention pattern.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT E -->
+<h2 class="formula cat-header">E — Formula Fields &nbsp;<span class="badge b-formula">Computed in Airtable</span></h2>
+
+<table>
+  <tr><th>Field name</th><th>Formula</th><th>Notes</th></tr>
+  <tr>
+    <td><strong>ID</strong> <span class="field-id">fldVAUWrdlyzZiHpe</span></td>
+    <td><code>{DocumentNumber} &amp; "-" &amp; {CustomerName}</code></td>
+    <td>Human-readable display key for the record, e.g. <code>"2473-Länsförsäkringar Jönköping"</code>. Used as the primary field in the Airtable interface.</td>
+  </tr>
+  <tr>
+    <td><strong>view</strong> <span class="field-id">fldt0Lq1q4zny7HkU</span></td>
+    <td><code>"https://airtable.com/appk463NGeDy17j9T/tblOLaZyIaVJP6h6V/viw1cAuWMloS9byMD/" &amp; RECORD_ID()</code></td>
+    <td>Direct URL to this record in a specific view. Used for linking from external tools or emails.</td>
+  </tr>
+</table>
+
+<!-- ================================================================ CAT F -->
+<h2 class="dev cat-header">F — Dev / Legacy Fields &nbsp;<span class="badge b-dev">Redundant or superseded</span></h2>
+
+<table>
+  <tr><th>Field name</th><th>Type</th><th>Why it's here</th></tr>
+  <tr>
+    <td><strong>Customer</strong> <span class="field-id">fldr4vdYj2YhV6Hvl</span></td>
+    <td>singleLineText</td>
+    <td>Duplicate of <code>CustomerName</code>. Both are singleLineText fields containing the customer name. One is likely from an older version of the sync workflow. Empty on all sample records — only <code>CustomerName</code> is actively populated.</td>
+  </tr>
+  <tr>
+    <td><strong>Order</strong> <span class="field-id">fldeadeiDIGm7nalu</span></td>
+    <td>singleLineText</td>
+    <td>Older copy of <code>OrderReference</code>. Both carry the Fortnox order DocumentNumber as a text value. Empty on all sample records — only <code>OrderReference</code> is actively populated.</td>
+  </tr>
+  <tr>
+    <td><strong>FortnoxOrder copy</strong> <span class="field-id">fld6QHTUZY99IqogN</span></td>
+    <td>singleLineText</td>
+    <td>Text copy of the FortnoxOrder link value. Likely created for formula use before formula fields could reference link fields directly. Empty on all sample records.</td>
+  </tr>
+  <tr>
+    <td><strong>OrderReference copy</strong> <span class="field-id">fld5Kq33IqRT6Ab0h</span></td>
+    <td>multilineText</td>
+    <td>Duplicate of <code>OrderReference</code> as multilineText. Populated on all records — same value as <code>OrderReference</code>. Likely kept for backwards compatibility with a formula or workflow that referenced this field ID.</td>
+  </tr>
+  <tr>
+    <td><strong>RecordID</strong> <span class="field-id">fldsycjj48OSZOfi8</span></td>
+    <td>multilineText</td>
+    <td>n8n writes the Airtable record ID (<code>RECORD_ID()</code>) into this plain text field. <strong>Not a Fortnox API field.</strong> Redundant with Airtable's built-in record ID. Was likely used in an earlier n8n workflow version that needed the record ID accessible as a text value for lookup operations.</td>
+  </tr>
+  <tr>
+    <td><strong>Fortnox API Data</strong> <span class="field-id">fldFMQAbOUxg769O2</span></td>
+    <td>multilineText</td>
+    <td>n8n stores the full raw Fortnox API response as a JSON string on every sync. <strong>Not a Fortnox API field — written by n8n as an audit/debug trail.</strong> Populated on all records. Useful for inspecting exactly what Fortnox returned at last sync without re-querying the API.</td>
+  </tr>
+  <tr>
+    <td><strong>InvoiceReference</strong> <span class="field-id">fldWzpH6y1MHJRkPp</span></td>
+    <td>singleLineText</td>
+    <td><strong>⚠ Origin unconfirmed.</strong> <code>"InvoiceReference"</code> does NOT appear in the Fortnox Invoice API response schema — it exists in the Order and Offer schemas only. Despite this, the field is populated on all records: <code>"0"</code> on 29/30 sample records, <code>"280"</code> on 1. The <code>"0"</code> pattern matches Fortnox's numeric-default convention. Possible sources: (a) n8n aliases it from a differently-named field in the Invoice payload; (b) it is pulled from the linked FortnoxOrder record. <strong>Verify in the n8n sync workflow before relying on this field.</strong></td>
+  </tr>
+</table>
+
+<!-- ================================================================ SYNC VIEW -->
+<h2 class="ops cat-header">Sync View</h2>
+
+<table>
+  <tr><th>View name</th><th>View ID</th><th>Purpose</th></tr>
+  <tr>
+    <td><strong>FortnoxInvoice_Sync</strong></td>
+    <td><code>viwpinefLB6kkZURy</code></td>
+    <td>The polling window for n8n. Filter criteria not inspected directly, but consistent with other Fortnox sync views: likely filters by <code>Last Modified Time</code> (recent window) or a status flag. Returned 0 records in the DEV base at time of schema audit.</td>
+  </tr>
+</table>
+
+</body>
+</html>
