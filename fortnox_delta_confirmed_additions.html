@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortnox ↔ Airtable — Confirmed Delta Additions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1050px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 28px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; font-family: 'Consolas', 'Courier New', monospace; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-gray   { background: #f1f5f9; color: #475569; }
+
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box   { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+
+  .delta-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px 20px; background: #fafbfc; margin: 16px 0; }
+  .delta-card h3 { margin-top: 0; }
+
+  .exclude-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0 20px; }
+  .exclude-box { border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px; }
+  .exclude-box h3 { margin-top: 0; }
+
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 32px 0; }
+
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    table { font-size: 11px; }
+    pre { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Fortnox ↔ Airtable — Confirmed Delta Additions</h1>
+  <p class="subtitle">
+    Base: <strong>app01yDjf98U6ejKs</strong> &nbsp;|&nbsp;
+    Purpose: <strong>delta-only note</strong> &nbsp;|&nbsp;
+    Scope: facts extracted from three later reports that add new knowledge without relying on contradicted or provisional sync-view claims
+  </p>
+
+  <div class="info-box">
+    <strong>How to read this note:</strong> This document is not a full architecture report. It is a <strong>safe delta</strong> on top of the earlier Fortnox/Airtable knowledge base. It includes only findings that appear both <strong>new</strong> relative to the earlier reports and <strong>stable</strong> across the later documents. Disputed interpretations around view ownership, polling windows, and exact trigger mechanics are intentionally excluded.
+  </div>
+
+  <div class="source-box">
+    <strong>Derived from:</strong>
+    <code>fortnox_orders_invoices_business_logic.html</code>,
+    <code>fortnox_linked_records_and_polling.html</code>,
+    <code>fortnox_data_flow_report.html</code>
+    <br>
+    <strong>Compared against earlier KB files:</strong>
+    <code>fortnox_sync_architecture_report.html</code>,
+    <code>fortnox_integration_documentation.html</code>,
+    <code>fortnox_overview.html</code>,
+    <code>fortnox_allocation_mapping.html</code>,
+    field audit documents, and related Airtable schema reports.
+  </div>
+
+  <h2>1. What This Delta Adds</h2>
+
+  <div class="ok-box">
+    <strong>Summary:</strong> The main value of the three later reports is not a new business model; the customer-side and supplier-side architecture was already known. Their value is in the <strong>operational mechanics</strong>: how linked records are resolved, what is manual versus automated, what the scoped LMT fields are actually for, and how platform-import reconciliation works end to end.
+  </div>
+
+  <table>
+    <tr>
+      <th>Area</th>
+      <th>What is newly worth keeping</th>
+      <th>Why it matters</th>
+    </tr>
+    <tr>
+      <td><span class="badge badge-blue">Sync operations</span></td>
+      <td>No Fortnox-related Airtable automations; sync is handled by n8n</td>
+      <td>Closes an open operational question left vague in earlier architecture summaries</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-green">Linked records</span></td>
+      <td>Dual-field pattern: Fortnox key field + Airtable linked-record field</td>
+      <td>Explains how parent/child relations are created safely inside Airtable</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-orange">Change detection</span></td>
+      <td>Scoped LMT fields are being used as precision sync signals, not just passive timestamps</td>
+      <td>Explains how n8n distinguishes Fortnox writes from Airtable-internal edits</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-blue">Finance control</span></td>
+      <td>Three-level reconciliation chain for platform imports</td>
+      <td>Adds a concrete control model not clearly documented in earlier files</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-gray">Manual workflows</span></td>
+      <td>Changed/deleted-in-Fortnox handling is human-operated, not automated</td>
+      <td>Important operational risk and process clarification</td>
+    </tr>
+  </table>
+
+  <h2>2. Confirmed Additions</h2>
+
+  <div class="delta-card">
+    <h3>2.1 Fortnox sync does not run through Airtable automations</h3>
+    <p>The later data-flow report adds a useful explicit conclusion: <strong>there are no Fortnox-related Airtable automations in this base</strong>. The Fortnox sync path is handled by <code>n8n</code> on <code>automation.offertizer.com</code>, while Airtable automations cover only internal business logic such as campaign creation, button flows, alerts, or internal housekeeping.</p>
+    <p>This is worth preserving because earlier architecture files described the integration stack but did not clearly resolve whether any Fortnox movement was triggered by Airtable automations.</p>
+  </div>
+
+  <div class="delta-card">
+    <h3>2.2 The synced Fortnox tables use a dual-field relationship pattern</h3>
+    <p>A strong implementation detail from the later reports is that parent/child relations across the 8 Fortnox sync tables follow a consistent structure:</p>
+    <ul>
+      <li>one field stores the Fortnox-side identifier as plain text or number, for example <code>CustomerNumber</code>, <code>SupplierNumber</code>, <code>DocumentNumber</code>, <code>OrderReference</code>, or <code>ArticleNumber</code></li>
+      <li>a second field stores the Airtable linked-record pointer used for rollups, UI display, and downstream formulas</li>
+    </ul>
+    <p>This pattern is especially important on child tables like <code>FortnoxInvoice</code>, <code>FortnoxInvoiceRow</code>, and <code>Fortnox OrderRow</code>, where both a Fortnox key and an Airtable link coexist.</p>
+  </div>
+
+  <div class="delta-card">
+    <h3>2.3 Parent tables must exist before child links can be written</h3>
+    <p>The linked-records report contributes a clear sync dependency rule: n8n must have already created the parent Airtable record before it can write a child record that links to it. This is particularly relevant for:</p>
+    <ul>
+      <li><code>FortnoxOrder</code> before <code>Fortnox OrderRow</code></li>
+      <li><code>FortnoxInvoice</code> before <code>FortnoxInvoiceRow</code></li>
+      <li><code>FortnoxCustomer</code> before linking orders and invoices to a customer</li>
+      <li><code>FortnoxSupplier</code> before linking supplier invoices</li>
+      <li><code>FortnoxArticle</code> before linking order rows or invoice rows to articles</li>
+    </ul>
+    <p>This does not change the business model, but it adds useful knowledge about why sync ordering matters operationally.</p>
+  </div>
+
+  <div class="delta-card">
+    <h3>2.4 Order–invoice linking is clarified more precisely</h3>
+    <p>The business-logic report adds one high-value clarification on the customer side:</p>
+    <ul>
+      <li><code>FortnoxInvoice</code> links back to <code>FortnoxOrder</code> using the linked-record field plus <code>OrderReference</code> as the Fortnox-side text copy of the parent order number</li>
+      <li><code>InvoiceReference</code> is <strong>not</strong> the order link; it is the credit-note reference field and normally shows a neutral value on standard invoices</li>
+    </ul>
+    <p>This distinction is worth preserving because the earlier KB already established that invoices are connected back to orders, but the new report removes a common field-name ambiguity.</p>
+  </div>
+
+  <div class="delta-card">
+    <h3>2.5 The changed/deleted-in-Fortnox process is manual</h3>
+    <p>The later data-flow report makes a valuable operational point explicit: the field <code>When is it changed/deleted in fortnox</code> is a plain date field that requires a human to fill it. Therefore the <strong>CHANGED/DELETED TODAY IN FORTNOX</strong> view is not a live detector or automated sync trigger. It is a <strong>human-operated monitoring process</strong>.</p>
+    <p>The practical implication is that the system does not have automated deletion/change detection for older Fortnox-side changes; someone must notice the change and mark it manually for review.</p>
+  </div>
+
+  <div class="delta-card">
+    <h3>2.6 Scoped LMT fields are active precision sync signals</h3>
+    <p>The earlier KB already documented that <code>Fortnox OrderRow</code> contains several separate Last Modified Time fields with different scopes. The new value added by the later report is the operational interpretation:</p>
+    <ul>
+      <li>one scoped LMT watches the Fortnox payload fields</li>
+      <li>another watches only allocation-link changes</li>
+      <li>another watches soft-delete changes</li>
+      <li>one all-fields LMT remains available for broad auditing</li>
+    </ul>
+    <p>That means the multi-LMT design is not cosmetic. It is there so n8n can tell the difference between:</p>
+    <ul>
+      <li>a Fortnox-derived value change written by the integration itself</li>
+      <li>a user linking or unlinking allocation records in Airtable</li>
+      <li>a soft-delete action</li>
+      <li>a generic human edit that should not be interpreted as Fortnox-side business data</li>
+    </ul>
+  </div>
+
+  <div class="delta-card">
+    <h3>2.7 n8n writes operational status back into Airtable</h3>
+    <p>The later report adds a concrete implementation detail: the sync writes operational trace/status messages back into Airtable fields such as <code>Automation Log</code> and <code>Fortnox Download Status</code> on the order side. This is useful because it shows that some Airtable columns are not business data mirrors but integration-observability fields.</p>
+  </div>
+
+  <div class="delta-card">
+    <h3>2.8 Platform imports use a three-level reconciliation chain</h3>
+    <p>The business-logic report adds a compact but important finance-control model for the platform-import flow. The reconciliation chain works across three levels:</p>
+    <ol>
+      <li><strong>Platform Import Files</strong> total from the external platform billing PDF</li>
+      <li><strong>FortnoxSupplierInvoice</strong> totals linked to that platform-import record</li>
+      <li><strong>sys.fakturamapping</strong> campaign allocations, compared back to campaign-side revenue allocation through <code>sys.orderallocationmapping</code></li>
+    </ol>
+    <p>This is useful new KB material because it clarifies that platform-import quality control is not only “invoice total equals PDF total,” but a deeper multi-level financial reconciliation process.</p>
+  </div>
+
+  <div class="delta-card">
+    <h3>2.9 A clean summary of the two money flows is worth preserving</h3>
+    <p>The later business-logic report restates the core business model in a compact form that is consistent with earlier knowledge and worth retaining as a high-level summary:</p>
+    <ul>
+      <li><strong>Customer side / money in:</strong> <code>FortnoxOrder → FortnoxInvoice</code></li>
+      <li><strong>Supplier side / money out:</strong> <code>FortnoxSupplierInvoice</code></li>
+      <li><strong>No direct Fortnox-native bridge</strong> exists between what the client was charged and what the supplier/platform charged Adgrabber</li>
+      <li>The bridge exists only inside Airtable via <code>sys.orderallocationmapping</code> and <code>sys.fakturamapping</code>, both meeting at <code>Media / Prod New</code></li>
+    </ul>
+    <p>This does not replace earlier architecture material, but it is a useful concise business-logic summary.</p>
+  </div>
+
+  <h2>3. Compact Relationship Summary</h2>
+
+  <pre>
+CUSTOMER SIDE (money in)
+FortnoxCustomer
+  -> FortnoxOrder
+      -> Fortnox OrderRow
+          -> sys.orderallocationmapping
+              -> Media / Prod New
+  -> FortnoxInvoice
+      -> FortnoxInvoiceRow
+
+SUPPLIER SIDE (money out)
+FortnoxSupplier
+  -> FortnoxSupplierInvoice
+      -> sys.fakturamapping
+          -> Media / Prod New
+
+BRIDGE BETWEEN SIDES
+Only inside Airtable, at Media / Prod New
+  </pre>
+
+  <h2>4. Explicitly Excluded from This Delta</h2>
+
+  <div class="warn-box">
+    <strong>The following topics are intentionally omitted from this note</strong> because the three later files disagree with each other, present them as inferred, or do not prove them strongly enough to be safe KB facts.
+  </div>
+
+  <div class="exclude-grid">
+    <div class="exclude-box">
+      <h3>Excluded: exact Airtable view usage by n8n</h3>
+      <p>Some later files describe per-table sync views as the operational drivers. Another later file treats at least some of those views as human-monitoring views or unresolved implementation details. Because of that inconsistency, this delta note does not preserve exact claims about which views n8n truly uses.</p>
+    </div>
+    <div class="exclude-box">
+      <h3>Excluded: exact polling-window model</h3>
+      <p>The later files contain useful ideas about time windows, but the interpretation of those windows depends on the disputed view-usage story. Until the n8n workflows themselves are inspected, the exact polling-window model should remain outside the contradiction-free KB layer.</p>
+    </div>
+    <div class="exclude-box">
+      <h3>Excluded: confirmed cron/trigger mechanics</h3>
+      <p>One later report infers a cron-style schedule and a likely trigger approach, but the mechanism is not confirmed directly in workflow code. This note therefore avoids presenting trigger logic as settled fact.</p>
+    </div>
+    <div class="exclude-box">
+      <h3>Excluded: live status of auto-created orders from brief.ordernr</h3>
+      <p>The later reports suggest a schema path involving <code>Brief. OrderNumber</code> and automated order-shell creation, but they do not prove that workflow is active in current live operations. It is left out here.</p>
+    </div>
+  </div>
+
+  <h2>5. Recommended KB Status</h2>
+
+  <table>
+    <tr>
+      <th>Topic</th>
+      <th>Status</th>
+      <th>Recommendation</th>
+    </tr>
+    <tr>
+      <td>No Airtable automations in Fortnox sync path</td>
+      <td><span class="badge badge-green">Keep</span></td>
+      <td>Add as confirmed operational fact</td>
+    </tr>
+    <tr>
+      <td>Dual-field linking pattern</td>
+      <td><span class="badge badge-green">Keep</span></td>
+      <td>Add as implementation detail</td>
+    </tr>
+    <tr>
+      <td>Parent-before-child sync dependency</td>
+      <td><span class="badge badge-green">Keep</span></td>
+      <td>Add as sync mechanics detail</td>
+    </tr>
+    <tr>
+      <td>OrderReference vs InvoiceReference clarification</td>
+      <td><span class="badge badge-green">Keep</span></td>
+      <td>Add as field-meaning clarification</td>
+    </tr>
+    <tr>
+      <td>Manual changed/deleted-in-Fortnox workflow</td>
+      <td><span class="badge badge-green">Keep</span></td>
+      <td>Add as operational risk/process fact</td>
+    </tr>
+    <tr>
+      <td>Scoped LMT meaning</td>
+      <td><span class="badge badge-green">Keep</span></td>
+      <td>Add as sync-logic interpretation</td>
+    </tr>
+    <tr>
+      <td>Automation Log / Fortnox Download Status write-back</td>
+      <td><span class="badge badge-green">Keep</span></td>
+      <td>Add as integration-observability note</td>
+    </tr>
+    <tr>
+      <td>Three-level platform-import reconciliation</td>
+      <td><span class="badge badge-green">Keep</span></td>
+      <td>Add as finance-control logic</td>
+    </tr>
+    <tr>
+      <td>Exact view ownership and usage by n8n</td>
+      <td><span class="badge badge-red">Exclude</span></td>
+      <td>Do not add until workflow inspection resolves contradictions</td>
+    </tr>
+    <tr>
+      <td>Exact cron/polling model</td>
+      <td><span class="badge badge-red">Exclude</span></td>
+      <td>Keep as open question, not KB fact</td>
+    </tr>
+  </table>
+
+  <hr>
+
+  <div class="ok-box">
+    <strong>Final takeaway:</strong> The three later files do not overturn the earlier architecture. Their stable value is in clarifying <strong>how the integration behaves operationally</strong>. This delta note preserves those additions while intentionally excluding disputed interpretations about sync views and polling.
+  </div>
+
+</div>
+</body>
+</html>
