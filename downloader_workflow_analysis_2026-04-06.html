@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox Downloader — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 30px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-gray { background: #f1f5f9; color: #475569; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .small { font-size: 12px; color: #555; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox Downloader — Workflow Analysis</h1>
+  <p class="subtitle">Revised project note created from workflow inspection discussion · Date: 2026-04-06</p>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> This document summarizes the active workflow
+    <strong>Adgrabber Fortnox Downloader V3.0.0</strong>, its trigger model, the six downloader branches,
+    the page/state logic, and the current understanding of the missing helper workflow <code>109</code>
+    referenced as <strong>Credentials</strong>.
+  </div>
+
+  <div class="source-box">
+    <strong>Primary inspected sources:</strong> <code>Adgrabber_Fortnox_Downloader_V3_0_0.json</code>,
+    <code>websocket_handler_workflow_analysis_2026-04-06.html</code>,
+    <code>airtable_schema_documentation.html</code>, and
+    <code>fortnox_sync_architecture_report.html</code>.
+  </div>
+
+  <div class="info-box">
+    <strong>How to read this note.</strong>
+    <ul>
+      <li><strong>Confirmed from workflow JSON:</strong> directly visible in the uploaded n8n export.</li>
+      <li><strong>User-reported live observation:</strong> values the user has seen in Airtable during this discussion.</li>
+      <li><strong>Inference:</strong> interpretation of runtime behavior that follows from the observed structure, but is not directly logged in the uploaded files.</li>
+    </ul>
+  </div>
+
+  <h2>1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox Downloader V3.0.0</strong></td></tr>
+    <tr><td>Workflow ID in original export</td><td><code>118</code></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-green">Active</span></td></tr>
+    <tr><td>Timezone</td><td><code>Europe/Stockholm</code></td></tr>
+    <tr><td>Error workflow</td><td><code>117</code> (<strong>Adgrabber Fortnox Error Handler</strong>)</td></tr>
+    <tr><td>Main purpose</td><td>Bulk-download Fortnox master/transaction records in batches, then hand each record ID to child component workflows that perform the detailed fetch/upsert into Airtable.</td></tr>
+  </table>
+
+  <h2>2. Entry Triggers and Control Surface</h2>
+  <p>The Downloader has <strong>two entry triggers</strong>, but only one appears active in the uploaded export.</p>
+
+  <table>
+    <tr><th>Node</th><th>Type</th><th>Observed role</th><th>Status / notes</th></tr>
+    <tr>
+      <td><strong>Settings Trigger</strong></td>
+      <td><code>airtableTrigger</code></td>
+      <td>Primary runtime entrypoint</td>
+      <td>Polls the Airtable <strong>Settings</strong> table every minute on <code>Last Modified Time</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Schedule Trigger</strong></td>
+      <td><code>scheduleTrigger</code></td>
+      <td>Alternative timer start</td>
+      <td>Configured in the export but <strong>disabled</strong>.</td>
+    </tr>
+    <tr>
+      <td><strong>Credentials</strong></td>
+      <td><code>executeWorkflow</code></td>
+      <td>Shared config loader</td>
+      <td>Calls missing workflow <code>109</code> before any downloader branch starts.</td>
+    </tr>
+    <tr>
+      <td><strong>Get Settings</strong></td>
+      <td><code>airtable list</code></td>
+      <td>Reads orchestrator state</td>
+      <td>Reads the single settings record that fans out into six IF gates.</td>
+    </tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Confirmed control fact:</strong> the workflow watches the Airtable <strong>Settings</strong> table
+    <code>tblPFPEG2Iu3M00FF</code> in production base <code>appk463NGeDy17j9T</code>.
+  </div>
+
+  <h3>Why the Settings table matters</h3>
+  <p>The Downloader is not triggered by Fortnox change events directly. It is driven by a small state record in Airtable containing:</p>
+  <ul>
+    <li>boolean flags such as <code>Download Invoices</code>, <code>Download Orders</code>, <code>Download Customers</code>, etc.</li>
+    <li>persisted page counters such as <code>Invoices Downloader Page</code>, <code>Orders Downloader Page</code>, and <code>Supplier Invoices Downloader Page</code></li>
+  </ul>
+
+  <h2>3. High-Level Workflow Behavior</h2>
+  <p>The Downloader is primarily a <strong>batch orchestrator/paginator</strong>, not the place where the detailed sync logic lives.
+  It lists Fortnox records page by page, normalizes each listed item's Fortnox ID into a small payload, and delegates the full detail fetch + Airtable upsert to child component workflows.</p>
+
+  <pre>Trigger from Settings table
+  -&gt; Credentials (workflow 109)
+  -&gt; Get Settings
+  -&gt; decide which downloader branch should run
+  -&gt; call Fortnox list endpoint for one entity family
+  -&gt; extract entity array from response
+  -&gt; split items one by one
+  -&gt; pass normalized ID into child component workflow
+  -&gt; decide whether the current Fortnox page is final
+  -&gt; write next page or next stage back to Settings</pre>
+
+  <div class="info-box">
+    <strong>Architectural distinction:</strong> the child components still perform the detailed record sync.
+    Example: the invoice branch lists invoice summaries via <code>GET /3/invoices</code>, then sends each invoice <code>DocumentNumber</code> to the invoice component, which handles the detailed fetch/upsert.
+  </div>
+
+  <h2>4. Confirmed Download Sequence</h2>
+  <p>The six branches are arranged as a <strong>state-machine cycle</strong>. Completion of one stage enables the next one.</p>
+
+  <table>
+    <tr>
+      <th>Stage</th>
+      <th>Start gate</th>
+      <th>Fortnox list endpoint</th>
+      <th>Per-item payload passed to child component</th>
+      <th>Confirmed terminal handoff</th>
+    </tr>
+    <tr>
+      <td><strong>1. Invoices</strong></td>
+      <td><code>Download Invoices = true</code> <em>or</em> <code>Invoices Downloader Page &gt; 1</code></td>
+      <td><code>GET /3/invoices?page=N&amp;sortby=documentnumber&amp;sortorder=descending</code></td>
+      <td><code>{ id: DocumentNumber }</code></td>
+      <td>On final page: set <code>Invoices Downloader Page = 1</code>, clear <code>Download Invoices</code>, set <code>Download Orders = true</code></td>
+    </tr>
+    <tr>
+      <td><strong>2. Orders</strong></td>
+      <td><code>Download Orders = true</code> <em>or</em> <code>Orders Downloader Page &gt; 1</code></td>
+      <td><code>GET /3/orders?page=N&amp;sortby=documentnumber&amp;sortorder=descending</code></td>
+      <td><code>{ id: DocumentNumber }</code></td>
+      <td>On final page: set <code>Orders Downloader Page = 1</code>, clear <code>Download Orders</code>, set <code>Download Customers = true</code></td>
+    </tr>
+    <tr>
+      <td><strong>3. Customers</strong></td>
+      <td><code>Download Customers = true</code></td>
+      <td><code>GET /3/customers?page=N</code></td>
+      <td><code>{ id: CustomerNumber }</code></td>
+      <td>After final page: clear <code>Download Customers</code>, set <code>Download Articles = true</code></td>
+    </tr>
+    <tr>
+      <td><strong>4. Articles</strong></td>
+      <td><code>Download Articles = true</code></td>
+      <td><code>GET /3/articles?page=N</code></td>
+      <td><code>{ id: ArticleNumber }</code></td>
+      <td>After final page: clear <code>Download Articles</code>, set <code>Download Supplier Invoices = true</code></td>
+    </tr>
+    <tr>
+      <td><strong>5. Supplier Invoices</strong></td>
+      <td><code>Download Supplier Invoices = true</code> <em>or</em> <code>Supplier Invoices Downloader Page &gt; 1</code></td>
+      <td><code>GET /3/supplierinvoices/?page=N</code></td>
+      <td><code>{ id: GivenNumber, sync_files: "no" }</code></td>
+      <td>On final page: set <code>Supplier Invoices Downloader Page = 1</code>, clear <code>Download Supplier Invoices</code>, set <code>Download Suppliers = true</code></td>
+    </tr>
+    <tr>
+      <td><strong>6. Suppliers</strong></td>
+      <td><code>Download Suppliers = true</code></td>
+      <td><code>GET /3/suppliers?page=N</code></td>
+      <td><code>{ id: SupplierNumber }</code></td>
+      <td>After final page: clear <code>Download Suppliers</code>, set <code>Download Invoices = true</code> to begin the next cycle</td>
+    </tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Confirmed branch order:</strong>
+    <code>Invoices -&gt; Orders -&gt; Customers -&gt; Articles -&gt; Supplier Invoices -&gt; Suppliers -&gt; back to Invoices</code>
+  </div>
+
+  <h2>5. Confirmed Branch Activation Conditions</h2>
+  <p>The workflow JSON makes an important distinction between two families of downloader branches.</p>
+
+  <h3>5.1 Persisted resume branches</h3>
+  <p><strong>Invoices, Orders, and Supplier Invoices</strong> each use an IF node with <code>combineOperation = "any"</code>.</p>
+  <ul>
+    <li>Invoice branch runs when <code>Invoices Downloader Page &gt; 1</code> <strong>or</strong> <code>Download Invoices = true</code>.</li>
+    <li>Order branch runs when <code>Orders Downloader Page &gt; 1</code> <strong>or</strong> <code>Download Orders = true</code>.</li>
+    <li>Supplier-invoice branch runs when <code>Supplier Invoices Downloader Page &gt; 1</code> <strong>or</strong> <code>Download Supplier Invoices = true</code>.</li>
+  </ul>
+
+  <div class="warn-box">
+    <strong>Corrected interpretation:</strong> a page counter greater than <code>1</code> is itself a valid start condition for these three branches.
+    So a live value like <code>Invoices Downloader Page = 34</code> is consistent with the workflow and should be read as a persisted mid-pagination state,
+    not as evidence that the reset logic is missing.
+  </div>
+
+  <h3>5.2 Non-persisted branches</h3>
+  <p><strong>Customers, Articles, and Suppliers</strong> do not have stored Airtable page counters in this workflow.
+  They are started by boolean flags and then loop internally using a temporary <code>CurrentPage</code> variable.</p>
+
+  <h2>6. Two Different Pagination Patterns</h2>
+  <p>The Downloader does <strong>not</strong> paginate every entity family the same way.</p>
+
+  <h3>A. Persisted page-state branches</h3>
+  <p><strong>Invoices, Orders, and Supplier Invoices</strong> use page counters stored in the Settings table.</p>
+  <ul>
+    <li>The branch reads page <code>N</code> from the Settings record.</li>
+    <li>It processes one Fortnox page per execution path through that branch.</li>
+    <li>If the page is not final, it writes page <code>N + 1</code> back to Settings.</li>
+    <li>If the page is final, it writes page <code>1</code> and hands control to the next entity family.</li>
+  </ul>
+
+  <pre>Settings page counter = N
+  -&gt; HTTP list page N
+  -&gt; process all items in page N
+  -&gt; if not final page: write N+1 back to Settings
+  -&gt; if final page: write 1 and enable next branch</pre>
+
+  <h3>B. In-memory looping branches</h3>
+  <p><strong>Customers, Articles, and Suppliers</strong> use a temporary field called <code>CurrentPage</code> inside the current execution.</p>
+  <ul>
+    <li>The branch begins with <code>CurrentPage = 1</code>.</li>
+    <li>If more pages remain, the workflow loops directly back to the same HTTP node in the same execution.</li>
+    <li>No persistent Airtable page checkpoint is written for these branches.</li>
+  </ul>
+
+  <pre>CurrentPage = 1
+  -&gt; HTTP list page 1
+  -&gt; process all items in page 1
+  -&gt; if not final page: CurrentPage = 2 and loop immediately
+  -&gt; continue until final page
+  -&gt; then update Settings once to hand off to next branch</pre>
+
+  <div class="warn-box">
+    <strong>Operational consequence:</strong> invoice/order/supplier-invoice backfills appear resumable across separate runs because their page number is persisted,
+    while customer/article/supplier backfills appear to rely on finishing that entity family within one execution chain.
+  </div>
+
+  <h2>7. Corrected Explanation of What the Stored Page Fields Mean</h2>
+  <p>The persisted page fields should be read as <strong>the next page to fetch / the current resume checkpoint</strong>, not as “the total number of Fortnox pages.”</p>
+
+  <table>
+    <tr><th>Field</th><th>What it means</th><th>What it does <em>not</em> mean</th></tr>
+    <tr><td><code>Invoices Downloader Page</code></td><td>The invoice page the workflow should fetch next if the invoice branch runs</td><td>Not the total number of invoice pages that exist in Fortnox</td></tr>
+    <tr><td><code>Orders Downloader Page</code></td><td>The order page the workflow should fetch next if the order branch runs</td><td>Not the total number of order pages that exist</td></tr>
+    <tr><td><code>Supplier Invoices Downloader Page</code></td><td>The supplier-invoice page the workflow should fetch next if that branch runs</td><td>Not the total number of supplier-invoice pages that exist</td></tr>
+  </table>
+
+  <h3>Important correction about reset behavior</h3>
+  <p>These fields do <strong>not</strong> always sit at <code>1</code>. They are reset to <code>1</code> only when the workflow reaches the branch’s
+  <strong>explicit final-page reset node</strong>. Until then, they can legitimately remain at <code>2</code>, <code>12</code>, <code>34</code>, etc.</p>
+
+  <div class="ok-box">
+    <strong>Confirmed from JSON:</strong>
+    <ul>
+      <li><strong>Update Invoices CurrentPage</strong> writes <code>Invoices Downloader Page = @CurrentPage + 1</code>.</li>
+      <li><strong>Reset Invoices CurrentPage</strong> writes <code>Invoices Downloader Page = 1</code> and enables orders.</li>
+      <li>The same structural pattern exists for orders and supplier invoices.</li>
+    </ul>
+  </div>
+
+  <h2>8. User-Reported Live State and Revised Interpretation</h2>
+  <div class="observed">
+    <h3>8.1 User-reported live observation</h3>
+    <p>During this discussion, the user reported that the current Airtable Settings record shows approximately:</p>
+    <ul>
+      <li><code>Invoices Downloader Page = 34</code> (example live value)</li>
+      <li><code>Orders Downloader Page = 1</code></li>
+      <li><code>Supplier Invoices Downloader Page = 1</code></li>
+    </ul>
+    <p>This is a <strong>runtime observation from the live base</strong>, not something directly present inside the uploaded JSON export.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>8.2 Revised interpretation of those live values</h3>
+    <p>Given the confirmed IF-gate logic, the most likely interpretation is:</p>
+    <ul>
+      <li><code>Invoices Downloader Page = 34</code> means the invoice branch is currently in a <strong>persisted mid-pagination / resume state</strong>.</li>
+      <li><code>Orders Downloader Page = 1</code> means the orders branch is <strong>not currently parked mid-pagination</strong>.</li>
+      <li><code>Supplier Invoices Downloader Page = 1</code> means the supplier-invoice branch is <strong>not currently parked mid-pagination</strong>.</li>
+    </ul>
+    <p>This inference is strongly supported by the workflow structure because the invoice branch can start from page &gt; 1 even if the boolean flag is false.
+    However, the uploaded files do <strong>not</strong> prove why the live invoice branch is parked at page 34 at that exact moment.
+    The JSON shows that this state is possible; it does not contain a runtime execution log explaining when or why it happened.</p>
+  </div>
+
+  <div class="warn-box">
+    <strong>What is proven vs. not proven here:</strong>
+    <ul>
+      <li><strong>Proven:</strong> invoice/order/supplier-invoice branches can resume when their page counter is greater than 1.</li>
+      <li><strong>Proven:</strong> they only reset to 1 on the explicit final-page reset path.</li>
+      <li><strong>Not proven from uploaded files:</strong> whether the live invoice branch is paused because of an interruption, because the cycle is intentionally mid-run, or because the next trigger has not yet fired.</li>
+    </ul>
+  </div>
+
+  <h2>9. Node-by-Node Summary</h2>
+  <table>
+    <tr><th>Node / group</th><th>Role</th><th>Notes</th></tr>
+    <tr><td><strong>Settings Trigger</strong></td><td>Main runtime entrypoint</td><td>Polls the Settings table every minute on <code>Last Modified Time</code>.</td></tr>
+    <tr><td><strong>Schedule Trigger</strong></td><td>Disabled fallback trigger</td><td>Configured but not active in the uploaded export.</td></tr>
+    <tr><td><strong>Credentials</strong></td><td>Execute child workflow <code>109</code></td><td>Loads shared workflow IDs, base/table IDs, and rate-limit identifier.</td></tr>
+    <tr><td><strong>Get Settings</strong></td><td>Read orchestrator state</td><td>Reads the settings record that controls which downloader branch is allowed to run.</td></tr>
+    <tr><td><strong>Should Do ...</strong> IF nodes</td><td>Gate selection</td><td>Six branch selectors; persisted branches use <code>combineOperation = any</code>.</td></tr>
+    <tr><td><strong>HTTP Fortnox ...</strong> nodes</td><td>Page fetch</td><td>Call Fortnox list endpoints through the shared <code>ratelimit.offertizer.com</code> proxy using OAuth.</td></tr>
+    <tr><td><strong>JSON ...</strong> nodes</td><td>Array extractor</td><td>Use <code>n8n-nodes-rhgroup.json-plus</code> to pull the entity array from each response payload.</td></tr>
+    <tr><td><strong>Split ...</strong> nodes</td><td>Per-item iterator</td><td>Process one listed record at a time.</td></tr>
+    <tr><td><strong>... Component Input</strong></td><td>ID adapter</td><td>Converts Fortnox list-record shape into the exact child-component input payload.</td></tr>
+    <tr><td><strong>... Component Output</strong></td><td>Execute child workflow</td><td>Delegates the full record sync to entity-specific child workflows.</td></tr>
+    <tr><td><strong>Last ...</strong> / <strong>Last ... Page</strong></td><td>Loop + paging control</td><td>One IF checks page item exhaustion; the second checks whether the current Fortnox page is the final page.</td></tr>
+    <tr><td><strong>Reset ...</strong> / <strong>Update ...</strong></td><td>State writer</td><td>Either move to the next page or reset the current entity and enable the next stage.</td></tr>
+    <tr><td><strong>Update Settings</strong></td><td>Persist orchestrator state</td><td>Writes the next state back to Airtable Settings.</td></tr>
+  </table>
+
+  <h3>Child component payloads observed in this workflow</h3>
+  <table>
+    <tr><th>Branch</th><th>Payload sent to child workflow</th><th>Observed meaning</th></tr>
+    <tr><td>Invoices</td><td><code>{ id: DocumentNumber }</code></td><td>Use Fortnox invoice document number</td></tr>
+    <tr><td>Orders</td><td><code>{ id: DocumentNumber }</code></td><td>Use Fortnox order document number</td></tr>
+    <tr><td>Customers</td><td><code>{ id: CustomerNumber }</code></td><td>Use Fortnox customer number</td></tr>
+    <tr><td>Articles</td><td><code>{ id: ArticleNumber }</code></td><td>Use Fortnox article number</td></tr>
+    <tr><td>Supplier Invoices</td><td><code>{ id: GivenNumber, sync_files: "no" }</code></td><td>Use supplier invoice given number; explicitly suppress file syncing in this bulk path</td></tr>
+    <tr><td>Suppliers</td><td><code>{ id: SupplierNumber }</code></td><td>Use Fortnox supplier number</td></tr>
+  </table>
+
+  <h2>10. What Workflow 109 Appears To Be For The Downloader</h2>
+  <div class="warn-box"><strong>Important:</strong> workflow <code>109</code> itself was <strong>not present</strong> in the uploaded workflow set inspected in this discussion.</div>
+  <p>The node named <strong>Credentials</strong> calls workflow <code>109</code>. In the Downloader, it behaves like a <strong>shared config/helper workflow</strong> that returns IDs and constants needed by the orchestrator.</p>
+
+  <h3>Fields the Downloader directly reads from workflow 109</h3>
+  <table>
+    <tr><th>Field</th><th>Observed use in Downloader</th></tr>
+    <tr><td><code>component_invoice</code></td><td>Workflow ID/reference for Invoice Component</td></tr>
+    <tr><td><code>component_order</code></td><td>Workflow ID/reference for Order Component</td></tr>
+    <tr><td><code>component_customer</code></td><td>Workflow ID/reference for Customer Component</td></tr>
+    <tr><td><code>component_article</code></td><td>Workflow ID/reference for Article Component</td></tr>
+    <tr><td><code>component_supplier_invoice</code></td><td>Workflow ID/reference for Supplier Invoice Component</td></tr>
+    <tr><td><code>component_supplier</code></td><td>Workflow ID/reference for Supplier Component</td></tr>
+    <tr><td><code>airtable_base</code></td><td>Base ID used by Get/Update Settings nodes</td></tr>
+    <tr><td><code>airtable_settings_table</code></td><td>Settings table ID used by Get/Update Settings nodes</td></tr>
+    <tr><td><code>ratelimit_id</code></td><td>Key used in the shared Fortnox rate-limit proxy URL</td></tr>
+  </table>
+
+  <h2>11. Inferences That Remain Plausible but Not Fully Proven</h2>
+  <div class="inferred">
+    <h3>11.1 The Downloader likely advances itself by retriggering from Settings updates</h3>
+    <p>The workflow both <strong>watches</strong> the Settings table and <strong>writes back</strong> to the same Settings record.
+    That strongly suggests a chained execution model:</p>
+    <ol>
+      <li>one run finishes a page or a stage,</li>
+      <li><code>Update Settings</code> writes the next flag/page state,</li>
+      <li>the Airtable trigger sees the modified settings record on its next poll,</li>
+      <li>the workflow starts again and continues from the new state.</li>
+    </ol>
+    <p>This is highly plausible from the structure, but the uploaded files do not contain execution logs proving that timing sequence.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>11.2 The workflow is designed as a controlled sweep / reconciliation cycle</h3>
+    <p>Unlike the WebSocket Handler, which reacts to Fortnox events in real time, the Downloader walks Fortnox list endpoints in a fixed entity order.
+    That makes it suitable for backfill, reconciliation, or catch-up processing.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>11.3 Supplier-invoice file syncing is intentionally suppressed in the bulk path</h3>
+    <p>The supplier-invoice branch sends <code>sync_files = "no"</code> into the child workflow.
+    Compared with the WebSocket path discussed separately, this strongly suggests that invoice-file attachment syncing is intentionally skipped during bulk sweeps.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>11.4 The disabled Schedule Trigger is probably legacy or fallback</h3>
+    <p>Because the schedule trigger exists but is disabled, it likely reflects an older design or a fallback start mechanism that is not currently used in production.</p>
+  </div>
+
+  <h2>12. Current State of Understanding</h2>
+  <ul>
+    <li>The Downloader is an active <strong>batch orchestrator</strong> workflow with ID <code>118</code>.</li>
+    <li>Its job is to page through Fortnox list endpoints and delegate each listed record into entity-specific child components.</li>
+    <li>The workflow is controlled by an Airtable <strong>Settings</strong> record that acts like a small state machine.</li>
+    <li>The branch order is confirmed as <strong>Invoices -&gt; Orders -&gt; Customers -&gt; Articles -&gt; Supplier Invoices -&gt; Suppliers -&gt; repeat</strong>.</li>
+    <li>Invoices, Orders, and Supplier Invoices use <strong>persisted page counters</strong>; Customers, Articles, and Suppliers use <strong>in-memory page loops</strong>.</li>
+    <li>A stored page value greater than <code>1</code> is a real resume condition for the persisted branches.</li>
+    <li>The missing workflow <code>109</code> is very likely the shared config/catalog workflow named <strong>Credentials</strong>.</li>
+    <li>The user’s live observation that invoices can sit at page <code>34</code> is consistent with the workflow and has now been incorporated into the analysis as a <strong>user-reported runtime state plus explicitly labeled interpretation</strong>.</li>
+  </ul>
+
+  <hr>
+  <p class="subtitle">End of revised note.</p>
+</div>
+</body>
+</html>

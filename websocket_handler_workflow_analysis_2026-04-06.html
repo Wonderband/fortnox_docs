@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox WebSocket Handler — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1050px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 30px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox WebSocket Handler — Workflow Analysis</h1>
+  <p class="subtitle">Project note created from workflow inspection discussion · Date: 2026-04-06</p>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> This document summarizes the analysis of the active workflow
+    <strong>Adgrabber Fortnox WebSocket Handler v3.0.0</strong>, the role of the custom WebSocket trigger,
+    the branch structure, and the current understanding of the missing helper workflow <code>109</code>
+    referenced as <strong>Credentials</strong>.
+  </div>
+
+  <h2>1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox WebSocket Handler v3.0.0</strong></td></tr>
+    <tr><td>Workflow ID in original export</td><td><code>116</code></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-green">Active</span></td></tr>
+    <tr><td>Main purpose</td><td>Receive Fortnox real-time events via WebSocket and route them into child component workflows that sync data into Airtable.</td></tr>
+  </table>
+
+  <h2>2. Entry Trigger</h2>
+  <p>The first node is a custom community node of type <code>n8n-nodes-rhgroup.webSocketTrigger</code>.
+  In a fresh local n8n instance it may appear as a question mark until the package is installed.</p>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Trigger endpoint</td><td><code>wss://ws.fortnox.se/topics-v1</code></td></tr>
+    <tr><td>Auth source</td><td>Fortnox OAuth credential selected on the WebSocket Trigger node</td></tr>
+    <tr><td>Trigger role</td><td>Open socket, authenticate tenant, register topics, subscribe, then emit incoming Fortnox events to the workflow.</td></tr>
+  </table>
+
+  <h3>Handshake code meaning</h3>
+  <ol>
+    <li><strong>add-tenants-v1</strong> sends the OAuth access token and client secret to Fortnox for tenant/session registration.</li>
+    <li><strong>add-topics-v1</strong> registers which event domains the workflow wants to receive.</li>
+    <li><strong>subscribe-v1</strong> starts the live event stream.</li>
+    <li>If any Fortnox response does not return <code>result === "ok"</code>, the node throws an error and the trigger does not start.</li>
+  </ol>
+  <pre>Subscribed Fortnox topics:
+- articles
+- invoices
+- orders
+- customers
+- suppliers
+- supplier-invoices</pre>
+
+  <h2>3. High-Level Workflow Behavior</h2>
+  <p>The WebSocket Handler is primarily an <strong>orchestrator/router</strong>, not the place where the full data-sync logic lives.
+  It receives a Fortnox event, normalizes the relevant ID, and then delegates the actual record fetch/upsert work to downstream component workflows.</p>
+  <pre>Fortnox event
+  -&gt; WebSocket Trigger
+  -&gt; Credentials (workflow 109)
+  -&gt; topic/type routing
+  -&gt; child component workflow
+  -&gt; Airtable sync inside child workflow</pre>
+
+  <h2>4. Node-by-Node Summary</h2>
+  <table>
+    <tr><th>Node</th><th>Role</th><th>Notes</th></tr>
+    <tr><td><strong>WebSocket Trigger</strong></td><td>Live Fortnox event entrypoint</td><td>Connects to Fortnox WebSocket, authenticates, subscribes to six topics.</td></tr>
+    <tr><td><strong>Credentials</strong></td><td>Execute child workflow <code>109</code></td><td>Expected to return config data used later in the workflow.</td></tr>
+    <tr><td><strong>WebSocket Switch</strong></td><td>First router</td><td>Splits invoice / order / customer / fallback topics.</td></tr>
+    <tr><td><strong>If Payment</strong></td><td>Invoice subtype router</td><td>Checks whether event type is <code>invoicepayment-bookkeep-v1</code>.</td></tr>
+    <tr><td><strong>Invoice Component Input1</strong></td><td>Input adapter</td><td>Sets <code>id = entityId</code>.</td></tr>
+    <tr><td><strong>Invoice Component Input2</strong></td><td>Input adapter</td><td>Sets <code>id = payload.invoiceId</code> for payment-related invoice events.</td></tr>
+    <tr><td><strong>Invoice Component Output1</strong></td><td>Execute child workflow</td><td>Uses <code>{{ $node["Credentials"].json["component_invoice"] }}</code>.</td></tr>
+    <tr><td><strong>Order Component Input1</strong></td><td>Input adapter</td><td>Sets <code>id = entityId</code>.</td></tr>
+    <tr><td><strong>Order Component Output1</strong></td><td>Execute child workflow</td><td>Uses <code>component_order</code>.</td></tr>
+    <tr><td><strong>Customer Component Input1</strong></td><td>Input adapter</td><td>Sets <code>id = entityId</code>.</td></tr>
+    <tr><td><strong>Customer Component Output1</strong></td><td>Execute child workflow</td><td>Uses <code>component_customer</code>.</td></tr>
+    <tr><td><strong>Switch</strong></td><td>Second router</td><td>Handles fallback branch: suppliers / supplier-invoices / articles.</td></tr>
+    <tr><td><strong>Supplier Component Input</strong></td><td>Input adapter</td><td>Sets <code>id = entityId</code>.</td></tr>
+    <tr><td><strong>Supplier Component Output</strong></td><td>Execute child workflow</td><td>Uses <code>component_supplier</code>.</td></tr>
+    <tr><td><strong>Supplier Invoice Component Input</strong></td><td>Input adapter</td><td>Sets <code>id = entityId</code> and <code>sync_files = "yes"</code>.</td></tr>
+    <tr><td><strong>Supplier Invoice Component Output</strong></td><td>Execute child workflow</td><td>Uses <code>component_supplier_invoice</code>.</td></tr>
+    <tr><td><strong>Article Component Input1</strong></td><td>Input adapter</td><td>Sets <code>id = entityId</code>.</td></tr>
+    <tr><td><strong>Article Component Output1</strong></td><td>Execute child workflow</td><td>Uses <code>component_article</code>.</td></tr>
+  </table>
+
+  <h2>5. What Workflow 109 Appears To Be</h2>
+  <div class="warn-box"><strong>Important:</strong> workflow <code>109</code> itself was <strong>not present</strong> in the uploaded workflow JSON set inspected in this discussion.</div>
+  <p>The node named <strong>Credentials</strong> calls workflow <code>109</code>. Based on how other workflows read its output, the missing workflow does not appear to be a business-action workflow. It is most likely a <strong>config/helper workflow</strong> that returns a JSON object containing shared IDs and references.</p>
+  <h3>For the WebSocket Handler specifically, 109 is expected to return:</h3>
+  <pre>{
+  "component_invoice": "...",
+  "component_order": "...",
+  "component_customer": "...",
+  "component_supplier": "...",
+  "component_supplier_invoice": "...",
+  "component_article": "..."
+}</pre>
+
+  <h2>6. Fields Expected From Workflow 109 Across Different Flows</h2>
+  <p>From broader inspection of related workflows in this project, workflow <code>109</code> is likely expected to provide more than child workflow IDs. The following fields were identified as being read from its output in other flows:</p>
+  <table>
+    <tr><th>Field</th><th>Likely purpose</th></tr>
+    <tr><td><code>component_invoice</code></td><td>Workflow ID/reference for Invoice Component</td></tr>
+    <tr><td><code>component_order</code></td><td>Workflow ID/reference for Order Component</td></tr>
+    <tr><td><code>component_customer</code></td><td>Workflow ID/reference for Customer Component</td></tr>
+    <tr><td><code>component_supplier</code></td><td>Workflow ID/reference for Supplier Component</td></tr>
+    <tr><td><code>component_supplier_invoice</code></td><td>Workflow ID/reference for Supplier Invoice Component</td></tr>
+    <tr><td><code>component_article</code></td><td>Workflow ID/reference for Article Component</td></tr>
+    <tr><td><code>airtable_base</code></td><td>Airtable base ID</td></tr>
+    <tr><td><code>airtable_settings_table</code></td><td>Airtable settings/config table ID</td></tr>
+    <tr><td><code>airtable_invoice_table</code></td><td>FortnoxInvoice table ID</td></tr>
+    <tr><td><code>airtable_invoice_row_table</code></td><td>FortnoxInvoiceRow table ID</td></tr>
+    <tr><td><code>airtable_customer_table</code></td><td>FortnoxCustomer table ID</td></tr>
+    <tr><td><code>airtable_supplier_table</code></td><td>FortnoxSupplier table ID</td></tr>
+    <tr><td><code>airtable_supplier_invoice_table</code></td><td>FortnoxSupplierInvoice table ID</td></tr>
+    <tr><td><code>airtable_order_table</code></td><td>FortnoxOrder table ID</td></tr>
+    <tr><td><code>airtable_article_table</code></td><td>FortnoxArticle table ID</td></tr>
+    <tr><td><code>ratelimit_id</code></td><td>ID/key used by the shared rate-limit proxy URL</td></tr>
+  </table>
+
+  <h2>7. Practical Reconstruction Strategy</h2>
+  <div class="ok-box"><strong>Most likely feasible:</strong> recreate workflow <code>109</code> manually as a simple helper workflow that returns a single JSON object with the required config values.</div>
+  <p>If all workflows are imported into the same local n8n database, a replacement <code>109</code> can be created with:</p>
+  <ul>
+    <li>the new local workflow IDs for each child component workflow</li>
+    <li>the relevant Airtable base/table IDs</li>
+    <li>other shared constants such as <code>ratelimit_id</code>, if known</li>
+  </ul>
+  <p>This would not recreate stored n8n credentials/secrets by itself, but it would likely restore the routing/config layer expected by the imported workflows.</p>
+
+  <h2>8. Current State of Understanding</h2>
+  <ul>
+    <li>The WebSocket Handler is an active parent/orchestrator workflow.</li>
+    <li>Its job is to receive Fortnox real-time events and route them into child sync components.</li>
+    <li>The missing workflow <code>109</code> is very likely a shared config/catalog workflow named <strong>Credentials</strong>.</li>
+    <li>Within the WebSocket Handler specifically, <code>109</code> appears to be used only to provide child workflow references.</li>
+    <li>Across the wider workflow set, <code>109</code> is also expected to return Airtable IDs and other shared config values.</li>
+  </ul>
+
+  <hr>
+  <p class="subtitle">End of note.</p>
+</div>
+</body>
+</html>
