@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox WebSocket/Downloader Reload — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-gray { background: #f1f5f9; color: #475569; }
+  .small { font-size: 12px; color: #555; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox WebSocket/Downloader Reload — Workflow Analysis</h1>
+  <p class="subtitle">Project note created from workflow inspection discussion · Date: 2026-04-07</p>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> This document summarizes the uploaded workflow
+    <strong>Adgrabber Fortnox WebSocket/Downloader Reload</strong>, explains what it actually does,
+    maps its two control branches, and separates what is directly proven from the JSON export
+    from what is only inferred about runtime intent.
+  </div>
+
+  <div class="source-box">
+    <strong>Primary inspected sources:</strong>
+    <code>Adgrabber_Fortnox_WebSocket_Downloader_Reload (1).json</code>,
+    <code>websocket_handler_workflow_analysis_2026-04-06.html</code>, and
+    <code>downloader_workflow_analysis_2026-04-06(2).html</code>.
+  </div>
+
+  <div class="info-box">
+    <strong>How to read this note.</strong>
+    <ul>
+      <li><strong>Confirmed from current workflow JSON:</strong> directly visible in the uploaded reload workflow export.</li>
+      <li><strong>Confirmed from prior workflow analysis:</strong> established elsewhere in the uploaded project notes.</li>
+      <li><strong>Inference:</strong> a plausible interpretation of why this flow exists or how it is meant to behave operationally.</li>
+    </ul>
+  </div>
+
+  <h2>1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox WebSocket/Downloader Reload</strong></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-green">Active</span></td></tr>
+    <tr><td>Timezone</td><td><code>Europe/Stockholm</code></td></tr>
+    <tr><td>Execution order</td><td><code>v1</code></td></tr>
+    <tr><td>Main purpose</td><td>Supervise and restart two other n8n workflows by calling the n8n REST API. It does not fetch Fortnox business data and it does not write to Airtable directly.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Key architectural fact:</strong> this is a <strong>controller/watchdog</strong> workflow, not a record-sync workflow.
+    It only toggles other workflows on or off.
+  </div>
+
+  <h2>2. What This Flow Controls</h2>
+  <p>The current reload workflow contains hardcoded API calls against two n8n workflow IDs:</p>
+  <table>
+    <tr><th>Controlled workflow ID</th><th>Observed action in reload flow</th><th>Cross-file identification</th></tr>
+    <tr>
+      <td><code>116</code></td>
+      <td>Deactivate -&gt; wait 10 seconds -&gt; activate -&gt; retry activation until HTTP 200</td>
+      <td>Matches the separately analyzed <strong>Adgrabber Fortnox WebSocket Handler</strong> workflow</td>
+    </tr>
+    <tr>
+      <td><code>118</code></td>
+      <td>Check latest execution age -&gt; conditionally deactivate -&gt; wait 10 seconds -&gt; activate</td>
+      <td>Matches the separately analyzed <strong>Adgrabber Fortnox Downloader</strong> workflow</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Important distinction:</strong> the reload flow is not the WebSocket Handler and not the Downloader.
+    It sits one level above them and manages their process lifecycle through the n8n API.
+  </div>
+
+  <h2>3. Entry Trigger and Overall Shape</h2>
+  <p>The entire workflow starts from a single <code>Schedule Trigger</code> configured with an hourly interval.
+  From that trigger, execution immediately splits into two parallel branches.</p>
+
+  <pre>Schedule Trigger (hourly)
+  |- Branch A: restart workflow 116 (WebSocket Handler)
+  |  -> deactivate 116
+  |  -> wait 10 sec
+  |  -> activate 116
+  |  -> if activation != 200, retry activation loop
+  |
+  |- Branch B: inspect workflow 118 (Downloader)
+     -> query latest execution of 118
+     -> if latest stoppedAt is older than now - 2 hours
+        -> deactivate 118
+        -> wait 10 sec
+        -> activate 118</pre>
+
+  <h2>4. Branch A — Forced Refresh of Workflow 116</h2>
+  <p>The first branch is unconditional. Every time the hourly schedule fires, it posts to the n8n API to deactivate workflow <code>116</code>, waits 10 seconds, then posts again to activate workflow <code>116</code>.</p>
+
+  <table>
+    <tr><th>Node</th><th>Role</th><th>Confirmed behavior</th></tr>
+    <tr><td><strong>HTTP Request Deactivate</strong></td><td>Lifecycle control</td><td>POST to <code>/api/v1/workflows/116/deactivate</code></td></tr>
+    <tr><td><strong>Wait</strong></td><td>Gap before restart</td><td>Waits <code>10 seconds</code></td></tr>
+    <tr><td><strong>HTTP Request Activate</strong></td><td>Lifecycle control</td><td>POST to <code>/api/v1/workflows/116/activate</code> with full response + <code>neverError</code></td></tr>
+    <tr><td><strong>IF Error</strong></td><td>Activation check</td><td>Tests whether activation response <code>statusCode != 200</code></td></tr>
+    <tr><td><strong>Set</strong></td><td>Success terminator</td><td>Sets <code>Done = true</code> when activation response is 200</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Proven behavior:</strong> workflow <code>116</code> is deliberately bounced on every hourly run of the reload flow.
+    There is no age check and no dependence on execution history for this branch.
+  </div>
+
+  <h3>4.1 Retry logic on the 116 restart path</h3>
+  <p>The activation response for workflow <code>116</code> is explicitly examined. If the response code is not 200, the <code>true</code> output of <strong>IF Error</strong> goes back to the same <strong>Wait</strong> node, creating a retry loop that repeatedly attempts activation after 10-second pauses.</p>
+
+  <pre>Deactivate 116
+  -> Wait 10 sec
+  -> Activate 116
+  -> IF statusCode != 200
+       true  -> Wait again -> Activate again -> ...
+       false -> Set Done = true</pre>
+
+  <div class="warn-box">
+    <strong>Important asymmetry:</strong> the workflow explicitly retries <strong>activation</strong> of 116, but it does not check the deactivation response first.
+    So the supervision logic is primarily concerned with ensuring that 116 ends in an activated state.
+  </div>
+
+  <h2>5. Branch B — Conditional Recovery of Workflow 118</h2>
+  <p>The second branch is conditional. It first queries the n8n executions API for the most recent execution of workflow <code>118</code>, limited to one result. Then it checks the latest execution’s <code>stoppedAt</code> timestamp against <code>$now.minus({ hours: 2 })</code>.</p>
+
+  <table>
+    <tr><th>Node</th><th>Role</th><th>Confirmed behavior</th></tr>
+    <tr><td><strong>HTTP Request Downloader Executions</strong></td><td>Execution lookup</td><td>GET <code>/api/v1/executions?workflowId=118&amp;limit=1</code></td></tr>
+    <tr><td><strong>If Last Execution Hour Ago</strong></td><td>Age gate</td><td>Checks whether latest <code>stoppedAt</code> is <strong>before</strong> <code>now - 2 hours</code></td></tr>
+    <tr><td><strong>HTTP Request Deactivate1</strong></td><td>Lifecycle control</td><td>POST to <code>/api/v1/workflows/118/deactivate</code> only when the age check passes</td></tr>
+    <tr><td><strong>Wait1</strong></td><td>Gap before restart</td><td>Waits <code>10 seconds</code></td></tr>
+    <tr><td><strong>HTTP Request Activate1</strong></td><td>Lifecycle control</td><td>POST to <code>/api/v1/workflows/118/activate</code></td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Proven behavior:</strong> workflow <code>118</code> is not always restarted.
+    It is restarted only when the reload flow concludes that the latest recorded execution for 118 is older than two hours.
+  </div>
+
+  <h3>5.1 Naming mismatch in the IF node</h3>
+  <p>The node is named <strong>If Last Execution Hour Ago</strong>, but the expression inside it compares against <code>$now.minus({ hours: 2 })</code>.</p>
+
+  <div class="observed">
+    <h3>Confirmed mismatch</h3>
+    <p>The node name suggests a one-hour threshold, but the actual condition uses <strong>two hours</strong>. The JSON therefore proves that the behavior follows the expression, not the label.</p>
+  </div>
+
+  <h3>5.2 No visible success/error handling after Activate1</h3>
+  <p>Unlike the 116 path, the 118 path does not route <strong>HTTP Request Activate1</strong> into any downstream IF or Set node. The activation request is made, but the current reload workflow export does not show an explicit branch that validates the response or retries if activation fails.</p>
+
+  <div class="warn-box">
+    <strong>Second important asymmetry:</strong> workflow 118 has a <strong>conditional restart</strong> and a <strong>fire-and-forget activation</strong>, while workflow 116 has an <strong>unconditional restart</strong> and an <strong>explicit activation retry loop</strong>.</div>
+
+  <h2>6. Why Workflows 116 and 118 Matter Here</h2>
+  <p>Cross-file project notes identify workflow <code>116</code> as the Fortnox WebSocket Handler and workflow <code>118</code> as the Fortnox Downloader.</p>
+
+  <table>
+    <tr><th>Workflow</th><th>Role in broader Fortnox architecture</th><th>Why a reload flow may supervise it</th></tr>
+    <tr>
+      <td><strong>116 — WebSocket Handler</strong></td>
+      <td>Real-time event listener and router for Fortnox WebSocket topics</td>
+      <td>Long-lived socket listeners often benefit from periodic refresh or reconnect</td>
+    </tr>
+    <tr>
+      <td><strong>118 — Downloader</strong></td>
+      <td>Batch paginator/state machine for Fortnox list backfills and reconciliation sweeps</td>
+      <td>A stalled or stale downloader can leave the Settings-driven batch cycle parked mid-process</td>
+    </tr>
+  </table>
+
+  <div class="inferred">
+    <h3>Likely operational intent</h3>
+    <p>The most plausible design intent is:</p>
+    <ol>
+      <li><strong>keep the WebSocket listener fresh</strong> by forcibly reconnecting it every hour, and</li>
+      <li><strong>heal a stale downloader</strong> only when its latest recorded execution appears too old.</li>
+    </ol>
+    <p>This intent is not spelled out in the JSON, but it fits the exact branch logic and the known roles of workflows 116 and 118.</p>
+  </div>
+
+  <h2>7. What Is Proven vs. What Is Inferred</h2>
+
+  <h3>7.1 Proven from the current reload JSON</h3>
+  <ul>
+    <li>The reload flow is triggered on an hourly schedule.</li>
+    <li>It controls workflows <code>116</code> and <code>118</code> through the n8n REST API.</li>
+    <li>Workflow 116 is always deactivated, then reactivated after a 10-second wait.</li>
+    <li>Workflow 116 activation is retried until the activation HTTP status code becomes 200.</li>
+    <li>Workflow 118 is only restarted when the latest fetched execution has <code>stoppedAt</code> older than two hours.</li>
+    <li>The node name <strong>If Last Execution Hour Ago</strong> does not match its actual two-hour threshold.</li>
+    <li>The 118 restart path has no explicit downstream retry/validation node after activation.</li>
+  </ul>
+
+  <h3>7.2 Confirmed from prior uploaded workflow analyses</h3>
+  <ul>
+    <li>Workflow <code>116</code> is the <strong>Adgrabber Fortnox WebSocket Handler</strong>.</li>
+    <li>Workflow <code>118</code> is the <strong>Adgrabber Fortnox Downloader</strong>.</li>
+    <li>The WebSocket Handler is a real-time Fortnox event router.</li>
+    <li>The Downloader is a batch orchestrator/state machine driven by an Airtable Settings record.</li>
+  </ul>
+
+  <h3>7.3 Inferences that remain plausible but not fully proven</h3>
+  <div class="inferred">
+    <h3>Inference A — this flow is a resilience / self-healing layer</h3>
+    <p>The reload flow looks like an ops safeguard added on top of the main Fortnox sync architecture. That interpretation is strong, but the JSON export itself does not contain a human note or comment confirming that intent.</p>
+
+    <h3>Inference B — workflow 116 is treated as more fragile or more important to keep hot</h3>
+    <p>The stronger restart discipline for 116 suggests that the WebSocket listener is treated as a process that should always be actively refreshed, while 118 is treated as a background worker that only needs intervention when stale. This is a reasonable reading of the asymmetry, but still an inference.</p>
+
+    <h3>Inference C — the age check for 118 is a coarse health signal rather than a true stall detector</h3>
+    <p>The logic does not inspect execution status, error state, queue state, or runtime duration. It only looks at the latest <code>stoppedAt</code> timestamp. So the health check is simple and coarse. That conclusion follows from structure, but the intended SLA is not documented in the export.</p>
+  </div>
+
+  <h2>8. Risks / Limitations Visible in the Current Design</h2>
+  <table>
+    <tr><th>Observed design point</th><th>Why it matters</th><th>Status</th></tr>
+    <tr>
+      <td>116 deactivation result is not checked</td>
+      <td>The flow assumes deactivation either succeeds or is not important enough to validate before activation retries begin.</td>
+      <td>Confirmed from JSON</td>
+    </tr>
+    <tr>
+      <td>118 activation result is not routed into retry logic</td>
+      <td>The downloader restart path is less fault-tolerant than the WebSocket restart path.</td>
+      <td>Confirmed from JSON</td>
+    </tr>
+    <tr>
+      <td>118 health gate uses only latest <code>stoppedAt</code></td>
+      <td>The check may misclassify some states because it does not read execution status or detect a currently running instance explicitly.</td>
+      <td>Inference from current logic</td>
+    </tr>
+    <tr>
+      <td>Node label says "Hour Ago" but logic uses 2 hours</td>
+      <td>The label can mislead maintainers reading the canvas.</td>
+      <td>Confirmed from JSON</td>
+    </tr>
+  </table>
+
+  <h2>9. Node-by-Node Summary</h2>
+  <table>
+    <tr><th>Node</th><th>Type</th><th>Role</th><th>Notes</th></tr>
+    <tr><td><strong>Schedule Trigger</strong></td><td><code>scheduleTrigger</code></td><td>Hourly entrypoint</td><td>Starts both control branches at once.</td></tr>
+    <tr><td><strong>HTTP Request Deactivate</strong></td><td><code>httpRequest</code></td><td>Turn off 116</td><td>Posts to workflow 116 deactivation endpoint.</td></tr>
+    <tr><td><strong>Wait</strong></td><td><code>wait</code></td><td>Pause before reactivation</td><td>10-second delay.</td></tr>
+    <tr><td><strong>HTTP Request Activate</strong></td><td><code>httpRequest</code></td><td>Turn on 116</td><td>Returns full response and never throws hard HTTP errors.</td></tr>
+    <tr><td><strong>IF Error</strong></td><td><code>if</code></td><td>Check 116 activation result</td><td>Loops on non-200 responses.</td></tr>
+    <tr><td><strong>Set</strong></td><td><code>set</code></td><td>Success marker</td><td>Sets <code>Done = true</code> after successful 116 activation.</td></tr>
+    <tr><td><strong>HTTP Request Downloader Executions</strong></td><td><code>httpRequest</code></td><td>Inspect latest 118 execution</td><td>Queries <code>/executions?workflowId=118&amp;limit=1</code>.</td></tr>
+    <tr><td><strong>If Last Execution Hour Ago</strong></td><td><code>if</code></td><td>Gate 118 recovery</td><td>Actually uses a 2-hour threshold.</td></tr>
+    <tr><td><strong>HTTP Request Deactivate1</strong></td><td><code>httpRequest</code></td><td>Turn off 118</td><td>Only runs when the age gate passes.</td></tr>
+    <tr><td><strong>Wait1</strong></td><td><code>wait</code></td><td>Pause before 118 reactivation</td><td>10-second delay.</td></tr>
+    <tr><td><strong>HTTP Request Activate1</strong></td><td><code>httpRequest</code></td><td>Turn on 118</td><td>No explicit downstream validation/retry path shown.</td></tr>
+  </table>
+
+  <h2>10. Plain-English Explanation</h2>
+  <p>If you explain this flow to a teammate without node jargon, the clearest summary is:</p>
+
+  <pre>Every hour, this watchdog flow does two things:
+1. It force-restarts the WebSocket listener workflow so the live Fortnox connection is refreshed.
+2. It checks whether the batch downloader workflow looks stale.
+   If the downloader's latest recorded execution is older than two hours,
+   it restarts that workflow too.</pre>
+
+  <div class="ok-box">
+    <strong>Best one-sentence description:</strong>
+    this workflow is an <strong>ops watchdog that keeps the Fortnox sync machinery alive</strong> by periodically refreshing the live listener and conditionally restarting the batch backfill worker.
+  </div>
+
+  <h2>11. Current State of Understanding</h2>
+  <ul>
+    <li>The reload workflow is active and self-contained.</li>
+    <li>It supervises workflow <code>116</code> and workflow <code>118</code> through hardcoded n8n API endpoints.</li>
+    <li>Workflow 116 is restarted on every hourly trigger and has explicit activation retry handling.</li>
+    <li>Workflow 118 is only restarted when the most recent execution appears older than two hours.</li>
+    <li>The reload flow therefore complements the main sync architecture rather than replacing it.</li>
+    <li>The current JSON strongly supports the interpretation that this is a resilience / maintenance layer for the Fortnox integration.</li>
+  </ul>
+
+  <hr>
+  <p class="subtitle">End of note.</p>
+</div>
+</body>
+</html>
