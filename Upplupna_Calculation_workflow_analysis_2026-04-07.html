@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upplupna Calculation - Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 30px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-gray { background: #f1f5f9; color: #475569; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .small { font-size: 12px; color: #555; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+  .toc { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 24px; margin: 20px 0 36px 0; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; color: #0f3460; }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 3px; }
+  .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0 24px 0; }
+  .metric-card { border-radius: 8px; padding: 14px 16px; }
+  .metric-card .num { font-size: 24px; font-weight: 700; line-height: 1; margin-bottom: 5px; }
+  .metric-card .lbl { font-size: 12px; color: #555; }
+  @media (max-width: 900px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Upplupna Calculation - Workflow Analysis</h1>
+  <p class="subtitle">
+    Workflow export reviewed: <strong>Upplupna Calculation</strong> &nbsp;|&nbsp;
+    Analysis date: <strong>2026-04-07</strong> &nbsp;|&nbsp;
+    Workflow ID: <code>dZJRdGRVi2JWq6OM</code>
+  </p>
+
+  <div class="info-box">
+    <strong>How to read this report:</strong> Sections 1-7 contain directly observed facts from the uploaded workflow JSON and previously uploaded Airtable reference documents. Section 8 contains interpretation of business purpose and operational role. Those interpretations are labeled clearly and should not be treated as stronger than the underlying observed evidence.
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">Executive summary</a></li>
+      <li><a href="#s2">Workflow identity and role</a></li>
+      <li><a href="#s3">Observed execution path</a></li>
+      <li><a href="#s4">Tables, filters, and data loaded</a></li>
+      <li><a href="#s5">Calculation logic</a></li>
+      <li><a href="#s6">Writeback behavior</a></li>
+      <li><a href="#s7">Confirmed risks and quirks</a></li>
+      <li><a href="#s8">Interpretation of business purpose</a></li>
+      <li><a href="#s9">Final verdict</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1">1. Executive summary</h2>
+
+  <div class="metric-grid">
+    <div class="metric-card" style="background:#dcfce7;">
+      <div class="num" style="color:#166534;">Active</div>
+      <div class="lbl">The uploaded workflow export is marked active.</div>
+    </div>
+    <div class="metric-card" style="background:#dbeafe;">
+      <div class="num" style="color:#1e40af;">Webhook</div>
+      <div class="lbl">This is not schedule-driven. It starts from a webhook call.</div>
+    </div>
+    <div class="metric-card" style="background:#ede9fe;">
+      <div class="num" style="color:#5b21b6;">Airtable-only</div>
+      <div class="lbl">No Fortnox HTTP nodes and no child workflow orchestration are in the active path.</div>
+    </div>
+    <div class="metric-card" style="background:#ffedd5;">
+      <div class="num" style="color:#9a3412;">Recalc</div>
+      <div class="lbl">This workflow recalculates accrual-style deltas and writes them back.</div>
+    </div>
+  </div>
+
+  <p>
+    The workflow is a focused Airtable calculation job. It loads open <code>Media / Prod New</code> records, supplier-cost mappings from <code>sys.fakturamapping</code>, and invoiced allocation records from <code>sys.orderallocationmapping</code>. It then computes a per-line delta and writes both line-level and run-level totals back to Airtable.
+  </p>
+
+  <div class="ok-box">
+    <strong>Main conclusion:</strong> this is not a parent sync flow like the WebSocket handler or the Downloader. It is a dedicated accrual reconciliation workflow centered on <code>Media / Prod New</code> and the two sys mapping tables.
+  </div>
+
+  <h2 id="s2">2. Workflow identity and role</h2>
+
+  <table>
+    <tr><th>Property</th><th>Observed value</th><th>Comment</th></tr>
+    <tr><td>Name</td><td><code>Upplupna Calculation</code></td><td>Explicit in the JSON export.</td></tr>
+    <tr><td>Workflow ID</td><td><code>dZJRdGRVi2JWq6OM</code></td><td>Present in the export metadata.</td></tr>
+    <tr><td>Tag</td><td><code>ADG Fortnox</code></td><td>Grouped with the Fortnox project workflows, but functionally Airtable-side.</td></tr>
+    <tr><td>Trigger</td><td>Webhook</td><td>Execution begins from a webhook path, not from a schedule trigger.</td></tr>
+    <tr><td>Execution order</td><td><code>v1</code></td><td>Default n8n execution order setting.</td></tr>
+    <tr><td>Active</td><td>Yes</td><td>The export shows <code>"active": true</code>.</td></tr>
+  </table>
+
+  <div class="observed">
+    <h3>Observed role</h3>
+    <p>
+      The workflow hardcodes one Airtable base and four working tables in its <code>Information</code> node:
+      production base <code>appk463NGeDy17j9T</code>, the <code>Automation Upplupna</code> control table, <code>Media / Prod New</code>, <code>sys.fakturamapping</code>, and <code>sys.orderallocationmapping</code>.
+    </p>
+  </div>
+
+  <h2 id="s3">3. Observed execution path</h2>
+
+  <pre>
+Webhook
+  -> Information
+  -> Airtable Automation         (set selected run record to In progress)
+  -> Airtable Find Media/Prod    (load target records)
+  -> Reset
+  -> Airtable Find Fakturamapping
+  -> Reset1
+  -> Airtable Find Orderallocationmapping
+  -> Reset2
+  -> Code                        (main calculation)
+  -> Split In Batches
+      -> Airtable Update Media/Prod
+      -> back to Split In Batches until exhausted
+  -> Total                       (aggregate all calculated rows)
+  -> Airtable Update Automation  (write final totals and status)
+  </pre>
+
+  <p>
+    The active chain is linear and self-contained. There are no <code>executeWorkflow</code> nodes in the active path, so this workflow does not delegate work to child components.
+  </p>
+
+  <div class="source-box">
+    <strong>Important distinction:</strong> this makes the workflow operationally very different from the project WebSocket and Downloader flows, which act as event/batch orchestrators. Upplupna Calculation is a direct calculation and writeback routine.
+  </div>
+
+  <h2 id="s4">4. Tables, filters, and data loaded</h2>
+
+  <h3>4.1 Hardcoded table targets</h3>
+  <table>
+    <tr><th>Logical name in workflow</th><th>Table ID</th><th>Role</th></tr>
+    <tr><td><code>table_upplupna_automation</code></td><td><code>tbl36schHwKFPc1lu</code></td><td>Control / run-summary table</td></tr>
+    <tr><td><code>table_media_prod</code></td><td><code>tblTf9sNLy464khq5</code></td><td>Main target table for line-level writeback</td></tr>
+    <tr><td><code>table_fakturamapping</code></td><td><code>tblRXZqzj79Vd3iC6</code></td><td>Actual supplier-cost mapping source</td></tr>
+    <tr><td><code>table_orderallocationmapping</code></td><td><code>tblvru6tOgpB5yVQG</code></td><td>Allocated revenue/spend source</td></tr>
+  </table>
+
+  <h3>4.2 Media / Prod search</h3>
+  <p>
+    The active <code>Airtable Find Media/Prod</code> node filters only on <code>{Mgmt. Status} != "Stangd"</code>. So the actual active run scope is all non-closed Media / Prod rows, not only rows inside a campaign date window.
+  </p>
+
+  <div class="warn-box">
+    Two alternative Media / Prod search nodes are still present in the export but are not in the active chain. Those old nodes used narrower date-based formulas. The live execution path does not currently use them.
+  </div>
+
+  <h3>4.3 Fakturamapping search</h3>
+  <p>
+    The workflow loads <code>Belopp ex moms</code>, <code>ID Mediakop/Production</code>, and <code>Supplier</code> from <code>sys.fakturamapping</code>, filtered by supplier-invoice date between the run's <code>Start Date</code> and <code>Up until including which date</code>.
+  </p>
+
+  <h3>4.4 Orderallocationmapping search</h3>
+  <p>
+    The workflow loads allocation records where:
+  </p>
+  <ul>
+    <li><code>Order Invoice Status = "Invoiced"</code></li>
+    <li><code>MP status != "Stangd"</code></li>
+    <li><code>Type of allocation</code> is either <code>Pay for external production cost</code> or <code>Pay for mediakop</code></li>
+  </ul>
+
+  <p>
+    It then performs a second date filter in code against <code>Fortnox Invoice Invoice Date (from FortnoxOrder)</code>, keeping only allocations whose invoice date falls inside the same run window.
+  </p>
+
+  <h3>4.5 Table semantics from the project docs</h3>
+  <table>
+    <tr><th>Table</th><th>Confirmed role in uploaded documentation</th></tr>
+    <tr><td><code>Media / Prod New</code></td><td>Central campaign line-item join point where revenue-side allocations and supplier cost meet.</td></tr>
+    <tr><td><code>sys.fakturamapping</code></td><td>Bridge table linking supplier invoice cost to campaign line items.</td></tr>
+    <tr><td><code>sys.orderallocationmapping</code></td><td>Bridge table distributing order-side value and spend recognition to campaign line items.</td></tr>
+    <tr><td><code>Automation Upplupna</code></td><td>Run table for monthly accrual processing metadata and totals.</td></tr>
+  </table>
+
+  <h2 id="s5">5. Calculation logic</h2>
+
+  <h3>5.1 Per-record matching</h3>
+  <p>
+    For each loaded <code>Media / Prod New</code> record, the main <code>Code</code> node creates two matched subsets:
+  </p>
+  <ul>
+    <li><strong>fakturamapping subset:</strong> rows whose <code>ID Mediakop/Production</code> equals the Media / Prod row's <code>Sys. ID</code></li>
+    <li><strong>orderallocationmapping subset:</strong> rows whose <code>ID Mediakop</code> or <code>ID Production</code> equals the same <code>Sys. ID</code></li>
+  </ul>
+
+  <h3>5.2 Core numeric totals</h3>
+  <table>
+    <tr><th>Computed variable</th><th>Meaning</th></tr>
+    <tr><td><code>totalBeloppExMoms</code></td><td>Sum of actual supplier cost from matched fakturamapping rows</td></tr>
+    <tr><td><code>totalBriefCustomerSpendAllocated</code></td><td>Sum of matched invoiced allocation values from orderallocationmapping</td></tr>
+    <tr><td><code>Upplupna Automation</code></td><td><code>totalBeloppExMoms - totalBriefCustomerSpendAllocated</code></td></tr>
+  </table>
+
+  <div class="observed">
+    <h3>Observed formula</h3>
+    <p>
+      The workflow explicitly calculates the main delta as <strong>actual mapped supplier cost minus allocated invoiced amount</strong>.
+    </p>
+  </div>
+
+  <h3>5.3 Additional line-level outputs</h3>
+  <ul>
+    <li><code>Upplupna Automation Up Until</code> - copied from the run control record</li>
+    <li><code>Upplupna Automation Run Date</code> - stamped with current execution time</li>
+    <li><code>Upplupna Automation Found Mapping Cost</code> - raw fakturamapping subtotal</li>
+    <li><code>Upplupna Automation Found Allocations Invoiced</code> - raw orderallocationmapping subtotal</li>
+    <li><code>Upplupa Comment</code> - set to <code>Has multiple allocation dates</code> when a matched allocation row carries multiple invoice dates</li>
+  </ul>
+
+  <h3>5.4 Supplier-specific branch</h3>
+  <p>
+    The code contains a dedicated supplier subtotal routine for supplier ID <code>GBG</code> and supplier name <code>912609676-Adgrabber Goteborg AB (From Fortnox)</code>. This computes separate supplier-specific totals for mapping cost, allocated invoiced amount, and the resulting delta.
+  </p>
+
+  <div class="warn-box">
+    This branch is hardcoded. The workflow is therefore partly generic and partly bespoke: all rows are processed generally, but one supplier receives additional dedicated subtotals.
+  </div>
+
+  <h2 id="s6">6. Writeback behavior</h2>
+
+  <h3>6.1 Line-level writeback to Media / Prod New</h3>
+  <p>
+    The active <code>Airtable Update Media/Prod</code> node writes the following fields back to each matched Media / Prod record:
+  </p>
+  <ul>
+    <li><code>Upplupna Automation</code></li>
+    <li><code>Upplupna Automation Found Allocations Invoiced</code></li>
+    <li><code>Upplupna Automation Found Mapping Cost</code></li>
+    <li><code>Upplupna Automation Run Date</code></li>
+    <li><code>Upplupna Automation Up Until</code></li>
+  </ul>
+
+  <h3>6.2 Run-level aggregation</h3>
+  <p>
+    After batch processing is exhausted, the <code>Total</code> node sums the emitted line-level records and produces run-level totals:
+  </p>
+  <ul>
+    <li><code>Total Upplupna</code></li>
+    <li><code>Total Media/Prod New</code></li>
+    <li><code>Total Fakturamapping</code></li>
+    <li><code>Total Orderallocationmapping</code></li>
+    <li><code>Total Found Mapping Cost</code></li>
+    <li><code>Total Found Allocations Invoiced</code></li>
+    <li>supplier-specific GBG totals</li>
+  </ul>
+
+  <h3>6.3 Final control-record update</h3>
+  <p>
+    The final <code>Airtable Update Automation</code> node writes the aggregated totals back to the selected run record in the <code>Automation Upplupna</code> table.
+  </p>
+
+  <h2 id="s7">7. Confirmed risks and quirks</h2>
+
+  <h3>7.1 Status spelling mismatch</h3>
+  <div class="warn-box">
+    <strong>Confirmed issue:</strong> the control-table schema embedded in the workflow shows status option <code>Finshed</code> (misspelled), while the <code>Total</code> code sets final status to <code>Finished</code>.
+  </div>
+
+  <p>
+    That mismatch is directly visible in the export. What cannot be proven from the export alone is whether the live Airtable field has already been corrected. But the inconsistency inside the workflow export is real and should be treated as a likely bug or stale-schema warning.
+  </p>
+
+  <h3>7.2 Legacy / disconnected nodes remain in the workflow</h3>
+  <p>
+    The export still contains old nodes such as <code>Airtable Find Media/Prod1</code>, <code>Airtable Find Media/Prod2</code>, <code>Code1-V1</code>, and <code>Code -Test</code>. These are not part of the active execution chain.
+  </p>
+
+  <p>
+    This suggests the workflow evolved in place and was not fully cleaned after iteration.
+  </p>
+
+  <h3>7.3 Broad active target scope</h3>
+  <p>
+    Because the active Media / Prod search only excludes <code>Mgmt. Status = "Stangd"</code>, the run recalculates across all open line items rather than a narrowly date-scoped subset. This may be intentional, but it is broader than the old alternative nodes imply.
+  </p>
+
+  <h3>7.4 No explicit visible error branch</h3>
+  <p>
+    The control table supports an <code>Error</code> status option, but the visible active path in this export only clearly sets <code>In progress</code> at the beginning and a finished-state value at the end. No dedicated catch branch is visible in the main graph.
+  </p>
+
+  <h2 id="s8">8. Interpretation of business purpose</h2>
+
+  <div class="inferred">
+    <h3>Most likely business role</h3>
+    <p>
+      This workflow appears to be the project's automated accrual reconciliation pass for campaign line items. It compares actual supplier-side cost already attributed through <code>sys.fakturamapping</code> with already-invoiced allocation-side value coming from <code>sys.orderallocationmapping</code>, then persists the difference back to <code>Media / Prod New</code> and the run table.
+    </p>
+  </div>
+
+  <p>
+    That interpretation aligns with the uploaded Airtable reference docs, which describe the same table cluster as the accrual layer and describe <code>UPPLUPNA</code> as the difference between allocated spend and actual invoiced cost. The workflow export itself confirms the exact implementation currently used by n8n: the active code computes <strong>actual mapped cost minus allocated invoiced amount</strong>.
+  </p>
+
+  <div class="source-box">
+    <strong>Important nuance:</strong> some older documentation phrases the concept as allocated spend minus invoiced cost, while this workflow's active code calculates cost minus allocated invoiced amount. That does not mean the workflow is wrong, but it does mean sign convention should be checked carefully when interpreting positive and negative values in reporting.
+  </div>
+
+  <h2 id="s9">9. Final verdict</h2>
+
+  <div class="ok-box">
+    <strong>Verdict:</strong> Upplupna Calculation is an active, standalone Airtable-side calculation workflow. It is not a parent sync flow. Its purpose is to recalculate per-line and per-run accrual deltas across <code>Media / Prod New</code> using the two sys mapping tables, then write those values back for reporting and operational review.
+  </div>
+
+  <table>
+    <tr><th>Question</th><th>Answer</th></tr>
+    <tr><td>Is it active?</td><td>Yes.</td></tr>
+    <tr><td>Is it a parent/orchestrator flow?</td><td>No. It is a self-contained calculation job.</td></tr>
+    <tr><td>Does it call Fortnox?</td><td>No direct Fortnox nodes are in the active path.</td></tr>
+    <tr><td>Does it write to Airtable?</td><td>Yes - line-level to Media / Prod New and run-level to Automation Upplupna.</td></tr>
+    <tr><td>Main technical risk visible in export?</td><td>Status spelling mismatch: <code>Finshed</code> vs <code>Finished</code>.</td></tr>
+    <tr><td>Main operational characteristic?</td><td>Recalculates broadly across all non-closed Media / Prod rows in the current active version.</td></tr>
+  </table>
+
+</div>
+</body>
+</html>
