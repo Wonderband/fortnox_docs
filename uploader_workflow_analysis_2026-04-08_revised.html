@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox Uploader — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 30px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-gray { background: #f1f5f9; color: #475569; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .small { font-size: 12px; color: #555; }
+  .toc { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 24px; margin: 20px 0 36px 0; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; color: #0f3460; }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 3px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox Uploader — Workflow Analysis</h1>
+  <p class="subtitle">
+    Workflow export reviewed: <strong>Adgrabber Fortnox Uploader V3.0.0</strong> &nbsp;|&nbsp;
+    Analysis date: <strong>2026-04-08</strong> &nbsp;|&nbsp;
+    Workflow ID: <code>119</code>
+  </p>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> This document summarizes the uploaded workflow
+    <strong>Adgrabber Fortnox Uploader V3.0.0</strong>, explains how it builds an outbound Fortnox order
+    from Airtable order + line-item data, and separates directly observed behavior from interpretation.
+  </div>
+
+  <div class="source-box">
+    <strong>Primary inspected sources:</strong>
+    <code>Adgrabber_Fortnox_Uploader_V3_0_0.json</code>,
+    <code>Fortnox_Adgrabber_Credentials.json</code>,
+    <code>order_field_audit.html</code>, and
+    <code>fortnox_orderrow_field_audit.html</code>.
+  </div>
+
+  <div class="info-box">
+    <strong>How to read this note.</strong>
+    <ul>
+      <li><strong>Confirmed from workflow JSON:</strong> directly visible in the uploaded n8n export.</li>
+      <li><strong>Confirmed from related docs:</strong> Airtable table roles inferred from the uploaded field-audit reports.</li>
+      <li><strong>Inference:</strong> plausible operational interpretation that is not explicitly logged by the workflow itself.</li>
+    </ul>
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">Workflow identity</a></li>
+      <li><a href="#s2">Entry trigger and control surface</a></li>
+      <li><a href="#s3">Observed execution path</a></li>
+      <li><a href="#s4">Order payload construction</a></li>
+      <li><a href="#s5">Create vs. update logic</a></li>
+      <li><a href="#s6">Write-back behavior</a></li>
+      <li><a href="#s7">Dependencies and surrounding architecture</a></li>
+      <li><a href="#s8">Confirmed quirks and risks</a></li>
+      <li><a href="#s9">Plain-English verdict</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1">1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox Uploader V3.0.0</strong></td></tr>
+    <tr><td>Workflow ID in original export</td><td><code>119</code></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-gray">Inactive</span> <span class="badge badge-blue">Proven from export</span></td></tr>
+    <tr><td>Timezone</td><td><code>Europe/Stockholm</code></td></tr>
+    <tr><td>Main purpose</td><td>Push an Airtable order record and its linked Airtable line items into Fortnox by either creating a new order or updating an existing Fortnox order.</td></tr>
+    <tr><td>Direction of sync</td><td><strong>Airtable -&gt; Fortnox</strong> (outbound write flow)</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Key architectural fact:</strong> this is not a downloader and not a WebSocket listener.
+    It is a <strong>manual/queue-driven outbound uploader</strong> for orders.
+  </div>
+
+  <h2 id="s2">2. Entry Trigger and Control Surface</h2>
+  <p>The workflow is triggered from the Airtable <strong>FortnoxOrder</strong> table, not from Fortnox itself.</p>
+
+  <table>
+    <tr><th>Node</th><th>Type</th><th>Observed role</th><th>Status / notes</th></tr>
+    <tr>
+      <td><strong>Settings Trigger</strong></td>
+      <td><code>airtableTrigger</code></td>
+      <td>Main runtime entrypoint</td>
+      <td>Polls every minute on <code>Last Modified Time</code> in production base <code>appk463NGeDy17j9T</code>, table <code>tblhNdAzxbWeNgEgW</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Trigger formula</strong></td>
+      <td><code>formula filter</code></td>
+      <td>Queue gate</td>
+      <td>Only runs for records where <code>CustomerNumber != ""</code> and <code>Sync Fortnox = "To sync"</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Credentials</strong></td>
+      <td><code>executeWorkflow</code></td>
+      <td>Shared config loader</td>
+      <td>Calls workflow <code>109</code> before writing anything back to Airtable or Fortnox.</td>
+    </tr>
+    <tr>
+      <td><strong>Set Status 1</strong> + <strong>Airtable Update Status 1</strong></td>
+      <td><code>set</code> + <code>airtable update</code></td>
+      <td>Lock / in-progress flag</td>
+      <td>Immediately marks the source order record as <code>Sync Fortnox = "In progress"</code>.</td>
+    </tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Confirmed queue model:</strong> the Airtable field <code>Sync Fortnox</code> acts like a write queue flag.
+    This workflow only wakes up for orders that have explicitly been marked <strong>To sync</strong>.
+  </div>
+
+  <h3>Why this matters</h3>
+  <p>The uploader is designed as a controlled push path. It does not scan the whole order table.
+  It waits for a record to be queued by Airtable field state, then processes exactly that order.</p>
+
+  <h2 id="s3">3. Observed Execution Path</h2>
+  <p>The workflow path visible in the JSON is linear and compact:</p>
+
+  <pre>Airtable order flagged "To sync"
+  -&gt; Credentials (workflow 109)
+  -&gt; set source record to "In progress"
+  -&gt; inspect whether the order has linked line items
+  -&gt; fetch linked Airtable order-row records if present
+  -&gt; build Fortnox Order payload from order header + rows
+  -&gt; switch on whether DocumentNumber already exists
+  -&gt; POST create or PUT update in Fortnox
+  -&gt; clear sync flag and write Fortnox DocumentNumber back to Airtable</pre>
+
+  <table>
+    <tr><th>Step</th><th>Observed node(s)</th><th>Role</th></tr>
+    <tr><td>1</td><td><strong>Settings Trigger</strong></td><td>Select one order record from Airtable's FortnoxOrder table.</td></tr>
+    <tr><td>2</td><td><strong>Credentials</strong></td><td>Load shared base/table config from workflow <code>109</code>.</td></tr>
+    <tr><td>3</td><td><strong>Set Status 1</strong> -&gt; <strong>Airtable Update Status 1</strong></td><td>Mark the order as <code>In progress</code>.</td></tr>
+    <tr><td>4</td><td><strong>Has Rows</strong></td><td>Check whether the order has linked Airtable line items in field <code>Line Items</code>.</td></tr>
+    <tr><td>5</td><td><strong>Prepare Order Rows Formula</strong> -&gt; <strong>Airtable Get Order Rows</strong></td><td>Build an <code>OR(RECORD_ID() = ...)</code> filter and fetch the linked order-row records.</td></tr>
+    <tr><td>6</td><td><strong>Prepare Data</strong></td><td>Assemble the Fortnox <code>Order</code> object.</td></tr>
+    <tr><td>7</td><td><strong>Switch</strong></td><td>Decide between create and update based on whether <code>DocumentNumber</code> is empty.</td></tr>
+    <tr><td>8</td><td><strong>HTTP Fortnox Create</strong> or <strong>HTTP Fortnox Update</strong></td><td>Write the order to Fortnox.</td></tr>
+    <tr><td>9</td><td><strong>Set Status 2</strong> -&gt; <strong>Airtable Update Status 2</strong></td><td>Clear the sync flag and persist the resulting Fortnox <code>DocumentNumber</code> into Airtable.</td></tr>
+  </table>
+
+  <h2 id="s4">4. Order Payload Construction</h2>
+  <p>The workflow builds the Fortnox request body inside the <strong>Prepare Data</strong> code node.
+  That node combines order-header fields from the source Airtable order record with zero or more linked Airtable order-row records.</p>
+
+  <h3>4.1 Header fields written into the outbound Fortnox order</h3>
+  <table>
+    <tr><th>Fortnox payload field</th><th>Airtable source field</th><th>Observed mapping</th></tr>
+    <tr><td><code>CustomerNumber</code></td><td><code>CustomerNumber</code></td><td>Direct copy from the source order record.</td></tr>
+    <tr><td><code>Remarks</code></td><td><code>Final Order Notes</code></td><td>Used as the Fortnox order remarks text.</td></tr>
+    <tr><td><code>OrderDate</code></td><td><code>OrderDate</code></td><td>Direct copy.</td></tr>
+    <tr><td><code>DeliveryDate</code></td><td><code>DeliveryDate</code></td><td>Direct copy.</td></tr>
+    <tr><td><code>CopyRemarks</code></td><td>hard-coded</td><td>Always set to <code>true</code>.</td></tr>
+    <tr><td><code>OrderRows</code></td><td>linked Airtable order rows</td><td>Built as an array from the linked row records.</td></tr>
+  </table>
+
+  <h3>4.2 Row fields written for each linked Airtable line item</h3>
+  <table>
+    <tr><th>Fortnox OrderRows field</th><th>Airtable source field</th><th>Observed mapping</th></tr>
+    <tr><td><code>ArticleNumber</code></td><td><code>ArticleNumber</code></td><td>Direct copy from each linked row record.</td></tr>
+    <tr><td><code>Description</code></td><td><code>ProductName</code></td><td>Used as the row description text.</td></tr>
+    <tr><td><code>Price</code></td><td><code>Custom Price</code></td><td>Direct numeric copy.</td></tr>
+    <tr><td><code>OrderedQuantity</code></td><td><code>Quantity</code></td><td>Direct numeric copy.</td></tr>
+  </table>
+
+  <div class="observed">
+    <h3>Observed data-shape fact</h3>
+    <p>If the source order has no linked line items, the workflow still sends an order object, but with
+    an empty <code>OrderRows</code> array. That is explicit in the code path through the <strong>Empty</strong> node.</p>
+  </div>
+
+  <pre>Outbound request body shape:
+{
+  "Order": {
+    "CustomerNumber": "...",
+    "Remarks": "...",
+    "OrderDate": "...",
+    "DeliveryDate": "...",
+    "CopyRemarks": true,
+    "OrderRows": [
+      {
+        "ArticleNumber": "...",
+        "Description": "...",
+        "Price": ...,
+        "OrderedQuantity": ...
+      }
+    ]
+  }
+}</pre>
+
+  <h2 id="s5">5. Create vs. Update Logic</h2>
+  <p>The workflow chooses between create and update by looking at the Airtable order field <code>DocumentNumber</code>.</p>
+
+  <table>
+    <tr><th>Condition</th><th>Switch outcome</th><th>Fortnox API call</th><th>Observed meaning</th></tr>
+    <tr>
+      <td><code>DocumentNumber</code> empty</td>
+      <td>Create branch</td>
+      <td><code>POST https://api.fortnox.se/3/orders/</code></td>
+      <td>Create a brand-new Fortnox order from Airtable data.</td>
+    </tr>
+    <tr>
+      <td><code>DocumentNumber</code> not empty</td>
+      <td>Update branch</td>
+      <td><code>PUT https://api.fortnox.se/3/orders/{DocumentNumber}</code></td>
+      <td>Update the existing Fortnox order with the current Airtable data.</td>
+    </tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Confirmed create/update rule:</strong> the uploader is idempotent at the business-record level only through
+    the Airtable <code>DocumentNumber</code> field. That field is the sole observed switch deciding whether the workflow creates a new Fortnox order or updates an existing one.
+  </div>
+
+  <div class="inferred">
+    <h3>Likely behavioral implication</h3>
+    <p>Because the update branch sends a full reconstructed <code>Order</code> body, not a small patch,
+    the workflow appears intended to treat Airtable as the current source of truth for the Fortnox order header and row content.
+    The uploaded JSON proves the full-body send; it does not by itself prove how Fortnox merges or replaces row-level changes internally.</p>
+  </div>
+
+  <h2 id="s6">6. Write-Back Behavior</h2>
+  <p>After either the POST or PUT request succeeds, the workflow writes back to the same Airtable order record.</p>
+
+  <table>
+    <tr><th>Write-back field</th><th>Observed value</th><th>Meaning</th></tr>
+    <tr><td><code>Sync Fortnox</code></td><td><code>null</code></td><td>Clears the queue flag so the record is no longer marked for upload.</td></tr>
+    <tr><td><code>DocumentNumber</code></td><td><code>$json["Order"]["DocumentNumber"]</code></td><td>Stores the Fortnox order number returned by the API response.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Important operational fact:</strong> the Fortnox response becomes the source of the persisted order number.
+    That means the create path not only creates the order in Fortnox, but also closes the Airtable-to-Fortnox loop by writing the returned <code>DocumentNumber</code> back into Airtable.
+  </div>
+
+  <h2 id="s7">7. Dependencies and Surrounding Architecture</h2>
+  <p>This workflow is much narrower than the downloader or WebSocket handler. It does not call any entity component workflows.
+  Its only workflow dependency is the shared config workflow <code>109</code>.</p>
+
+  <table>
+    <tr><th>Dependency</th><th>Observed use</th></tr>
+    <tr><td><strong>Workflow 109 - Credentials</strong></td><td>Provides at least <code>airtable_base</code>, <code>airtable_order_table</code>, and <code>airtable_order_row_table</code> used by the Airtable read/write nodes.</td></tr>
+    <tr><td><strong>FortnoxOrder table</strong></td><td>Source order header record and destination for write-back status/document number.</td></tr>
+    <tr><td><strong>Fortnox OrderRow table</strong></td><td>Source of linked Airtable row records used to build <code>OrderRows</code> in the outbound Fortnox request.</td></tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Architectural role relative to the rest of the system:</strong> the downloader and WebSocket handler are
+    <strong>Fortnox -&gt; Airtable</strong> ingestion/orchestration flows. The uploader is the opposite direction:
+    <strong>Airtable -&gt; Fortnox</strong> for order creation/update.
+  </div>
+
+  <h2 id="s8">8. Confirmed Quirks and Risks</h2>
+
+  <div class="observed">
+    <h3>8.1 What is proven: the uploaded export is inactive</h3>
+    <p>The workflow JSON shows <code>"active": false</code>. That is a direct fact from the uploaded n8n export, so the version documented in this note was inactive at the moment that export was taken.</p>
+  </div>
+
+  <div class="observed">
+    <h3>8.2 What is also proven inside the uploaded workflow graph</h3>
+    <p>No uploaded parent workflow in this source set is shown calling workflow <code>119</code> via <code>executeWorkflow</code>. Within the uploaded dependency graph, this workflow appears as a top-level trigger flow, not as a child workflow invoked by another parent.</p>
+  </div>
+
+  <div class="observed">
+    <h3>8.3 Production Airtable base + sandbox Fortnox credential</h3>
+    <p>The trigger points at production Airtable base <code>appk463NGeDy17j9T</code>, while the Fortnox HTTP nodes use credential
+    <strong>Fortnox Sandbox OAuth2</strong>. That exact environment pairing is directly visible in the JSON export.</p>
+  </div>
+
+  <div class="warn-box">
+    <strong>Why that environment mix matters:</strong> if this export reflects real runtime configuration rather than a staging snapshot,
+    it would mean the workflow reads real Airtable production orders while writing to a sandbox Fortnox tenant. The uploaded files prove the credential names and IDs, but not whether those names are still semantically accurate today.
+  </div>
+
+  <div class="inferred">
+    <h3>8.4 Empty-line-item orders may be allowed structurally but could be operationally risky</h3>
+    <p>The workflow does not hard-stop when no linked order rows exist. It simply sends <code>OrderRows = []</code>.
+    That may be intentional for draft headers, or it may be a weak validation point. The JSON confirms the empty-array path; it does not show whether Fortnox rejects, accepts, or warns on such payloads.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>8.5 Current practical usage appears inactive, but that part is an inference</h3>
+    <p>The uploaded export proves that this workflow was disabled when exported, and the uploaded workflow graph does not show any other parent flow calling it. Those are direct facts. A stronger sentence such as <em>"this flow is not used right now in the live system"</em> goes one step beyond the export itself. That broader operational conclusion is well-supported by the source set, but it is still an inference unless confirmed from the live n8n instance directly.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>8.6 The uploader is probably a queue processor rather than a fully automatic sync mirror</h3>
+    <p>Because the workflow requires <code>Sync Fortnox = "To sync"</code>, it appears designed for explicit outbound publishing, not for every Airtable edit to auto-push immediately.
+    That matches a controlled write-queue pattern rather than a passive bidirectional sync.</p>
+  </div>
+
+  <h2 id="s9">9. Plain-English Verdict</h2>
+  <p><strong>This workflow is the order publishing path from Airtable into Fortnox.</strong></p>
+
+  <ul>
+    <li>It watches the Airtable <strong>FortnoxOrder</strong> table for records explicitly flagged <strong>To sync</strong>.</li>
+    <li>It marks the order <strong>In progress</strong>, loads linked Airtable line items, and builds a Fortnox order payload.</li>
+    <li>It creates a new Fortnox order if <code>DocumentNumber</code> is empty, or updates the existing Fortnox order if <code>DocumentNumber</code> already exists.</li>
+    <li>On success, it clears the sync flag and writes the resulting Fortnox <code>DocumentNumber</code> back into Airtable.</li>
+  </ul>
+
+  <div class="ok-box">
+    <strong>Bottom line:</strong> this document proves that workflow <code>119</code> is an <strong>Airtable -&gt; Fortnox push workflow</strong> for orders and that the uploaded export is <strong>inactive</strong>. The stronger statement that it is <em>currently unused in the live system</em> is a reasonable interpretation of the source set, but it should be read as an inference rather than as direct runtime proof from n8n.</div>
+
+  <hr>
+  <p class="subtitle">End of workflow note.</p>
+</div>
+</body>
+</html>
