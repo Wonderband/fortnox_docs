@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox Invoice Component — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 30px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-gray { background: #f1f5f9; color: #475569; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .toc { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 24px; margin: 20px 0 36px 0; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; color: #0f3460; }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 3px; }
+  .mini { font-size: 12px; color: #555; }
+  .flow-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 16px 0 24px; }
+  .flow-card { border: 1px solid #dbe3f0; border-radius: 8px; padding: 14px 16px; background: #fafcff; }
+  .flow-card h4 { font-size: 13px; color: #0f3460; margin-bottom: 6px; }
+  .flow-card p { margin-bottom: 6px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox Invoice Component — Workflow Analysis</h1>
+  <p class="subtitle">
+    Workflow export reviewed: <strong>Adgrabber Fortnox Invoice Component v1.0.0</strong> &nbsp;|&nbsp;
+    Analysis date: <strong>2026-04-08</strong> &nbsp;|&nbsp;
+    Workflow ID: <code>115</code>
+  </p>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> The invoice component processes <strong>one invoice at a time</strong>. That does <strong>not</strong> imply that a customer has only one order or one invoice.
+    This note separates the <strong>workflow-level handoff logic</strong> from the <strong>business data relationships</strong>, and it shows exactly which child components are called, what data is passed to them, what comes back, and what this component writes to Airtable.
+  </div>
+
+  <div class="source-box">
+    <strong>Primary inspected sources:</strong>
+    <code>Adgrabber_Fortnox_Invoice_Component_v1_0_0.json</code>,
+    <code>Adgrabber_Fortnox_WebSocket_Handler_v3_0_0.json</code>,
+    <code>Adgrabber_Fortnox_Downloader_V3_0_0.json</code>,
+    <code>Fortnox_Adgrabber_Credentials.json</code>,
+    <code>fortnox_invoice_field_audit.html</code>, and
+    <code>customer_field_audit.html</code>.
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">Workflow identity</a></li>
+      <li><a href="#s2">What the parent passes into this component</a></li>
+      <li><a href="#s3">Explicit component dependency map</a></li>
+      <li><a href="#s4">Step-by-step execution path</a></li>
+      <li><a href="#s5">What data is passed to each child component</a></li>
+      <li><a href="#s6">What data comes back from each child component</a></li>
+      <li><a href="#s7">What this component writes to Airtable</a></li>
+      <li><a href="#s8">Business purpose of the child calls</a></li>
+      <li><a href="#s9">What this does not mean about customers, orders, and invoices</a></li>
+      <li><a href="#s10">Status, usage, and caveats</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1">1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox Invoice Component v1.0.0</strong></td></tr>
+    <tr><td>Workflow ID in original export</td><td><code>115</code></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-gray">Inactive</span> <span class="badge badge-blue">Proven from export</span></td></tr>
+    <tr><td>Workflow type</td><td><strong>Child component workflow</strong></td></tr>
+    <tr><td>Main purpose</td><td>Fetch one Fortnox invoice by ID, ensure the related customer and (if available) related order exist in Airtable, upsert the invoice header, then optionally upsert each invoice row.</td></tr>
+    <tr><td>Top-level trigger inside this JSON</td><td><code>Start</code> only — this is structurally a worker called via <code>executeWorkflow</code> from parent flows.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Most important framing:</strong> this workflow is a <strong>single-invoice sync worker</strong>.
+    Every run handles exactly <strong>one invoice identifier</strong> from a parent flow, then builds or refreshes all Airtable records needed for that invoice.
+  </div>
+
+  <h2 id="s2">2. What the Parent Passes Into This Component</h2>
+  <p>The invoice component expects a very small input contract from its parent: <strong>an object with one field, <code>id</code></strong>.</p>
+
+  <table>
+    <tr><th>Parent flow</th><th>How it builds the input</th><th>Meaning of <code>id</code></th></tr>
+    <tr>
+      <td><strong>WebSocket Handler (116)</strong></td>
+      <td>For normal invoice events, it sets <code>id = entityId</code>. For payment-related invoice events, it sets <code>id = payload.invoiceId</code>.</td>
+      <td>Fortnox invoice identifier used in <code>GET /3/invoices/{id}</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Downloader (118)</strong></td>
+      <td>It sets <code>id = DocumentNumber</code> for each invoice record from the list API.</td>
+      <td>Fortnox invoice document number, again used as the detail-fetch id.</td>
+    </tr>
+  </table>
+
+  <pre>Parent -> Invoice Component
+{
+  "id": "2473"
+}</pre>
+
+  <div class="observed">
+    <h3>Observed simplification</h3>
+    <p>The parent does <strong>not</strong> send a full invoice payload. It sends only the invoice identifier. The invoice component then performs its <strong>own Fortnox detail fetch</strong> and does not rely on the parent for business data.</p>
+  </div>
+
+  <h2 id="s3">3. Explicit Component Dependency Map</h2>
+  <p>The invoice component depends on three other component/helper workflows.</p>
+
+  <table>
+    <tr><th>Dependency</th><th>Workflow ID</th><th>When called</th><th>Why it is called</th></tr>
+    <tr><td><strong>Credentials helper</strong></td><td><code>109</code></td><td>Always, first step</td><td>Returns shared workflow IDs, Airtable table IDs, base ID, and rate-limit proxy id.</td></tr>
+    <tr><td><strong>Customer Component</strong></td><td><code>111</code></td><td>Always</td><td>Ensures the Fortnox customer linked to this invoice exists in Airtable and returns that Airtable customer record id.</td></tr>
+    <tr><td><strong>Order Component</strong></td><td><code>114</code></td><td>Only if the invoice has a valid <code>OrderReference</code></td><td>Ensures the parent Fortnox order exists in Airtable and returns that Airtable order record id.</td></tr>
+    <tr><td><strong>Article Component</strong></td><td><code>110</code></td><td>Inside the row loop, only for rows with a valid <code>ArticleNumber</code></td><td>Ensures the Fortnox article on that invoice row exists in Airtable and returns that Airtable article record id.</td></tr>
+  </table>
+
+  <pre>Parent flow
+  -> Invoice Component (115)
+       -> Credentials (109)
+       -> Customer Component (111)          always
+       -> Order Component (114)             only if OrderReference > 0
+       -> Article Component (110)           row-by-row, only if ArticleNumber > 0
+       -> Airtable invoice header upsert
+       -> Airtable invoice-row upsert loop</pre>
+
+  <h2 id="s4">4. Step-by-Step Execution Path</h2>
+  <pre>Start
+  -> Credentials (109)
+  -> HTTP Fortnox API                     GET /3/invoices/{id}
+  -> Customer Component Input            { id: Invoice.CustomerNumber }
+  -> Customer Component Output           returns Airtable FortnoxCustomer record id
+  -> Has No Order?
+       -> yes: skip order child
+       -> no: Order Component Input      { id: Invoice.OrderReference, customer_id: Customer Airtable id }
+             -> Order Component Output   returns Airtable FortnoxOrder record id
+  -> Find invoice in Airtable by DocumentNumber
+  -> Normalize invoice payload
+  -> Update existing invoice or create new invoice
+  -> Store resulting Airtable invoice record id
+  -> Should Sync rows?
+       -> no: return invoice record id
+       -> yes: loop InvoiceRows one by one
+            -> Has No Article?
+                 -> yes: skip article child
+                 -> no: Article Component Input   { id: Row.ArticleNumber }
+                       -> Article Component Output returns Airtable FortnoxArticle record id
+            -> Find invoice row in Airtable by RowId
+            -> Attach invoice link and optional article link
+            -> Update existing row or create new row
+            -> when last row is finished, return invoice record id</pre>
+
+  <h2 id="s5">5. What Data Is Passed to Each Child Component</h2>
+
+  <h3>5.1 Customer Component</h3>
+  <table>
+    <tr><th>Input field</th><th>Source</th><th>Value passed</th></tr>
+    <tr><td><code>id</code></td><td><code>HTTP Fortnox API -> Invoice.CustomerNumber</code></td><td>The Fortnox customer number from the invoice header.</td></tr>
+  </table>
+
+  <pre>Invoice Component -> Customer Component
+{
+  "id": "1082"
+}</pre>
+
+  <h3>5.2 Order Component</h3>
+  <table>
+    <tr><th>Input field</th><th>Source</th><th>Value passed</th></tr>
+    <tr><td><code>id</code></td><td><code>HTTP Fortnox API -> Invoice.OrderReference</code></td><td>The Fortnox order document number referenced by this invoice.</td></tr>
+    <tr><td><code>customer_id</code></td><td><code>Customer Component Output.id</code></td><td>The Airtable record id of the already-synced FortnoxCustomer record.</td></tr>
+  </table>
+
+  <pre>Invoice Component -> Order Component
+{
+  "id": "2670",
+  "customer_id": "recCustomer123"
+}</pre>
+
+  <div class="info-box">
+    <strong>Why the order child also receives <code>customer_id</code>:</strong>
+    the order component can use the already-resolved Airtable customer record directly instead of having to look it up again. That keeps the invoice's customer/order linkage internally consistent inside one execution chain.
+  </div>
+
+  <h3>5.3 Article Component</h3>
+  <table>
+    <tr><th>Input field</th><th>Source</th><th>Value passed</th></tr>
+    <tr><td><code>id</code></td><td><code>JSON Row -> ArticleNumber</code></td><td>The Fortnox article number on the current invoice row.</td></tr>
+  </table>
+
+  <pre>Invoice Component -> Article Component
+{
+  "id": "ART-1004"
+}</pre>
+
+  <h2 id="s6">6. What Data Comes Back From Each Child Component</h2>
+  <p>The child components are not returning full business payloads for this workflow to parse deeply. What this component really needs back is the <strong>Airtable record id</strong> of the synced related record.</p>
+
+  <table>
+    <tr><th>Child component</th><th>Value the invoice component reads back</th><th>How it is used</th></tr>
+    <tr><td><strong>Customer Component Output</strong></td><td><code>id</code> of the Airtable FortnoxCustomer record</td><td>Written into the invoice header as <code>FortnoxCustomer = [customerRecordId]</code>.</td></tr>
+    <tr><td><strong>Order Component Output</strong></td><td><code>id</code> of the Airtable FortnoxOrder record</td><td>Written into the invoice header as <code>FortnoxOrder = [orderRecordId]</code> if the order child ran.</td></tr>
+    <tr><td><strong>Article Component Output</strong></td><td><code>id</code> of the Airtable FortnoxArticle record</td><td>Written into the current invoice-row record as <code>FortnoxArticle = [articleRecordId]</code> if the article child ran.</td></tr>
+  </table>
+
+  <div class="observed">
+    <h3>Observed pattern</h3>
+    <p>The invoice component uses child components primarily as <strong>relationship resolvers</strong>.
+    It makes sure the related customer/order/article record exists first, then stores the returned Airtable id as a link on the invoice or invoice-row record.</p>
+  </div>
+
+  <h2 id="s7">7. What This Component Writes to Airtable</h2>
+
+  <h3>7.1 Invoice header table</h3>
+  <p>After fetching and normalizing the Fortnox invoice header, the workflow upserts the <strong>FortnoxInvoice</strong> table by <code>DocumentNumber</code>.</p>
+
+  <table>
+    <tr><th>Write target</th><th>How it is found</th><th>What is written</th></tr>
+    <tr>
+      <td><strong>FortnoxInvoice</strong></td>
+      <td><code>Find</code> node filters Airtable by <code>DocumentNumber</code></td>
+      <td>Normalized Fortnox invoice payload, plus Airtable links to <code>FortnoxCustomer</code> and optionally <code>FortnoxOrder</code>, plus raw payload in <code>Fortnox API Data</code>.</td>
+    </tr>
+  </table>
+
+  <p>The main code node explicitly sets:</p>
+  <ul>
+    <li><code>FortnoxCustomer = [Customer Component Output.id]</code> always</li>
+    <li><code>FortnoxOrder = [Order Component Output.id]</code> only if an order child ran and returned successfully</li>
+    <li>serialized JSON fields such as <code>InvoiceRows</code>, <code>EmailInformation</code>, <code>EDIInformation</code>, and <code>Labels</code></li>
+    <li>stringified booleans such as <code>Booked</code>, <code>Cancelled</code>, <code>Sent</code>, and <code>VATIncluded</code></li>
+  </ul>
+
+  <h3>7.2 Invoice-row table</h3>
+  <p>If the invoice has rows, the workflow upserts the <strong>FortnoxInvoiceRow</strong> table by <code>RowId</code>.</p>
+
+  <table>
+    <tr><th>Write target</th><th>How it is found</th><th>What is written</th></tr>
+    <tr>
+      <td><strong>FortnoxInvoiceRow</strong></td>
+      <td><code>Find Row</code> filters Airtable by <code>RowId</code></td>
+      <td>The current Fortnox invoice row payload, plus <code>FortnoxInvoice = [invoiceRecordId]</code>, and optionally <code>FortnoxArticle = [articleRecordId]</code>.</td>
+    </tr>
+  </table>
+
+  <pre>Code Row guarantees:
+  FortnoxInvoice = [current Airtable invoice record id]
+  FortnoxArticle = [current Airtable article record id]   only when article child ran successfully</pre>
+
+  <h2 id="s8">8. Business Purpose of the Child Calls</h2>
+  <div class="flow-grid">
+    <div class="flow-card">
+      <h4>Customer child call</h4>
+      <p><strong>Business purpose:</strong> every invoice belongs to a customer, so the Airtable customer record must exist before the invoice can be linked properly.</p>
+      <p><strong>Practical effect:</strong> the invoice table remains connected to the customer table, and the customer table can maintain the inverse 1 customer -> many invoices relationship.</p>
+    </div>
+    <div class="flow-card">
+      <h4>Order child call</h4>
+      <p><strong>Business purpose:</strong> many Fortnox invoices are generated from Fortnox orders, so this component tries to preserve that parent-order chain whenever <code>OrderReference</code> exists.</p>
+      <p><strong>Practical effect:</strong> the invoice can link back to its parent order, which supports invoice-count rollups and revenue-chain analysis.</p>
+    </div>
+    <div class="flow-card">
+      <h4>Article child call</h4>
+      <p><strong>Business purpose:</strong> each invoice row may refer to a catalog article. Syncing the article first lets the row link to the proper Airtable article record.</p>
+      <p><strong>Practical effect:</strong> row-level analysis can reuse the shared Fortnox article dimension instead of leaving article references as raw text only.</p>
+    </div>
+  </div>
+
+  <h2 id="s9">9. What This Does Not Mean About Customers, Orders, and Invoices</h2>
+  <div class="warn-box">
+    <strong>This is where the earlier wording was easy to misread.</strong>
+    The node name <code>Has No Order</code> means only:
+    <strong>"this invoice record has no usable OrderReference"</strong>.
+    It does <strong>not</strong> mean that the customer has no orders overall.
+  </div>
+
+  <table>
+    <tr><th>Level</th><th>Correct meaning</th></tr>
+    <tr><td><strong>Workflow level</strong></td><td>This run processes <strong>one invoice</strong>. It may or may not call the order child depending on that invoice's <code>OrderReference</code>.</td></tr>
+    <tr><td><strong>Invoice-record level</strong></td><td>Each invoice links to <strong>one customer</strong> and usually <strong>one parent order</strong>.</td></tr>
+    <tr><td><strong>Business-data level</strong></td><td>One customer can still have <strong>many orders</strong> and <strong>many invoices</strong>. The workflow does not contradict that.</td></tr>
+  </table>
+
+  <pre>Correct business relationships:
+1 customer -> many orders
+1 customer -> many invoices
+1 order    -> many invoices   (possible)
+1 invoice  -> many invoice rows</pre>
+
+  <h2 id="s10">10. Status, Usage, and Caveats</h2>
+  <table>
+    <tr><th>Question</th><th>Answer</th></tr>
+    <tr><td>Is workflow 115 exported as active?</td><td>No. The uploaded JSON marks it <code>active: false</code>.</td></tr>
+    <tr><td>Is it still architecturally important?</td><td>Yes. The uploaded WebSocket Handler and Downloader both reference <code>component_invoice</code>, so this child remains part of the designed dependency graph.</td></tr>
+    <tr><td>Does the row sync always run?</td><td>No. It runs only when the invoice payload contains at least one row.</td></tr>
+    <tr><td>Does the order child always run?</td><td>No. It runs only when the invoice has a valid numeric <code>OrderReference</code> greater than 0.</td></tr>
+    <tr><td>Does the article child always run?</td><td>No. It runs row-by-row only when the current row has a valid numeric/text article identifier that parses to a value greater than 0.</td></tr>
+  </table>
+
+  <div class="inferred">
+    <h3>Operational reading</h3>
+    <p>The design intent is to make the invoice component a <strong>self-sufficient sync unit</strong> for one invoice. A parent flow only needs to know the invoice id. This child workflow then resolves every required related record and writes both the header and the rows.</p>
+  </div>
+
+  <hr>
+  <p class="mini">Project note created from uploaded workflow JSON and related Airtable architecture documents on 2026-04-08.</p>
+
+</div>
+</body>
+</html>
