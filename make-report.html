@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Make Implementation Report — Invoice Automation</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121935;
+      --text:#edf2ff;
+      --muted:#aab5d6;
+      --accent:#7aa2ff;
+      --ok:#2dd4bf;
+      --border:#263158;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:linear-gradient(180deg,#0b1020 0%,#0f1530 100%);
+      color:var(--text);
+      line-height:1.55;
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:32px 20px 56px}
+    .hero{
+      background:linear-gradient(135deg,#121935 0%,#18224a 100%);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:28px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+      margin-bottom:20px;
+    }
+    h1,h2,h3{margin:0 0 12px}
+    h1{font-size:32px; line-height:1.15}
+    h2{font-size:20px;color:#d7e2ff}
+    .lead{color:var(--muted); margin-top:10px; max-width:820px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:18px}
+    .card{
+      grid-column:span 12;
+      background:rgba(18,25,53,.92);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:20px;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+    @media(min-width:860px){.half{grid-column:span 6}.third{grid-column:span 4}}
+    .pill{
+      display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--border);
+      background:#0f1530;color:#cfe0ff;font-size:13px;margin:4px 6px 0 0;
+    }
+    .ok{color:var(--ok)}
+    ol.flow{margin:10px 0 0 20px;padding:0}
+    ol.flow li{margin:6px 0}
+    ul{margin:10px 0 0 18px}
+    code,.mono{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      font-size:13px;color:#d9e6ff;background:#0e1430;border:1px solid var(--border);
+      border-radius:8px;padding:2px 6px;
+    }
+    .note{
+      padding:12px 14px;border-left:4px solid var(--accent);background:#0d1430;
+      border-radius:10px;color:#dbe7ff;margin-top:12px;
+    }
+    .footer{margin-top:22px;color:var(--muted);font-size:14px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Make Implementation Report</h1>
+      <h2>Invoice automation workflow</h2>
+      <p class="lead">
+        Concise report of the current Make.com implementation that starts from Gmail, extracts invoice data with OpenAI,
+        uploads the PDF to Google Drive, writes a row into Google Sheets, applies a processed label, and sends a confirmation email.
+      </p>
+      <div>
+        <span class="pill">Status: <strong class="ok">Working end-to-end</strong></span>
+        <span class="pill">Platform: Make.com</span>
+        <span class="pill">LLM: OpenAI Responses API</span>
+        <span class="pill">Storage: Google Drive + Google Sheets</span>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card half">
+        <h3>1. Current flow</h3>
+        <ol class="flow">
+          <li>Gmail watches incoming emails.</li>
+          <li>Attachments are listed and filtered to PDF only.</li>
+          <li>PDF is uploaded to OpenAI via <span class="mono">/v1/files</span>.</li>
+          <li>Extraction request is sent to <span class="mono">/v1/responses</span>.</li>
+          <li>Returned JSON text is parsed into structured fields.</li>
+          <li>Original PDF is uploaded to Google Drive.</li>
+          <li>A share link is created for the uploaded PDF.</li>
+          <li>A new row is added to Google Sheets.</li>
+          <li>The Gmail label <span class="mono">invoice-processed</span> is added.</li>
+          <li>A custom confirmation email is sent.</li>
+        </ol>
+      </section>
+
+      <section class="card half">
+        <h3>2. Implemented nodes</h3>
+        <ul>
+          <li>Gmail → Watch emails</li>
+          <li>Gmail → List email attachments and media</li>
+          <li>Filter → PDF only</li>
+          <li>HTTP → Upload file to OpenAI</li>
+          <li>HTTP → Extract invoice fields from OpenAI</li>
+          <li>JSON → Parse JSON</li>
+          <li>Google Drive → Upload a File</li>
+          <li>Google Drive → Get a Share Link</li>
+          <li>Google Sheets → Add a Row</li>
+          <li>Gmail → Modify Email Labels</li>
+          <li>Gmail → Send an email</li>
+        </ul>
+      </section>
+
+      <section class="card third">
+        <h3>3. Data written to sheet</h3>
+        <ul>
+          <li>Supplier</li>
+          <li>Description</li>
+          <li>Receipt item</li>
+          <li>Amount</li>
+          <li>Date</li>
+          <li>Comment</li>
+          <li>PDF link</li>
+        </ul>
+      </section>
+
+      <section class="card third">
+        <h3>4. Credentials and auth</h3>
+        <ul>
+          <li>OpenAI API key stored in Make HTTP auth.</li>
+          <li>Google Drive required custom Google Cloud OAuth.</li>
+          <li>Google Sheets can reuse the same Google Cloud project/client.</li>
+          <li>Restricted Google scopes were added manually.</li>
+        </ul>
+      </section>
+
+      <section class="card third">
+        <h3>5. Important scopes</h3>
+        <ul>
+          <li><span class="mono">.../auth/drive</span></li>
+          <li><span class="mono">.../auth/drive.readonly</span></li>
+          <li><span class="mono">.../auth/spreadsheets</span></li>
+          <li>Gmail was connected separately in Make.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h3>6. Main implementation challenges and resolutions</h3>
+        <ul>
+          <li><strong>OpenAI request design:</strong> two HTTP requests were used: upload PDF first, then call the extraction endpoint with the returned <span class="mono">file_id</span>. This was simpler in Make than injecting base64 into one request.</li>
+          <li><strong>Incomplete model responses:</strong> low <span class="mono">max_output_tokens</span> caused incomplete outputs. Increasing the token budget fixed this.</li>
+          <li><strong>OpenAI output structure:</strong> the response returned both <span class="mono">reasoning</span> and <span class="mono">message</span> items. The final JSON lived in the message branch.</li>
+          <li><strong>JSON parsing in Make:</strong> parsing initially failed because the wrong array element was referenced. The working mapping targeted the final message text explicitly.</li>
+          <li><strong>Google Drive connection:</strong> personal Gmail required a custom Google Cloud OAuth app instead of the default restricted connection flow.</li>
+          <li><strong>Drive scope errors:</strong> <span class="mono">403 insufficient authentication scopes</span> was resolved by adding Drive scopes in Google Cloud and reconnecting the Make connection.</li>
+          <li><strong>Google Sheets row insertion:</strong> Make failed on a non-native spreadsheet file. The destination had to be a real Google Sheet, not an Excel file in Drive.</li>
+          <li><strong>Date display in Sheets:</strong> <span class="mono">2026-04-10</span> appeared as <span class="mono">46122</span>, which is a normal Sheets date serial value. Formatting the column as Date fixes the display.</li>
+        </ul>
+      </section>
+
+      <section class="card half">
+        <h3>7. What is already working</h3>
+        <ul>
+          <li class="ok">Email trigger works.</li>
+          <li class="ok">PDF filtering works.</li>
+          <li class="ok">OpenAI returns valid structured JSON.</li>
+          <li class="ok">PDF uploads to Google Drive.</li>
+          <li class="ok">Share link is generated.</li>
+          <li class="ok">New row is added to Google Sheets.</li>
+          <li class="ok">Processed label is added in Gmail.</li>
+          <li class="ok">Confirmation email is sent.</li>
+        </ul>
+      </section>
+
+      <section class="card half">
+        <h3>8. Recommended next improvements</h3>
+        <ul>
+          <li>Add a dedicated error route with failure email + processed label.</li>
+          <li>Restore stricter schema enforcement if needed.</li>
+          <li>Improve Drive filenames using invoice date + supplier.</li>
+          <li>Create year/month folders automatically instead of using a fixed folder.</li>
+          <li>Pre-format the date column in Sheets as <span class="mono">YYYY-MM-DD</span>.</li>
+          <li>Tighten Gmail filters to avoid non-invoice PDFs.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h3>9. Summary</h3>
+        <p>
+          The Make implementation is currently working on the main success path. It starts from Gmail, processes PDF attachments through OpenAI,
+          parses the returned JSON, uploads the original PDF to Google Drive, writes the extracted data into Google Sheets, adds a processed label,
+          and sends a custom confirmation email.
+        </p>
+        <div class="note">
+          The main technical effort went into OpenAI response handling inside Make, Google restricted OAuth setup for Drive/Sheets,
+          and resolving spreadsheet/document-format issues.
+        </div>
+      </section>
+    </div>
+
+    <p class="footer">Prepared as a concise HTML report for the current Make.com invoice automation workflow.</p>
+  </div>
+</body>
+</html>
