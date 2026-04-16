@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox Article Component — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .bad-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .flow-wrap { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin: 16px 0 22px 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; margin: 10px 0; }
+  .flow-num { background: #0f3460; color: #fff; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; flex-shrink: 0; }
+  .mini { color: #64748b; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-gray   { background: #f1f5f9; color: #475569; }
+  .toc { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 24px; margin: 20px 0 36px 0; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; color: #0f3460; }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 3px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox Article Component — Workflow Analysis</h1>
+  <p class="subtitle">
+    Workflow export reviewed: <strong>Adgrabber Fortnox Article Component v1.0.0</strong> &nbsp;|&nbsp;
+    Analysis date: <strong>2026-04-16</strong> &nbsp;|&nbsp;
+    Workflow ID: <code>110</code>
+  </p>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> This document summarizes the uploaded workflow
+    <strong>Adgrabber Fortnox Article Component v1.0.0</strong>, explains how it syncs one Fortnox article into Airtable,
+    and separates directly observed workflow behavior from interpretation.
+  </div>
+
+  <div class="source-box">
+    <strong>Primary inspected sources:</strong>
+    <code>Adgrabber_Fortnox_Article_Component_v1_0_0.json</code>,
+    <code>Adgrabber_Fortnox_Article_Component_v1_0_0 (1).json</code>,
+    <code>Fortnox_Adgrabber_Credentials.json</code>,
+    <code>fortnox_article_field_audit.html</code>,
+    <code>airtable_schema_documentation.html</code>,
+    <code>websocket_handler_workflow_analysis_2026-04-06.html</code>,
+    <code>invoice_component_workflow_analysis_2026-04-08.html</code>, and
+    related component notes for Order and Customer.
+  </div>
+
+  <div class="info-box">
+    <strong>How to read this note.</strong>
+    <ul>
+      <li><strong>Confirmed from workflow JSON:</strong> directly visible in the uploaded n8n export.</li>
+      <li><strong>Confirmed from related docs:</strong> Airtable table roles and field semantics described in the uploaded audits.</li>
+      <li><strong>Inference:</strong> plausible operational interpretation that is not explicitly logged by the workflow itself.</li>
+    </ul>
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">Workflow identity</a></li>
+      <li><a href="#s2">Architectural role and dependencies</a></li>
+      <li><a href="#s3">Observed execution path</a></li>
+      <li><a href="#s4">Header record write behavior</a></li>
+      <li><a href="#s5">Identity model and output contract</a></li>
+      <li><a href="#s6">Tables touched by one run</a></li>
+      <li><a href="#s7">Confirmed quirks and unresolved questions</a></li>
+      <li><a href="#s8">Plain-English verdict</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1">1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox Article Component v1.0.0</strong></td></tr>
+    <tr><td>Workflow ID in original export</td><td><code>110</code></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-gray">Inactive</span> <span class="badge badge-blue">Proven from export</span></td></tr>
+    <tr><td>Timezone</td><td><code>Europe/Stockholm</code></td></tr>
+    <tr><td>Main purpose</td><td>Fetch one Fortnox article/product, then create or update one <strong>FortnoxArticle</strong> record in Airtable and return the Airtable record id.</td></tr>
+    <tr><td>Direction of sync</td><td><strong>Fortnox -&gt; Airtable</strong> for this component's runtime behavior.</td></tr>
+    <tr><td>Workflow shape</td><td>Child component, not a top-level batch workflow. It processes one article at a time.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Key architectural fact:</strong> this component is the article-side single-record synchronizer.
+    Other workflows use it when they need a guaranteed Airtable <strong>FortnoxArticle</strong> record id before writing order rows or invoice rows.
+  </div>
+
+  <div class="warn-box">
+    <strong>Status nuance:</strong> the uploaded export is inactive as a standalone workflow export.
+    However, the wider workflow set still references workflow <code>110</code> through <code>component_article</code>,
+    so it remains architecturally relevant even if this export was disabled when captured.
+  </div>
+
+  <h2 id="s2">2. Architectural Role and Dependencies</h2>
+  <p>This workflow is narrow and foundational. It does not sync orders, invoices, or allocations itself. Its only job is to make sure that one Fortnox article master record exists in Airtable so that downstream row-level workflows can link to it safely.</p>
+
+  <table>
+    <tr><th>Direction</th><th>Workflow</th><th>Payload</th><th>Purpose</th></tr>
+    <tr>
+      <td>Parent -&gt; this component</td>
+      <td>Downloader / WebSocket Handler / Invoice Component / Order Component</td>
+      <td><code>{ id: &lt;Fortnox ArticleNumber&gt; }</code></td>
+      <td>Tells the component which single Fortnox article to fetch and normalize into an Airtable link target.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; Credentials</td>
+      <td>Workflow 109</td>
+      <td>No business payload</td>
+      <td>Loads shared config such as Airtable base id, article table id, and the Fortnox ratelimit proxy id.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; child workflows</td>
+      <td>None</td>
+      <td>None</td>
+      <td>This component is a leaf node in the sync graph. It does not call Customer, Order, Invoice, Supplier, or file workflows.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Role relative to the wider model:</strong> the uploaded schema notes describe
+    <strong>FortnoxArticle</strong> as the product/article catalog in Airtable, linked to
+    <strong>sys.mediatyp</strong> for media-type classification and used as a reusable master-data anchor from row-level tables.
+    The component therefore exists primarily to keep that master-data mirror available.
+  </div>
+
+  <h2 id="s3">3. Observed Execution Path</h2>
+  <p>The visible execution path is deliberately simple. Compared with the Order and Invoice components, this workflow has no child-row reconciliation and no secondary branching beyond the update/create upsert gate.</p>
+
+  <pre>Parent sends one article id
+  -&gt; Credentials (workflow 109)
+  -&gt; GET /3/articles/{id} via ratelimit proxy
+  -&gt; find Airtable FortnoxArticle by ArticleNumber
+  -&gt; extract Article object from HTTP payload
+  -&gt; pass payload through unchanged
+  -&gt; if article already exists: update Airtable record
+  -&gt; else: create Airtable record
+  -&gt; return Airtable article record id</pre>
+
+  <div class="flow-wrap">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div>
+        <strong>Load shared config</strong><br>
+        The workflow starts by calling the shared credentials workflow so it can read the Airtable base id, the article table id, and the Fortnox ratelimit proxy id.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div>
+        <strong>Fetch one article from Fortnox</strong><br>
+        It issues <code>GET /3/articles/{id}</code> through the shared ratelimit proxy and receives the Fortnox <code>Article</code> object.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div>
+        <strong>Look for an existing Airtable record</strong><br>
+        The component searches the <strong>FortnoxArticle</strong> table with
+        <code>ArticleNumber = HTTP.Article.ArticleNumber</code>.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div>
+        <strong>Extract the article payload</strong><br>
+        The <code>JSON Article</code> node takes only the nested Fortnox <code>Article</code> object, which becomes the input for the Airtable write nodes.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div>
+        <strong>Pass the payload through unchanged</strong><br>
+        The <code>Code</code> node contains only <code>return $input.item</code>, so no visible field normalization or enrichment happens here.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">6</div>
+      <div>
+        <strong>Upsert the Airtable article</strong><br>
+        The <code>Article Exists</code> IF node chooses between <code>Update Customer</code> (misnamed update node) and <code>Create Article</code>.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">7</div>
+      <div>
+        <strong>Return the Airtable record id</strong><br>
+        Both branches end in the output set node, which returns a minimal payload containing only <code>{ id: AirtableRecordId }</code>.
+        <br><span class="mini">Parent workflows only need the link id, not the full article payload.</span>
+      </div>
+    </div>
+  </div>
+
+  <h2 id="s4">4. Header Record Write Behavior</h2>
+  <p>The write-side logic is minimal, but that minimalism itself is the key design feature of this workflow.</p>
+
+  <table>
+    <tr><th>Observed element</th><th>What it does</th><th>Why it matters</th></tr>
+    <tr>
+      <td><code>Find Article</code></td>
+      <td>Looks up an existing Airtable article by <code>ArticleNumber</code>.</td>
+      <td>That makes <code>ArticleNumber</code> the business identity used inside this n8n component.</td>
+    </tr>
+    <tr>
+      <td><code>JSON Article</code></td>
+      <td>Extracts only the nested Fortnox <code>Article</code> object from the HTTP response.</td>
+      <td>The Airtable write nodes receive a clean article-level payload rather than the full Fortnox wrapper structure.</td>
+    </tr>
+    <tr>
+      <td><code>Code</code> node</td>
+      <td>Returns the item unchanged.</td>
+      <td>Unlike Customer, Order, and Invoice components, there is no visible normalization logic here. The article payload appears to be already compatible with the Airtable field layout.</td>
+    </tr>
+    <tr>
+      <td><code>Article Exists</code> IF node</td>
+      <td>Tests whether the Airtable list result contains an existing record.</td>
+      <td>This is the upsert gate between update and create behavior.</td>
+    </tr>
+    <tr>
+      <td><code>Update Customer</code> / <code>Create Article</code></td>
+      <td>Writes the parent record into the Airtable <strong>FortnoxArticle</strong> table.</td>
+      <td>The article becomes available as a reusable link target for order rows and invoice rows.</td>
+    </tr>
+    <tr>
+      <td><code>Customer Component Output</code></td>
+      <td>Returns only the Airtable record id.</td>
+      <td>Parent workflows can immediately use the id for linking without carrying a large article object through later steps.</td>
+    </tr>
+  </table>
+
+  <div class="observed">
+    <h3>Important design fact</h3>
+    <p>The workflow does <strong>not</strong> use <code>@url</code> directly as the lookup key in the n8n component itself. The uploaded component finds records by <code>ArticleNumber</code>. That differs from the field-audit language that describes the table-level upsert key as <code>@url</code>.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>Likely reason for the design</h3>
+    <p>Using <code>ArticleNumber</code> inside the component is operationally sensible because parent workflows pass article identifiers as plain Fortnox article numbers, and row-level records in orders and invoices also refer to articles by <code>ArticleNumber</code>. The current source set does not explicitly justify the choice, but it is consistent with the dependency graph.</p>
+  </div>
+
+  <h2 id="s5">5. Identity Model and Output Contract</h2>
+  <p>This component is small enough that its most important behavior is not branching complexity but <strong>contract simplicity</strong>.</p>
+
+  <table>
+    <tr><th>Aspect</th><th>Observed behavior</th><th>Operational meaning</th></tr>
+    <tr>
+      <td>Input contract</td>
+      <td>One field: <code>Start.id</code></td>
+      <td>The parent only has to pass one Fortnox article number.</td>
+    </tr>
+    <tr>
+      <td>Write contract</td>
+      <td>Update existing row or append new row in <strong>FortnoxArticle</strong></td>
+      <td>The component behaves as a simple reusable upsert wrapper around the Fortnox Articles API.</td>
+    </tr>
+    <tr>
+      <td>Output contract</td>
+      <td>One field: <code>{ id: AirtableRecordId }</code></td>
+      <td>The component is optimized for linking, not for downstream data transformation.</td>
+    </tr>
+    <tr>
+      <td>Normalization strategy</td>
+      <td>Essentially none visible in the JSON export</td>
+      <td>This suggests the Airtable schema was designed to mirror Fortnox article fields closely enough that generic pass-through writes are acceptable.</td>
+    </tr>
+    <tr>
+      <td>Failure handling</td>
+      <td>No explicit fallback branch is visible</td>
+      <td>If the Fortnox fetch fails, the component appears to have no alternate lookup-only rescue path like the Customer Component does.</td>
+    </tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Confirmed functional contract:</strong> this workflow is a reusable <strong>article id -&gt; Airtable article record id</strong> resolver.
+    That is why Order and Invoice row-sync flows can call it repeatedly without needing any extra payload shaping.
+  </div>
+
+  <div class="bad-box">
+    <strong>Failure boundary:</strong> the current JSON export does not show an <code>onError = continueErrorOutput</code> fallback branch or a direct Airtable rescue lookup.
+    If the Fortnox fetch fails, this component appears more brittle than the Customer Component.
+  </div>
+
+  <h2 id="s6">6. Tables Touched by One Run</h2>
+  <table>
+    <tr><th>Table</th><th>Direct or indirect</th><th>Expected action</th></tr>
+    <tr>
+      <td><strong>FortnoxArticle</strong></td>
+      <td>Direct</td>
+      <td>Create or update one article master record.</td>
+    </tr>
+    <tr>
+      <td><strong>Fortnox OrderRow</strong></td>
+      <td>Not written directly</td>
+      <td>Not touched by this workflow, but Order Component uses the returned article id when linking rows to the article catalog.</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxInvoiceRow</strong></td>
+      <td>Not written directly</td>
+      <td>Not touched by this workflow, but Invoice Component is designed to use the returned article id when writing invoice rows.</td>
+    </tr>
+    <tr>
+      <td><strong>sys.mediatyp</strong></td>
+      <td>Not written directly</td>
+      <td>No media-type classification is assigned here even though the article table contains that relationship.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Important boundary:</strong> this workflow does not create order rows, does not create invoice rows, does not classify media types, and does not populate downstream financial logic.
+    Its responsibility is narrower: keep the <strong>FortnoxArticle</strong> mirror record available so other workflows can link to it reliably.
+  </div>
+
+  <h2 id="s7">7. Confirmed Quirks and Unresolved Questions</h2>
+
+  <div class="observed">
+    <h3>7.1 The export is inactive, but the component is still referenced elsewhere</h3>
+    <p>The uploaded JSON proves <code>"active": false</code>. Separately, the broader source set shows workflow <code>110</code> referenced as <code>component_article</code> by the WebSocket handler and by row-processing logic in Order and Invoice flows. That means the component remains part of the documented dependency graph even though this export was disabled when captured.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.2 Two node names clearly come from a copy-pasted customer template</h3>
+    <p>The update node is named <code>Update Customer</code> and the final output node is named <code>Customer Component Output</code> even though this is the Article Component. The runtime behavior still points to the article table, so this appears to be a labeling error rather than a logic error.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.3 The article table behaves like a real master-data mirror in production</h3>
+    <p>The field audit describes <strong>FortnoxArticle</strong> as a read-only Fortnox-to-Airtable mirror with complete API-field coverage, while the schema note describes it as the product/article catalog linked to internal media-type classification. That fits this component's very narrow master-data role.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.4 The workflow uses <code>ArticleNumber</code> while the field audit describes <code>@url</code> as the upsert key</h3>
+    <p>The available sources therefore document two identity concepts at once: a table-level canonical Fortnox URL and a workflow-level business lookup by article number. The current source set does not prove which one should be considered the primary identity across all historical versions of the integration.</p>
+  </div>
+
+  <div class="bad-box">
+    <strong>Still unresolved:</strong> unlike the Customer Component, the current Article Component export does not show an explicit fallback path if Fortnox is temporarily unavailable. The available sources do not prove whether another error-handling layer compensates for that at runtime.
+  </div>
+
+  <div class="inferred">
+    <h3>7.5 Why the minimal design is probably intentional</h3>
+    <p>Articles are reference data, not transaction headers. Because the payload is flat and the parent workflows mainly need a link id, the simplest possible design is often the most robust: fetch one article, upsert it, return one id, and leave all transactional logic to OrderRow or InvoiceRow flows.</p>
+  </div>
+
+  <h2 id="s8">8. Plain-English Verdict</h2>
+  <div class="ok-box">
+    <strong>Bottom line:</strong> the Article Component is the smallest and cleanest Fortnox child component in the set.
+    It behaves like a reusable master-data resolver:
+    <strong>given one Fortnox article number, it guarantees one Airtable article record id</strong>.
+  </div>
+
+  <p>That makes it strategically important even though it is small. Order-row and invoice-row workflows do not want to duplicate article-sync logic every time they encounter an <code>ArticleNumber</code>. Instead, they call this component, receive a stable Airtable id, and continue their own row upsert logic.</p>
+
+  <p>The most important caveats are not about business logic but about <strong>maintenance hygiene</strong>: two node names still refer to "Customer", the component's lookup key differs from the field-audit language, and there is no visible fallback path on fetch failure. None of those points change the core interpretation, but they are worth documenting for future cleanup.</p>
+
+  <hr>
+  <p class="subtitle">End of note.</p>
+</div>
+</body>
+</html>
