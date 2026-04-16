@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox Order Component — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .bad-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .flow-wrap { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin: 16px 0 22px 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; margin: 10px 0; }
+  .flow-num { background: #0f3460; color: #fff; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; flex-shrink: 0; }
+  .mini { color: #64748b; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-gray   { background: #f1f5f9; color: #475569; }
+  .toc { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 24px; margin: 20px 0 36px 0; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; color: #0f3460; }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 3px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox Order Component — Workflow Analysis</h1>
+  <p class="subtitle">
+    Workflow export reviewed: <strong>Adgrabber Fortnox Order Component v1.0.0</strong> &nbsp;|&nbsp;
+    Analysis date: <strong>2026-04-16</strong> &nbsp;|&nbsp;
+    Workflow ID: <code>114</code>
+  </p>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> This document summarizes the uploaded workflow
+    <strong>Adgrabber Fortnox Order Component v1.0.0</strong>, explains how it syncs one Fortnox order and its rows into Airtable,
+    and separates directly observed behavior from interpretation.
+  </div>
+
+  <div class="source-box">
+    <strong>Primary inspected sources:</strong>
+    <code>Adgrabber_Fortnox_Order_Component_v1_0_0.json</code>,
+    <code>Fortnox_Adgrabber_Credentials.json</code>,
+    <code>order_field_audit.html</code>,
+    <code>fortnox_orderrow_field_audit.html</code>,
+    <code>invoice_component_workflow_analysis_2026-04-08.html</code>, and
+    related Fortnox architecture notes.
+  </div>
+
+  <div class="info-box">
+    <strong>How to read this note.</strong>
+    <ul>
+      <li><strong>Confirmed from workflow JSON:</strong> directly visible in the uploaded n8n export.</li>
+      <li><strong>Confirmed from related docs:</strong> Airtable table roles and field semantics described in the uploaded audits.</li>
+      <li><strong>Inference:</strong> plausible operational interpretation that is not explicitly logged by the workflow itself.</li>
+    </ul>
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">Workflow identity</a></li>
+      <li><a href="#s2">Architectural role and dependencies</a></li>
+      <li><a href="#s3">Observed execution path</a></li>
+      <li><a href="#s4">Header record write behavior</a></li>
+      <li><a href="#s5">Row reconciliation and soft-delete pattern</a></li>
+      <li><a href="#s6">Tables touched by one run</a></li>
+      <li><a href="#s7">Confirmed quirks and unresolved questions</a></li>
+      <li><a href="#s8">Plain-English verdict</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1">1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox Order Component v1.0.0</strong></td></tr>
+    <tr><td>Workflow ID in original export</td><td><code>114</code></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-gray">Inactive</span> <span class="badge badge-blue">Proven from export</span></td></tr>
+    <tr><td>Timezone</td><td><code>Europe/Stockholm</code></td></tr>
+    <tr><td>Main purpose</td><td>Fetch one Fortnox order, upsert its parent <strong>FortnoxOrder</strong> record in Airtable, and reconcile the child <strong>Fortnox OrderRow</strong> records against the latest Fortnox payload.</td></tr>
+    <tr><td>Direction of sync</td><td><strong>Fortnox -&gt; Airtable</strong> for this component's runtime behavior.</td></tr>
+    <tr><td>Workflow shape</td><td>Child component, not a top-level batch workflow. It processes one order at a time.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Key architectural fact:</strong> this component is the order-side equivalent of a single-record synchronizer.
+    It is called with one Fortnox order id, then updates both the header table and the child row table.
+  </div>
+
+  <div class="warn-box">
+    <strong>Status nuance:</strong> the uploaded export is inactive as a standalone workflow export.
+    However, the broader source set still shows workflow <code>114</code> referenced by other workflows,
+    so it remains architecturally relevant even if this export itself was disabled when captured.
+  </div>
+
+  <h2 id="s2">2. Architectural Role and Dependencies</h2>
+  <p>This workflow sits in the middle of the order sync graph. Its role is wider than just "sync one order header." It also controls row reconciliation and article linkage for each row.</p>
+
+  <table>
+    <tr><th>Direction</th><th>Workflow</th><th>Payload</th><th>Purpose</th></tr>
+    <tr>
+      <td>Parent -&gt; this component</td>
+      <td>Downloader / WebSocket Handler / Invoice Component</td>
+      <td><code>{ id: &lt;Fortnox order number&gt; }</code><br>or <code>{ id: &lt;order number&gt;, customer_id: &lt;Airtable customer rec id&gt; }</code></td>
+      <td>Tells the component which single order to fetch and, optionally, gives it an already-resolved Airtable customer id.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; Credentials</td>
+      <td>Workflow 109</td>
+      <td>No business payload</td>
+      <td>Loads shared config such as Airtable table ids, component workflow ids, and the Fortnox ratelimit proxy id.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; Customer Component</td>
+      <td>Workflow 111</td>
+      <td><code>{ id: Order.CustomerNumber }</code></td>
+      <td>Runs only when the parent did not already provide <code>customer_id</code>. Ensures the related Fortnox customer exists in Airtable first.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; Article Component</td>
+      <td>Workflow 110</td>
+      <td><code>{ id: OrderRow.ArticleNumber }</code></td>
+      <td>Ensures the row's Fortnox article exists in Airtable so the order row can link to it.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Role relative to the whole model:</strong> the parent <strong>FortnoxOrder</strong> table stores the raw Fortnox order and its serialized <code>OrderRows</code> blob, while the child <strong>Fortnox OrderRow</strong> table materializes each individual order row as its own Airtable record. This component is the bridge that keeps those two layers in sync.
+  </div>
+
+  <h2 id="s3">3. Observed Execution Path</h2>
+  <p>The workflow path visible in the JSON is more complex than the invoice component because it performs <strong>row replacement by soft-delete + reactivation</strong> rather than only appending fresh child rows.</p>
+
+  <pre>Parent sends one order id
+  -&gt; Credentials (workflow 109)
+  -&gt; GET /3/orders/{id} via ratelimit proxy
+  -&gt; resolve customer_id
+       - if parent already gave one, reuse it
+       - else call Customer Component with CustomerNumber
+  -&gt; find Airtable FortnoxOrder by DocumentNumber
+  -&gt; update or create FortnoxOrder header
+  -&gt; compute should_sync flag on returned Airtable order record
+  -&gt; if should_sync is false: stop and return order id
+  -&gt; find all existing Airtable Fortnox OrderRow records for this order
+  -&gt; mark all existing rows Deleted = true
+  -&gt; inspect Fortnox OrderRows array
+       - if empty: stop and return order id
+       - else split rows one by one
+  -&gt; for each row:
+       - resolve article if ArticleNumber is valid
+       - find row by RowId
+       - set LineItem Source = Fortnox, Deleted = false, link order and article
+       - update existing row or create new row
+  -&gt; after last row: return Airtable order id</pre>
+
+  <div class="flow-wrap">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div>
+        <strong>Load shared config and fetch the Fortnox order</strong><br>
+        The workflow calls the shared credentials workflow, then issues <code>GET /3/orders/{id}</code> through the shared ratelimit proxy.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div>
+        <strong>Resolve the customer link</strong><br>
+        If <code>Start.customer_id</code> already exists, the workflow skips the Customer Component and reuses that Airtable record id. Otherwise it calls the Customer Component with <code>Order.CustomerNumber</code>.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div>
+        <strong>Upsert the order header</strong><br>
+        It finds the Airtable order by <code>DocumentNumber</code>, then either updates the existing record or creates a new one.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div>
+        <strong>Gate the row branch with <code>should_sync</code></strong><br>
+        After the header write, the workflow builds a small object containing the Airtable order id and a boolean called <code>should_sync</code> derived from <code>fields["Internal Status"] !== "Do not sync"</code>.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div>
+        <strong>Mark prior child rows as deleted</strong><br>
+        If row sync is allowed, the workflow finds all existing Airtable order rows for this order using the formula <code>{Order Number Text} = '{{ Start.id }}'</code> and sets <code>Deleted = true</code> on all of them first.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">6</div>
+      <div>
+        <strong>Process the current Fortnox row array</strong><br>
+        If <code>OrderRows.length &gt; 0</code>, it iterates one row at a time. If the array is empty, it exits after the soft-delete pass.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">7</div>
+      <div>
+        <strong>Resolve article per row and upsert by RowId</strong><br>
+        Each row optionally calls the Article Component, then the workflow finds an Airtable row by <code>RowId</code> and either updates it or creates it.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">8</div>
+      <div>
+        <strong>Reactivate surviving rows</strong><br>
+        The row code sets <code>Deleted = false</code> on every row that still exists in the latest Fortnox payload. Rows not recreated remain soft-deleted.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="s4">4. Header Record Write Behavior</h2>
+  <p>The header-side part of the workflow is straightforward but still important because it normalizes Fortnox data for Airtable consumption.</p>
+
+  <table>
+    <tr><th>Observed element</th><th>What it does</th><th>Why it matters</th></tr>
+    <tr>
+      <td><code>Find</code> node</td>
+      <td>Looks up an existing Airtable order by <code>DocumentNumber</code>.</td>
+      <td>That makes <code>DocumentNumber</code> the business identity for the header record.</td>
+    </tr>
+    <tr>
+      <td><code>Code</code> node</td>
+      <td>Converts Fortnox booleans like <code>Cancelled</code>, <code>CopyRemarks</code>, <code>VATIncluded</code>, and <code>Sent</code> into strings and serializes complex objects like <code>EmailInformation</code>, <code>Labels</code>, and <code>OrderRows</code> to JSON strings.</td>
+      <td>This matches the Airtable schema design where several Fortnox structures are stored as text snapshots rather than native nested objects.</td>
+    </tr>
+    <tr>
+      <td><code>FortnoxCustomer</code> assignment</td>
+      <td>The header payload is enriched with <code>FortnoxCustomer = [customer record id]</code>.</td>
+      <td>That ties the order to the already-synced customer master record.</td>
+    </tr>
+    <tr>
+      <td><code>Update</code> / <code>Create</code></td>
+      <td>Writes the parent record into the Airtable <strong>FortnoxOrder</strong> table.</td>
+      <td>The order header becomes the anchor for downstream invoice linkage and row rollups.</td>
+    </tr>
+  </table>
+
+  <div class="observed">
+    <h3>Important design fact</h3>
+    <p>The workflow does <strong>not</strong> use <code>@url</code> directly as the upsert key in the n8n component itself. The uploaded component finds records by <code>DocumentNumber</code>. That differs from some broader table-level audit language that describes the general sync model at table level.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>Likely reason for the design</h3>
+    <p>Using <code>DocumentNumber</code> inside the component is operationally sensible because parent workflows also identify orders by Fortnox order number, and downstream entities such as invoices link back through that number. The current source set does not explicitly explain why the component chose this key, but it is consistent with the wider order model.</p>
+  </div>
+
+  <h2 id="s5">5. Row Reconciliation and Soft-Delete Pattern</h2>
+  <p>This is the most important behavior in the workflow. The component is not simply "append new rows." It first assumes every previously known row may be obsolete, marks them all deleted, then revives only the rows that still exist in the latest Fortnox payload.</p>
+
+  <table>
+    <tr><th>Step</th><th>Observed node(s)</th><th>Meaning</th></tr>
+    <tr><td>1</td><td><strong>Find All Rows</strong></td><td>Reads all Airtable child rows matching <code>{Order Number Text} = Start.id</code>.</td></tr>
+    <tr><td>2</td><td><strong>Set Deleted on All Rows</strong> + <strong>Update All Rows as Deleted</strong></td><td>Soft-deletes every currently linked row before processing the fresh Fortnox payload.</td></tr>
+    <tr><td>3</td><td><strong>JSON Rows</strong> + <strong>Split Rows</strong></td><td>Explodes the current Fortnox <code>OrderRows</code> array into one execution item per row.</td></tr>
+    <tr><td>4</td><td><strong>Find Row</strong></td><td>Looks up a row by <code>RowId</code>, the Fortnox row identifier.</td></tr>
+    <tr><td>5</td><td><strong>Code Row</strong></td><td>Sets <code>LineItem Source = "Fortnox"</code>, clears <code>Deleted</code>, and links the row to both the parent order and optional article.</td></tr>
+    <tr><td>6</td><td><strong>Update Row</strong> / <strong>Create Row</strong></td><td>Reactivates an existing row or creates a brand-new one if Fortnox introduced a new row id.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Confirmed reconciliation model:</strong> deletion is handled as a <strong>soft-delete</strong>, not a hard delete.
+    Missing Fortnox rows remain in Airtable with <code>Deleted = true</code>; surviving rows are explicitly reset to <code>false</code>.
+  </div>
+
+  <div class="observed">
+    <h3>Why this aligns with the field audits</h3>
+    <p>The uploaded OrderRow audit already describes the child table as a hybrid operational table with explicit soft-deletion logic, <code>RowId</code> as the Fortnox row key, and <code>LineItem Source = "Fortnox"</code> written by n8n. The workflow JSON matches that model exactly.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>Practical effect of the pattern</h3>
+    <p>This design preserves historical row records, allocations, and operational notes even when Fortnox removes or changes a row. Instead of erasing the Airtable record, the component leaves a visible trace that the row no longer exists in the current Fortnox payload.</p>
+  </div>
+
+  <h2 id="s6">6. Tables Touched by One Run</h2>
+  <table>
+    <tr><th>Table</th><th>Direct or indirect</th><th>Expected action</th></tr>
+    <tr>
+      <td><strong>FortnoxOrder</strong></td>
+      <td>Direct</td>
+      <td>Create or update one order header record.</td>
+    </tr>
+    <tr>
+      <td><strong>Fortnox OrderRow</strong></td>
+      <td>Direct</td>
+      <td>Soft-delete all prior rows for that order, then recreate/reactivate the current Fortnox rows one by one.</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxCustomer</strong></td>
+      <td>Indirect via Customer Component</td>
+      <td>Create or update the linked customer if the caller did not already provide <code>customer_id</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxArticle</strong></td>
+      <td>Indirect via Article Component</td>
+      <td>Create or update article master records for rows with valid <code>ArticleNumber</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>sys.orderallocationmapping</strong></td>
+      <td>Not written directly</td>
+      <td>Not updated by this workflow, but existing allocation logic in Airtable depends on the child rows this component maintains.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Important boundary:</strong> this workflow does not itself create allocation records in <strong>sys.orderallocationmapping</strong> and does not itself invoice anything.
+    Its responsibility is narrower: keep the order header and order-row mirror in Airtable consistent with Fortnox so that downstream allocation, QA, and invoicing logic can work correctly.
+  </div>
+
+  <h2 id="s7">7. Confirmed Quirks and Unresolved Questions</h2>
+
+  <div class="observed">
+    <h3>7.1 The export is inactive, but the component is still referenced elsewhere</h3>
+    <p>The uploaded JSON proves <code>"active": false</code>. Separately, the broader source set shows workflow <code>114</code> referenced as <code>component_order</code> by the Downloader, WebSocket Handler, and Invoice Component. That means the component remains part of the documented dependency graph even though this export was disabled when captured.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.2 Customer resolution is optimized for chained calls</h3>
+    <p>The workflow explicitly accepts an incoming <code>customer_id</code> from a parent. That is why the Invoice Component can call Order Component without forcing a second customer sync when it already resolved the customer one step earlier.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.3 The row branch uses a suspicious <code>Internal Status</code> gate</h3>
+    <p>The <code>Order</code> set node computes <code>should_sync = fields["Internal Status"] !== "Do not sync"</code> on the returned Airtable order record. In the currently uploaded schema notes, <code>Internal Status</code> is clearly documented for <strong>FortnoxSupplier</strong>, not for <strong>FortnoxOrder</strong>. The current evidence set still does not clearly document a same-named field on the order table. This is a separate question from <code>Order Status</code> — they are not the same field.</p>
+  </div>
+
+  <div class="bad-box">
+    <strong>Still unresolved:</strong> the available sources do not prove whether <code>FortnoxOrder</code> really has an undocumented <code>Internal Status</code> field, whether the field existed in an older schema, or whether this condition now effectively evaluates to true for all orders because the field is absent. This ambiguity remains specifically about <code>Internal Status</code>, not about <code>Order Status</code>.
+  </div>
+
+  <div class="observed">
+    <h3>7.4 <code>Order Status</code> exists in schema but is dormant in production</h3>
+    <p>User verification and the broader schema notes agree on the same point: <strong>the FortnoxOrder table does have an <code>Order Status</code> field, but it is empty on production records</strong>. That fits the documented interpretation that <code>Order Status</code> belongs to a designed Airtable -&gt; Fortnox push lifecycle (<code>Airtable Draft</code> -&gt; <code>Copy to Fortnox</code> -&gt; <code>Fortnox Order</code>) which is not active in real usage.</p>
+    <p>For this component, that matters in a very concrete way: the workflow does <strong>not</strong> read or write <code>Order Status</code> anywhere in the uploaded export. It works by fetching one Fortnox order, upserting the header by Fortnox identifiers, and reconciling child rows. So a blank <code>Order Status</code> is not a sync failure inside this workflow — it is the expected state of an unused lifecycle field.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.5 The component preserves deleted rows instead of removing them</h3>
+    <p>This is not speculative. The workflow marks all prior rows <code>Deleted = true</code> before rebuilding the live set, and it only flips current rows back to <code>false</code>. That creates a durable audit trail of removed rows in Airtable.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>7.6 Why the soft-delete design is probably intentional</h3>
+    <p>Because order rows participate in allocation tracking and operational QA, hard deletion would break downstream visibility. A soft-delete pattern lets the team see that a row disappeared from Fortnox while keeping the historical Airtable record alive. The workflow JSON proves the pattern; the business rationale is an inference from the surrounding schema.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.7 Push-path fields exist in schema, but current live usage appears pull-dominant</h3>
+    <p>The broader Airtable documentation says the order schema contains push-oriented fields such as <code>Sync Fortnox</code> and lifecycle statuses, while live-data notes say all current order records appear to have come from Fortnox and all current order-row records show <code>LineItem Source = "Fortnox"</code>. This component fits the pull/mirror side of that reality, and the blank production <code>Order Status</code> values reinforce that conclusion.</p>
+  </div>
+
+  <h2 id="s8">8. Plain-English Verdict</h2>
+  <p><strong>This workflow is the order mirror-and-reconciliation child flow for Fortnox orders.</strong></p>
+
+  <ul>
+    <li>It receives one Fortnox order id from a parent workflow.</li>
+    <li>It fetches the current Fortnox order payload and upserts the Airtable <strong>FortnoxOrder</strong> header.</li>
+    <li>It then reconciles the child <strong>Fortnox OrderRow</strong> table by soft-deleting old rows and reactivating or creating the rows that still exist in Fortnox.</li>
+    <li>It optionally ensures the customer and referenced articles exist in Airtable through child component calls.</li>
+  </ul>
+
+  <div class="ok-box">
+    <strong>Bottom line:</strong> the uploaded export proves that workflow <code>114</code> is designed as a <strong>Fortnox -&gt; Airtable order component</strong> with explicit row-level reconciliation logic. The production-side observation that <code>Order Status</code> is always blank now fits cleanly into the analysis: it behaves like a dormant push-lifecycle field, not like an active control field for this component. The main unresolved issue that remains is the meaning of the separate <code>Internal Status</code> gate on the order record, because that field is still not clearly documented on <strong>FortnoxOrder</strong> in the current source set.
+  </div>
+
+  <hr>
+  <p class="subtitle">End of workflow note.</p>
+</div>
+</body>
+</html>
