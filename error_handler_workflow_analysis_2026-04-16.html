@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox Error Handler — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .bad-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .flow-wrap { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin: 16px 0 22px 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; margin: 10px 0; }
+  .flow-num { background: #0f3460; color: #fff; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; flex-shrink: 0; }
+  .mini { color: #64748b; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-gray   { background: #f1f5f9; color: #475569; }
+  .toc { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 24px; margin: 20px 0 36px 0; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; color: #0f3460; }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 3px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox Error Handler — Workflow Analysis</h1>
+  <p class="subtitle">
+    Workflow export reviewed: <strong>Adgrabber Fortnox Error Handler</strong> &nbsp;|&nbsp;
+    Analysis date: <strong>2026-04-16</strong> &nbsp;|&nbsp;
+    Workflow ID: <code>117</code>
+  </p>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> This document summarizes the uploaded workflow
+    <strong>Adgrabber Fortnox Error Handler</strong>, explains what it actually does after a workflow failure,
+    and separates directly observed behavior from interpretation.
+  </div>
+
+  <div class="source-box">
+    <strong>Primary inspected sources:</strong>
+    <code>Adgrabber_Fortnox_Error_Handler.json</code>,
+    <code>downloader_workflow_analysis_2026-04-06(2).html</code>,
+    <code>Adgrabber_Fortnox_Downloader_V3_0_0.json</code>,
+    <code>Fortnox_Adgrabber_Credentials.json</code>, and
+    the current component-analysis notes created in this project.
+  </div>
+
+  <div class="info-box">
+    <strong>How to read this note.</strong>
+    <ul>
+      <li><strong>Confirmed from workflow JSON:</strong> directly visible in the uploaded n8n export.</li>
+      <li><strong>Confirmed from related docs:</strong> surrounding workflow roles and the Settings-table trigger model documented elsewhere in the uploaded notes.</li>
+      <li><strong>Inference:</strong> plausible operational interpretation that is not explicitly logged by the workflow itself.</li>
+    </ul>
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">Workflow identity</a></li>
+      <li><a href="#s2">Architectural role and dependencies</a></li>
+      <li><a href="#s3">Observed execution path</a></li>
+      <li><a href="#s4">Exact settings write behavior</a></li>
+      <li><a href="#s5">Recovery and restart model</a></li>
+      <li><a href="#s6">Tables touched by one run</a></li>
+      <li><a href="#s7">Confirmed quirks and unresolved questions</a></li>
+      <li><a href="#s8">Plain-English verdict</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1">1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox Error Handler</strong></td></tr>
+    <tr><td>Workflow ID in original export</td><td><code>117</code></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-gray">Inactive</span> <span class="badge badge-blue">Proven from export</span></td></tr>
+    <tr><td>Timezone</td><td><code>Europe/Stockholm</code></td></tr>
+    <tr><td>Trigger type</td><td><code>errorTrigger</code></td></tr>
+    <tr><td>Main purpose</td><td>Wait after a failure, then update the shared Airtable <strong>Settings</strong> record so the integration can resume or be retriggered.</td></tr>
+    <tr><td>Direction of action</td><td><strong>n8n failure event -&gt; Airtable control-plane update</strong>, not a business-data sync flow.</td></tr>
+    <tr><td>Workflow shape</td><td>Small recovery/supervisor flow. It does not sync Fortnox entities directly.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Key architectural fact:</strong> this workflow is not a domain-data component like Customer, Order, or Invoice.
+    It is a control-path workflow whose only durable side effect is updating the shared Settings record used by the downloader/orchestrator layer.
+  </div>
+
+  <div class="warn-box">
+    <strong>Status nuance:</strong> the uploaded export is inactive as a standalone workflow export.
+    However, the broader source set explicitly shows workflow <code>117</code> referenced as the Downloader's
+    configured <code>errorWorkflow</code>, so it remains architecturally relevant even if this export itself was disabled when captured.
+  </div>
+
+  <h2 id="s2">2. Architectural Role and Dependencies</h2>
+  <p>This workflow sits off to the side of the normal Fortnox sync graph. It is invoked only after another workflow throws an error, and its job is generic recovery rather than entity-specific repair.</p>
+
+  <table>
+    <tr><th>Direction</th><th>Workflow / system</th><th>Payload</th><th>Purpose</th></tr>
+    <tr>
+      <td>Parent -&gt; this workflow</td>
+      <td>n8n error system</td>
+      <td>Error-trigger context from a failed run</td>
+      <td>Starts the recovery flow when an upstream workflow configured with <code>errorWorkflow = 117</code> fails.</td>
+    </tr>
+    <tr>
+      <td>This workflow -&gt; Credentials</td>
+      <td>Workflow 109</td>
+      <td>No business payload</td>
+      <td>Loads shared config such as Airtable base id and the Settings table id.</td>
+    </tr>
+    <tr>
+      <td>This workflow -&gt; Settings table</td>
+      <td>Airtable</td>
+      <td>One record update</td>
+      <td>Reads the current orchestrator state, then writes a timestamp plus a conditional invoice-download flag back to the same record.</td>
+    </tr>
+    <tr>
+      <td>This workflow -&gt; child workflows</td>
+      <td>None</td>
+      <td>None</td>
+      <td>This flow does not call Customer, Order, Invoice, Supplier, or Fortnox API nodes.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Role relative to the wider model:</strong> the Downloader note already confirms that the main orchestrator watches the
+    Airtable <strong>Settings</strong> table on <code>Last Modified Time</code>. That makes this Error Handler best understood as a
+    generic “touch the control record after a cool-off period” helper, not as a data-repair workflow.
+  </div>
+
+  <h2 id="s3">3. Observed Execution Path</h2>
+  <p>The runtime path visible in the JSON is very short and fully linear. There are no IF branches inside the workflow; the only conditional behavior is embedded inside one expression in the <code>Set</code> node.</p>
+
+  <pre>A workflow fails
+  -&gt; Error Trigger fires
+  -&gt; wait 5 minutes
+  -&gt; call Credentials (workflow 109)
+  -&gt; list 1 record from Airtable Settings table
+  -&gt; compute two outbound fields:
+       - Temp Field = current timestamp as string
+       - Download Invoices = if Idle == 1 then true else keep current Download Invoices
+  -&gt; update the same Settings record
+  -&gt; stop</pre>
+
+  <div class="flow-wrap">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div>
+        <strong>Receive an n8n failure event</strong><br>
+        The entry node is a native <code>errorTrigger</code>, so this workflow starts only after some other execution fails.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div>
+        <strong>Pause for five minutes</strong><br>
+        The <code>Wait</code> node introduces a fixed cool-off delay before any recovery action is attempted.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div>
+        <strong>Load shared config</strong><br>
+        The flow calls the shared Credentials workflow <code>109</code> so it can resolve the Airtable base and Settings table ids dynamically.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div>
+        <strong>Read the current Settings record</strong><br>
+        The <code>Get Settings</code> node lists one record from the shared Settings table. No filter formula is visible in this export.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div>
+        <strong>Build the recovery payload</strong><br>
+        The <code>Update Temp Field</code> node keeps only two outgoing fields: a timestamp string in <code>Temp Field</code> and a conditionally recomputed <code>Download Invoices</code> boolean.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">6</div>
+      <div>
+        <strong>Update the same Settings record</strong><br>
+        The workflow writes those fields back to the Settings record id returned by <code>Get Settings</code>, then ends.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="s4">4. Exact Settings Write Behavior</h2>
+  <p>The entire business effect of this workflow is concentrated in the last two nodes. That makes their exact behavior unusually important.</p>
+
+  <table>
+    <tr><th>Observed element</th><th>What it does</th><th>Why it matters</th></tr>
+    <tr>
+      <td><code>Get Settings</code></td>
+      <td>Reads exactly one Airtable record from the shared Settings table.</td>
+      <td>The recovery action is global / orchestrator-level, not targeted to a specific customer, order, invoice, or supplier record.</td>
+    </tr>
+    <tr>
+      <td><code>Temp Field</code></td>
+      <td>Sets <code>Temp Field = $now.valueOf().toString()</code>.</td>
+      <td>This guarantees a changed value on every run, so the Settings record definitely gets modified.</td>
+    </tr>
+    <tr>
+      <td><code>Download Invoices</code></td>
+      <td>Sets <code>true</code> only when <code>Idle === 1</code>; otherwise it preserves the existing <code>Download Invoices</code> value.</td>
+      <td>The workflow can explicitly re-enable the invoice-stage downloader entrypoint, but only under one visible condition.</td>
+    </tr>
+    <tr>
+      <td><code>Update Settings</code></td>
+      <td>Updates the same Settings record returned by the read step.</td>
+      <td>This is the only durable write performed by the workflow.</td>
+    </tr>
+  </table>
+
+  <div class="observed">
+    <h3>Important design fact</h3>
+    <p>The workflow does <strong>not</strong> read the error message, error type, failed workflow name, failed entity id, or any other failure-specific detail.
+    It applies the same generic recovery write regardless of what actually broke upstream.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>Likely reason for the design</h3>
+    <p>This looks intentional. The workflow appears designed to kick the orchestrator back into motion rather than to diagnose or repair the original failure.
+    In other words, it behaves more like a controlled restart helper than a forensic error-management workflow.</p>
+  </div>
+
+  <h2 id="s5">5. Recovery and Restart Model</h2>
+  <p>This workflow is most useful when read together with the Downloader note. The two sources together suggest a simple recovery pattern: wait, touch the Settings record, and let the normal Airtable-triggered orchestration resume.</p>
+
+  <table>
+    <tr><th>Step</th><th>Observed / inferred source</th><th>Meaning</th></tr>
+    <tr><td>1</td><td><strong>Observed in Error Handler</strong></td><td>The workflow always waits 5 minutes before making any changes.</td></tr>
+    <tr><td>2</td><td><strong>Observed in Error Handler</strong></td><td>It updates <code>Temp Field</code> every time and conditionally sets <code>Download Invoices</code>.</td></tr>
+    <tr><td>3</td><td><strong>Observed in Downloader note</strong></td><td>The Downloader watches the Settings table on <code>Last Modified Time</code>.</td></tr>
+    <tr><td>4</td><td><strong>Inference from both</strong></td><td>Changing the Settings record likely causes the downloader control loop to wake up again on its next poll.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Most plausible runtime interpretation:</strong> after a failure, this workflow waits a few minutes, touches the shared Settings record, and thereby creates the conditions for the normal downloader/state-machine flow to restart from its usual control surface.
+  </div>
+
+  <div class="observed">
+    <h3>What is definitely proven</h3>
+    <p>The workflow waits, loads settings, computes a timestamp, conditionally forces <code>Download Invoices = true</code> when <code>Idle == 1</code>, and updates the Settings record. Those steps are explicit in the uploaded JSON.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>What remains interpretation</h3>
+    <p>The uploaded files do not contain runtime logs proving the exact downstream sequence after the Settings update.
+    The restart interpretation is strong because the Downloader note confirms that the Settings record is the orchestrator trigger surface, but the actual next execution is still inferred rather than directly logged in the available sources.</p>
+  </div>
+
+  <div class="bad-box">
+    <strong>Important boundary:</strong> this workflow does not itself retry the failed HTTP request, does not inspect which record failed, and does not repair partial writes in domain tables.
+    It performs only a generic orchestrator-state update.
+  </div>
+
+  <h2 id="s6">6. Tables Touched by One Run</h2>
+  <table>
+    <tr><th>Table / system</th><th>Direct or indirect</th><th>Expected action</th></tr>
+    <tr>
+      <td><strong>Settings</strong></td>
+      <td>Direct</td>
+      <td>Read one record, then update that same record with <code>Temp Field</code> and a conditional <code>Download Invoices</code> value.</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxCustomer / FortnoxOrder / FortnoxInvoice / FortnoxSupplier / FortnoxSupplierInvoice / FortnoxArticle</strong></td>
+      <td>Not written directly</td>
+      <td>No domain-table writes are visible in this workflow.</td>
+    </tr>
+    <tr>
+      <td><strong>Fortnox API</strong></td>
+      <td>Not touched directly</td>
+      <td>No HTTP call to Fortnox is made here.</td>
+    </tr>
+    <tr>
+      <td><strong>Workflow 109 (Credentials)</strong></td>
+      <td>Indirect dependency</td>
+      <td>Used only to resolve shared configuration before the Settings-table read/write.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Important boundary:</strong> this workflow is not part of the normal entity-sync data plane.
+    Its scope is narrower: maintain or restart the shared control state after an error so the orchestrator layer can continue.
+  </div>
+
+  <h2 id="s7">7. Confirmed Quirks and Unresolved Questions</h2>
+
+  <div class="observed">
+    <h3>7.1 The export is inactive, but the Downloader still points to it</h3>
+    <p>The uploaded Error Handler export itself is inactive, yet the Downloader export and its analysis both still identify <code>117</code> as the configured error workflow. So this flow remains part of the documented dependency graph even though its captured standalone export is inactive.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.2 The workflow ignores the actual error payload</h3>
+    <p>No node uses the incoming error contents. That means all failure types are funneled into the same generic response.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.3 The workflow updates only orchestrator fields, not diagnostic fields</h3>
+    <p>The visible writeback fields are <code>Temp Field</code> and <code>Download Invoices</code>. There is no visible write of error text, failed workflow id, stack trace, retry counter, or alert flag.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.4 The workflow is self-referential in its own export settings</h3>
+    <p>The uploaded JSON shows <code>errorWorkflow = "117"</code> inside workflow <code>117</code> itself. The available sources do not explain whether this is intentional, ignored by n8n for error workflows, or potentially risky if the handler itself throws an error.</p>
+  </div>
+
+  <div class="bad-box">
+    <strong>Still unresolved:</strong> the current source set does not prove what the <code>Idle</code> field means operationally, where it is maintained, or whether a value of <code>1</code> always means the downloader is safe to restart from the invoice stage.
+  </div>
+
+  <div class="inferred">
+    <h3>7.5 Why the five-minute wait probably exists</h3>
+    <p>The most plausible explanation is debouncing / cool-off: let transient outages, API throttling, or half-finished writes settle before touching the orchestrator state again. That rationale fits the structure, but it is not explicitly documented in the workflow.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>7.6 Why the workflow always writes a fresh timestamp</h3>
+    <p>The likely purpose of <code>Temp Field</code> is to guarantee a Settings-record modification even when <code>Download Invoices</code> does not change. That would make sense in a system where the main orchestrator watches <code>Last Modified Time</code> on that record.</p>
+  </div>
+
+  <h2 id="s8">8. Plain-English Verdict</h2>
+  <p><strong>This workflow is the integration's generic “after failure, poke the control record” recovery flow.</strong></p>
+
+  <ul>
+    <li>It starts from n8n's global error trigger, not from a Fortnox entity event.</li>
+    <li>It waits five minutes before doing anything.</li>
+    <li>It loads the shared Settings record, updates a timestamp field, and conditionally turns <code>Download Invoices</code> back on.</li>
+    <li>It does not inspect the error payload and does not repair any specific customer, order, invoice, or supplier record.</li>
+    <li>Its most likely purpose is to restart or reawaken the normal downloader/state-machine flow through the Settings table.</li>
+  </ul>
+
+  <div class="ok-box">
+    <strong>Bottom line:</strong> the uploaded export proves that workflow <code>117</code> is a very small <strong>control-plane recovery workflow</strong>, not a data-sync workflow. Its job is to wait after a failure and then write back to the shared Airtable Settings record so the main orchestrator can likely resume. The biggest remaining unknowns are the exact semantics of <code>Idle</code> and whether the self-referential <code>errorWorkflow = 117</code> setting is harmless or an overlooked configuration quirk.
+  </div>
+
+  <hr>
+  <p class="subtitle">End of workflow note.</p>
+</div>
+</body>
+</html>
