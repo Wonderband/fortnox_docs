@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox Customer Component — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .bad-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .flow-wrap { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin: 16px 0 22px 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; margin: 10px 0; }
+  .flow-num { background: #0f3460; color: #fff; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; flex-shrink: 0; }
+  .mini { color: #64748b; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-gray   { background: #f1f5f9; color: #475569; }
+  .toc { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 24px; margin: 20px 0 36px 0; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; color: #0f3460; }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 3px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox Customer Component — Workflow Analysis</h1>
+  <p class="subtitle">
+    Workflow export reviewed: <strong>Adgrabber Fortnox Customer Component v1.0.0</strong> &nbsp;|&nbsp;
+    Analysis date: <strong>2026-04-16</strong> &nbsp;|&nbsp;
+    Workflow ID: <code>111</code>
+  </p>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> This document summarizes the uploaded workflow
+    <strong>Adgrabber Fortnox Customer Component v1.0.0</strong>, explains how it syncs one Fortnox customer into Airtable,
+    and separates directly observed workflow behavior from interpretation.
+  </div>
+
+  <div class="source-box">
+    <strong>Primary inspected sources:</strong>
+    <code>Adgrabber_Fortnox_Customer_Component_v1_0_0.json</code>,
+    <code>customer_field_audit.html</code>,
+    <code>Adgrabber_Fortnox_Downloader_V3_0_0.json</code>,
+    <code>Adgrabber_Fortnox_WebSocket_Handler_v3_0_0.json</code>,
+    <code>invoice_component_workflow_analysis_2026-04-08.html</code>, and
+    related Fortnox architecture notes.
+  </div>
+
+  <div class="info-box">
+    <strong>How to read this note.</strong>
+    <ul>
+      <li><strong>Confirmed from workflow JSON:</strong> directly visible in the uploaded n8n export.</li>
+      <li><strong>Confirmed from related docs:</strong> Airtable table roles and field semantics described in the uploaded audits.</li>
+      <li><strong>Inference:</strong> plausible operational interpretation that is not explicitly logged by the workflow itself.</li>
+    </ul>
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">Workflow identity</a></li>
+      <li><a href="#s2">Architectural role and dependencies</a></li>
+      <li><a href="#s3">Observed execution path</a></li>
+      <li><a href="#s4">Header record write behavior</a></li>
+      <li><a href="#s5">Fallback path when Fortnox fetch fails</a></li>
+      <li><a href="#s6">Tables touched by one run</a></li>
+      <li><a href="#s7">Confirmed quirks and unresolved questions</a></li>
+      <li><a href="#s8">Plain-English verdict</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1">1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox Customer Component v1.0.0</strong></td></tr>
+    <tr><td>Workflow ID in original export</td><td><code>111</code></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-gray">Inactive</span> <span class="badge badge-blue">Proven from export</span></td></tr>
+    <tr><td>Timezone</td><td><code>Europe/Stockholm</code></td></tr>
+    <tr><td>Main purpose</td><td>Fetch one Fortnox customer, normalize selected Fortnox fields for Airtable compatibility, and create or update one <strong>FortnoxCustomer</strong> record in Airtable.</td></tr>
+    <tr><td>Direction of sync</td><td><strong>Fortnox -&gt; Airtable</strong> for this component's runtime behavior.</td></tr>
+    <tr><td>Workflow shape</td><td>Child component, not a top-level batch workflow. It processes one customer at a time.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Key architectural fact:</strong> this component is the customer-side single-record synchronizer.
+    Other workflows depend on it when they need a guaranteed Airtable customer record id before writing related records such as orders or invoices.
+  </div>
+
+  <div class="warn-box">
+    <strong>Status nuance:</strong> the uploaded export is inactive as a standalone workflow export.
+    However, the broader source set still shows workflow <code>111</code> referenced by other workflows,
+    so it remains architecturally relevant even if this export itself was disabled when captured.
+  </div>
+
+  <h2 id="s2">2. Architectural Role and Dependencies</h2>
+  <p>This workflow is narrow but foundational. It does not sync invoices or orders itself. Instead, it ensures that one Fortnox customer master record exists in Airtable so that dependent workflows can safely attach links to it.</p>
+
+  <table>
+    <tr><th>Direction</th><th>Workflow</th><th>Payload</th><th>Purpose</th></tr>
+    <tr>
+      <td>Parent -&gt; this component</td>
+      <td>Downloader / WebSocket Handler / Invoice Component / Order Component</td>
+      <td><code>{ id: &lt;Fortnox customer number&gt; }</code></td>
+      <td>Tells the component which single Fortnox customer to fetch and normalize.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; Credentials</td>
+      <td>Workflow 109</td>
+      <td>No business payload</td>
+      <td>Loads shared config such as Airtable base id, customer table id, and the Fortnox ratelimit proxy id.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; child workflows</td>
+      <td>None</td>
+      <td>None</td>
+      <td>This component is a leaf node in the sync graph. It does not call Order, Invoice, Article, or other components.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Role relative to the wider model:</strong> the <strong>FortnoxCustomer</strong> table is described in the field audit as a largely pure sync mirror in production. The workflow therefore acts as the identity anchor that lets orders and invoices link back to the correct Fortnox customer record in Airtable.
+  </div>
+
+  <h2 id="s3">3. Observed Execution Path</h2>
+  <p>The workflow is structurally simple, but it has one important twist: it contains a deliberate fallback branch for cases where the Fortnox API fetch fails.</p>
+
+  <pre>Parent sends one customer id
+  -&gt; Credentials (workflow 109)
+  -&gt; GET /3/customers/{id} via ratelimit proxy
+       - success output -&gt; Find Customer by returned CustomerNumber
+       - error output   -&gt; Find Customer1 by Start.id in Airtable
+  -&gt; on success path:
+       - extract Customer object
+       - normalize selected fields for Airtable compatibility
+       - if Airtable customer exists: update
+       - else: create
+       - return Airtable record id
+  -&gt; on error path:
+       - do not write to FortnoxCustomer
+       - look up an already-existing Airtable customer by CustomerNumber
+       - return Airtable record id if found</pre>
+
+  <div class="flow-wrap">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div>
+        <strong>Load shared config and fetch the Fortnox customer</strong><br>
+        The workflow calls the shared credentials workflow, then issues <code>GET /3/customers/{id}</code> through the shared ratelimit proxy.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div>
+        <strong>Branch on HTTP success vs HTTP error</strong><br>
+        The HTTP node is configured with <code>onError = continueErrorOutput</code>, so the workflow has both a normal success branch and an explicit error-output branch.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div>
+        <strong>On success, find by CustomerNumber</strong><br>
+        It searches the Airtable <strong>FortnoxCustomer</strong> table with <code>CustomerNumber = Fortnox.Customer.CustomerNumber</code>.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div>
+        <strong>Normalize selected fields</strong><br>
+        It converts booleans to strings, serializes nested Fortnox objects to JSON strings, and forces <code>CustomerNumber</code> into an integer before writing to Airtable.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div>
+        <strong>Upsert the customer header</strong><br>
+        It checks whether the Airtable customer already exists. If yes, it updates that record. If no, it creates a new record.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">6</div>
+      <div>
+        <strong>Return the Airtable record id</strong><br>
+        The workflow ends by outputting only <code>{ id: &lt;airtable record id&gt; }</code>, which makes it easy for parent workflows to chain dependencies.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">7</div>
+      <div>
+        <strong>On HTTP error, try Airtable-only recovery</strong><br>
+        If the Fortnox fetch fails, the workflow searches Airtable directly by <code>Start.id</code> and returns an existing customer id if one already exists, without performing an update.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="s4">4. Header Record Write Behavior</h2>
+  <p>The write-side logic is straightforward, but the normalization code is important because it reveals how this component bridges Fortnox data types to the Airtable schema.</p>
+
+  <table>
+    <tr><th>Observed element</th><th>What it does</th><th>Why it matters</th></tr>
+    <tr>
+      <td><code>Find Customer</code></td>
+      <td>Looks up an existing Airtable customer by <code>CustomerNumber</code>.</td>
+      <td>That makes <code>CustomerNumber</code> the business identity used inside this n8n component.</td>
+    </tr>
+    <tr>
+      <td><code>Code</code> node</td>
+      <td>Converts <code>Active</code> and <code>ShowPriceVATIncluded</code> to string values, casts <code>CustomerNumber</code> to integer, and serializes <code>DefaultDeliveryTypes</code> and <code>DefaultTemplates</code> to JSON strings.</td>
+      <td>This matches the field-audit description that Airtable stores those Fortnox values in simplified text-compatible forms.</td>
+    </tr>
+    <tr>
+      <td><code>Customer Exists</code> IF node</td>
+      <td>Tests whether the list result contains an existing Airtable record.</td>
+      <td>This is the upsert gate between update and create behavior.</td>
+    </tr>
+    <tr>
+      <td><code>Update Customer</code> / <code>Create Customer</code></td>
+      <td>Writes the parent record into the Airtable <strong>FortnoxCustomer</strong> table.</td>
+      <td>The Fortnox customer becomes available as a link target for orders and invoices.</td>
+    </tr>
+    <tr>
+      <td><code>Customer Component Output</code></td>
+      <td>Returns only the Airtable record id.</td>
+      <td>Parent workflows do not need the full customer payload. They only need a stable Airtable link id.</td>
+    </tr>
+  </table>
+
+  <div class="observed">
+    <h3>Important design fact</h3>
+    <p>The workflow does <strong>not</strong> use <code>@url</code> directly as the upsert key in the n8n component itself. The uploaded component finds records by <code>CustomerNumber</code>. That differs from broader table-level audit language that describes the general customer sync model using <code>@url</code>.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>Likely reason for the design</h3>
+    <p>Using <code>CustomerNumber</code> inside the component is operationally sensible because all parent workflows pass the Fortnox customer number as <code>id</code>, and related orders and invoices also reference customers by that number. The current source set does not explicitly justify the choice, but it is consistent with the dependency graph.</p>
+  </div>
+
+  <h2 id="s5">5. Fallback Path When Fortnox Fetch Fails</h2>
+  <p>This is the most distinctive behavior in the workflow. Unlike a naive sync component, this one has an explicit recovery branch that still tries to satisfy parent workflows even when the Fortnox HTTP request fails.</p>
+
+  <table>
+    <tr><th>Step</th><th>Observed node(s)</th><th>Meaning</th></tr>
+    <tr><td>1</td><td><strong>HTTP Fortnox Customer</strong></td><td>Configured with <code>onError = continueErrorOutput</code>, so runtime errors are not fatal by default.</td></tr>
+    <tr><td>2</td><td><strong>Find Customer1</strong></td><td>Searches Airtable directly by <code>CustomerNumber = Start.id</code> if the Fortnox fetch errors out.</td></tr>
+    <tr><td>3</td><td><strong>Customer Component Output1</strong></td><td>Returns an existing Airtable record id without updating any field values.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Confirmed recovery model:</strong> if Fortnox is temporarily unavailable, a parent workflow can still continue <strong>provided that the customer already exists in Airtable</strong>.
+  </div>
+
+  <div class="observed">
+    <h3>What the fallback definitely does not do</h3>
+    <p>The error branch does not normalize data, does not update stale values, and does not create a missing customer. It is a lookup-only rescue path.</p>
+  </div>
+
+  <div class="bad-box">
+    <strong>Failure boundary:</strong> if the Fortnox fetch fails <em>and</em> the customer does not already exist in Airtable, this workflow does not have a visible create-on-error path. In that case, the parent may receive no usable Airtable customer id.
+  </div>
+
+  <div class="inferred">
+    <h3>Practical effect of the design</h3>
+    <p>This pattern suggests the component was designed to protect chained workflows such as Invoice Component and Order Component from transient Fortnox outages. It prioritizes returning a usable Airtable link id over forcing a hard stop in every failure scenario.</p>
+  </div>
+
+  <h2 id="s6">6. Tables Touched by One Run</h2>
+  <table>
+    <tr><th>Table</th><th>Direct or indirect</th><th>Expected action</th></tr>
+    <tr>
+      <td><strong>FortnoxCustomer</strong></td>
+      <td>Direct</td>
+      <td>Create or update one customer master record on the success path, or look up one existing record on the fallback path.</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxOrder</strong></td>
+      <td>Not written directly</td>
+      <td>Not touched by this workflow, but dependent workflows later use the returned customer id when writing orders.</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxInvoice</strong></td>
+      <td>Not written directly</td>
+      <td>Not touched by this workflow, but Invoice Component uses the returned customer id when writing invoices.</td>
+    </tr>
+    <tr>
+      <td><strong>Kunder</strong></td>
+      <td>Not written directly</td>
+      <td>No direct Kunder-link creation logic is visible in this component even though the FortnoxCustomer table contains a Kunder link field.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Important boundary:</strong> this workflow does not create orders, does not create invoices, does not assign Kunder links, and does not populate CRM-layer fields.
+    Its responsibility is narrower: keep the <strong>FortnoxCustomer</strong> mirror record available so other workflows can link to it reliably.
+  </div>
+
+  <h2 id="s7">7. Confirmed Quirks and Unresolved Questions</h2>
+
+  <div class="observed">
+    <h3>7.1 The export is inactive, but the component is still referenced elsewhere</h3>
+    <p>The uploaded JSON proves <code>"active": false</code>. Separately, the broader source set shows workflow <code>111</code> referenced as <code>component_customer</code> by the Downloader, WebSocket Handler, and Invoice Component. That means the component remains part of the documented dependency graph even though this export was disabled when captured.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.2 The FortnoxCustomer table behaves like a pure sync mirror in production</h3>
+    <p>The field audit describes the table as originally designed for both sync and CRM use, but confirms that in practice the CRM layer is empty in both production and DEV. That means this component should be understood primarily as a master-data mirror, not as a CRM workflow.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.3 The component returns only an Airtable id, not a normalized business object</h3>
+    <p>This is intentional. The output contract is minimal because parent workflows mainly need a link id, not the full customer payload. That makes the component easy to reuse inside larger workflows.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.4 The fallback branch is useful but asymmetric</h3>
+    <p>The workflow can recover from Fortnox fetch failure only when the customer already exists in Airtable. It does not contain a visible strategy for creating or reconstructing a missing customer without a valid Fortnox response.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.5 There is no visible logic here for maintaining the Kunder bridge</h3>
+    <p>The FortnoxCustomer table has a documented link to the operational <strong>Kunder</strong> table, but the uploaded customer component contains no node that searches or writes Kunder. If that bridge is maintained automatically anywhere, it is outside this workflow.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>7.6 Why the component probably prefers CustomerNumber over @url</h3>
+    <p>Because every parent passes a customer number and every dependent table also refers to customers through that number, <code>CustomerNumber</code> is the simplest common key for chaining workflows. The broader sync architecture may still rely on <code>@url</code> in other contexts, especially in bulk polling logic.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>7.7 Why the recovery branch probably exists</h3>
+    <p>The most plausible reason is resilience. If a parent workflow already knows the customer should exist, letting it proceed with an existing Airtable record id is operationally better than failing every chained sync on a transient Fortnox problem. That rationale is not explicitly documented, but it fits the observed structure well.</p>
+  </div>
+
+  <h2 id="s8">8. Plain-English Verdict</h2>
+  <p><strong>This workflow is the customer master-record child flow for Fortnox customers.</strong></p>
+
+  <ul>
+    <li>It receives one Fortnox customer number from a parent workflow.</li>
+    <li>It fetches the current Fortnox customer payload and upserts the Airtable <strong>FortnoxCustomer</strong> record.</li>
+    <li>It normalizes a few Fortnox data types so they fit the Airtable schema.</li>
+    <li>It returns only the Airtable customer record id so parent workflows can link invoices and orders correctly.</li>
+    <li>It also includes a lookup-only fallback path for cases where Fortnox fetch fails but the customer already exists in Airtable.</li>
+  </ul>
+
+  <div class="ok-box">
+    <strong>Bottom line:</strong> the uploaded export proves that workflow <code>111</code> is designed as a <strong>Fortnox -&gt; Airtable customer component</strong> with one especially important resilience feature: when the Fortnox API call fails, it can still return an existing Airtable customer id if that customer was already synced earlier. The main unresolved questions are outside the component itself, especially how the <strong>Kunder</strong> bridge is maintained and whether live bulk-sync logic uses <code>@url</code>, <code>CustomerNumber</code>, or both as the effective upsert identity.
+  </div>
+
+  <hr>
+  <p class="subtitle">End of workflow note.</p>
+</div>
+</body>
+</html>
