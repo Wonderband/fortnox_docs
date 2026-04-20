@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox Supplier Component — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .bad-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .flow-wrap { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin: 16px 0 22px 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; margin: 10px 0; }
+  .flow-num { background: #0f3460; color: #fff; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; flex-shrink: 0; }
+  .mini { color: #64748b; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-gray   { background: #f1f5f9; color: #475569; }
+  .toc { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 24px; margin: 20px 0 36px 0; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; color: #0f3460; }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 3px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox Supplier Component — Workflow Analysis</h1>
+  <p class="subtitle">
+    Workflow export reviewed: <strong>Adgrabber Fortnox Supplier Component v1.0.0</strong> &nbsp;|&nbsp;
+    Analysis date: <strong>2026-04-20</strong> &nbsp;|&nbsp;
+    Workflow ID: <code>112</code>
+  </p>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> This document summarizes the uploaded workflow
+    <strong>Adgrabber Fortnox Supplier Component v1.0.0</strong>, explains how it syncs one Fortnox supplier into Airtable,
+    and separates directly observed workflow behavior from interpretation.
+  </div>
+
+  <div class="source-box">
+    <strong>Primary inspected sources:</strong>
+    <code>Adgrabber_Fortnox_Supplier_Component_v1_0_0.json</code>,
+    <code>supplier_field_audit.html</code>,
+    <code>Adgrabber_Fortnox_Supplier_Invoice_Component_v1_0_0.json</code>,
+    <code>Adgrabber_Fortnox_Downloader_V3_0_0.json</code>,
+    <code>Adgrabber_Fortnox_WebSocket_Handler_v3_0_0.json</code>, and
+    related Fortnox architecture notes.
+  </div>
+
+  <div class="info-box">
+    <strong>How to read this note.</strong>
+    <ul>
+      <li><strong>Confirmed from workflow JSON:</strong> directly visible in the uploaded n8n export.</li>
+      <li><strong>Confirmed from related docs:</strong> Airtable table roles and field semantics described in the uploaded audits.</li>
+      <li><strong>Inference:</strong> plausible operational interpretation that is not explicitly logged by the workflow itself.</li>
+    </ul>
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">Workflow identity</a></li>
+      <li><a href="#s2">Architectural role and dependencies</a></li>
+      <li><a href="#s3">Observed execution path</a></li>
+      <li><a href="#s4">Header record write behavior</a></li>
+      <li><a href="#s5">Returned output and supplier-invoice gate</a></li>
+      <li><a href="#s6">Tables touched by one run</a></li>
+      <li><a href="#s7">Confirmed quirks and unresolved questions</a></li>
+      <li><a href="#s8">Plain-English verdict</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1">1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox Supplier Component v1.0.0</strong></td></tr>
+    <tr><td>Workflow ID in original export</td><td><code>112</code></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-gray">Inactive</span> <span class="badge badge-blue">Proven from export</span></td></tr>
+    <tr><td>Timezone</td><td><code>Europe/Stockholm</code></td></tr>
+    <tr><td>Main purpose</td><td>Fetch one Fortnox supplier, lightly normalize the payload for Airtable compatibility, and create or update one <strong>FortnoxSupplier</strong> record in Airtable.</td></tr>
+    <tr><td>Direction of sync</td><td><strong>Fortnox -&gt; Airtable</strong> for this component's runtime behavior.</td></tr>
+    <tr><td>Workflow shape</td><td>Child component, not a top-level batch workflow. It processes one supplier at a time.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Key architectural fact:</strong> this component is the supplier-side single-record synchronizer.
+    Other workflows depend on it when they need a guaranteed Airtable supplier record id before writing related supplier invoices.
+  </div>
+
+  <div class="warn-box">
+    <strong>Status nuance:</strong> the uploaded export is inactive as a standalone workflow export.
+    However, the broader source set still shows workflow <code>112</code> referenced by other workflows,
+    so it remains architecturally relevant even if this export itself was disabled when captured.
+  </div>
+
+  <h2 id="s2">2. Architectural Role and Dependencies</h2>
+  <p>This workflow is narrow but important in the supplier-side branch of the sync graph. It does not sync supplier invoices itself. Instead, it ensures that one Fortnox supplier master record exists in Airtable so dependent workflows can safely attach a <strong>FortnoxSupplier</strong> link to supplier-invoice records.</p>
+
+  <table>
+    <tr><th>Direction</th><th>Workflow</th><th>Payload</th><th>Purpose</th></tr>
+    <tr>
+      <td>Parent -&gt; this component</td>
+      <td>Downloader / WebSocket Handler / Supplier Invoice Component</td>
+      <td><code>{ id: &lt;Fortnox supplier number&gt; }</code></td>
+      <td>Tells the component which single Fortnox supplier to fetch and normalize.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; Credentials</td>
+      <td>Workflow 109</td>
+      <td>No business payload</td>
+      <td>Loads shared config such as Airtable base id, supplier table id, and the Fortnox ratelimit proxy id.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; child workflows</td>
+      <td>None</td>
+      <td>None</td>
+      <td>This component is a leaf node in the sync graph. It does not call Supplier Invoice File, Order, Invoice, or Article components.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; downstream parent logic</td>
+      <td>Supplier Invoice Component</td>
+      <td><code>{ id, should_sync }</code></td>
+      <td>Supplies the Airtable supplier record id and a boolean gate that the supplier-invoice flow uses to decide whether to continue syncing that invoice.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Role relative to the wider model:</strong> the <strong>FortnoxSupplier</strong> table contains both Fortnox-synced suppliers and manual platform suppliers. This component only handles the Fortnox side. It cannot create the manual platform-only supplier records described in the field audit because it always starts from <code>GET /3/suppliers/{id}</code> in Fortnox.
+  </div>
+
+  <h2 id="s3">3. Observed Execution Path</h2>
+  <p>The workflow is structurally simple. It fetches one supplier from Fortnox, finds the matching Airtable supplier by <code>SupplierNumber</code>, lightly normalizes one field, then upserts the header record and returns a minimal output contract.</p>
+
+  <pre>Parent sends one supplier id
+  -&gt; Credentials (workflow 109)
+  -&gt; GET /3/suppliers/{id} via ratelimit proxy
+  -&gt; Find Supplier by returned SupplierNumber
+  -&gt; extract Supplier object
+  -&gt; normalize WorkPlace so empty becomes null
+  -&gt; if Airtable supplier exists: update
+  -&gt; else: create
+  -&gt; return Airtable record id and should_sync boolean</pre>
+
+  <div class="flow-wrap">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div>
+        <strong>Load shared config and fetch the Fortnox supplier</strong><br>
+        The workflow calls the shared credentials workflow, then issues <code>GET /3/suppliers/{id}</code> through the shared ratelimit proxy.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div>
+        <strong>Find the existing Airtable supplier by SupplierNumber</strong><br>
+        It searches the Airtable <strong>FortnoxSupplier</strong> table with <code>SupplierNumber = Fortnox.Supplier.SupplierNumber</code>.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div>
+        <strong>Extract the Supplier object from the HTTP envelope</strong><br>
+        The <code>JSON Supplier</code> node unwraps the <code>Supplier</code> object so downstream nodes work with the normalized Fortnox payload rather than the full HTTP response shell.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div>
+        <strong>Normalize <code>WorkPlace</code></strong><br>
+        The <code>Code</code> node sets <code>WorkPlace = null</code> whenever the value is missing or empty. No other visible field transformation happens here.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div>
+        <strong>Upsert the supplier header</strong><br>
+        The <code>Supplier Exists</code> IF node decides between <code>Update Supplier</code> and <code>Create Supplier</code> based on whether the Airtable lookup returned a record.
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">6</div>
+      <div>
+        <strong>Return a minimal result for parent workflows</strong><br>
+        The workflow ends by outputting only <code>{ id: &lt;airtable record id&gt;, should_sync: &lt;boolean&gt; }</code> so parent workflows can continue chaining without carrying the full supplier payload.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="s4">4. Header Record Write Behavior</h2>
+  <p>The write-side logic is straightforward. The main insight is not a long transformation pipeline, but rather <em>which identity key it uses</em> and how small the normalization layer actually is.</p>
+
+  <table>
+    <tr><th>Observed element</th><th>What it does</th><th>Why it matters</th></tr>
+    <tr>
+      <td><code>Find Supplier</code></td>
+      <td>Looks up an existing Airtable supplier by <code>SupplierNumber</code>.</td>
+      <td>That makes <code>SupplierNumber</code> the business identity used inside this n8n component.</td>
+    </tr>
+    <tr>
+      <td><code>JSON Supplier</code></td>
+      <td>Extracts the inner <code>Supplier</code> object from the Fortnox API response.</td>
+      <td>Downstream nodes write a clean supplier payload rather than the full envelope.</td>
+    </tr>
+    <tr>
+      <td><code>Code</code> node</td>
+      <td>Normalizes <code>WorkPlace</code> to <code>null</code> when missing.</td>
+      <td>This suggests Airtable expects a proper empty numeric value rather than an undefined or empty-string payload for that field.</td>
+    </tr>
+    <tr>
+      <td><code>Supplier Exists</code> IF node</td>
+      <td>Tests whether the Airtable list result contains an existing supplier record.</td>
+      <td>This is the upsert gate between update and create behavior.</td>
+    </tr>
+    <tr>
+      <td><code>Update Supplier</code> / <code>Create Supplier</code></td>
+      <td>Writes the parent record into the Airtable <strong>FortnoxSupplier</strong> table.</td>
+      <td>The supplier becomes available as a link target for supplier invoices and supplier-level rollups.</td>
+    </tr>
+    <tr>
+      <td><code>Supplier Component Output</code></td>
+      <td>Returns the Airtable record id plus a computed <code>should_sync</code> boolean.</td>
+      <td>The parent does not need the whole supplier object. It mainly needs a link id and a continue/stop signal for downstream invoice syncing.</td>
+    </tr>
+  </table>
+
+  <div class="observed">
+    <h3>Important design fact</h3>
+    <p>The workflow does <strong>not</strong> use <code>@url</code> directly as the upsert key in the n8n component itself. The uploaded component finds records by <code>SupplierNumber</code>. That differs from the broader table-level audit language that describes the general supplier sync model using <code>@url</code> as the upsert key.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>Likely reason for the design</h3>
+    <p>Using <code>SupplierNumber</code> inside the component is operationally sensible because parent workflows already pass supplier ids in that form, and supplier invoices also refer to suppliers through <code>SupplierNumber</code>. The current source set does not explicitly justify the design, but it fits the dependency graph well.</p>
+  </div>
+
+  <h2 id="s5">5. Returned Output and Supplier-Invoice Gate</h2>
+  <p>The most distinctive behavior in this component is the fact that it returns <em>more than just an Airtable id</em>. It also computes a boolean that downstream workflows use as an execution gate.</p>
+
+  <table>
+    <tr><th>Returned field</th><th>Observed expression</th><th>Meaning</th></tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>{{ $json["id"] }}</code></td>
+      <td>The Airtable record id of the created or updated <strong>FortnoxSupplier</strong> record.</td>
+    </tr>
+    <tr>
+      <td><code>should_sync</code></td>
+      <td><code>{{ $json["fields"]["Internal Status"] !== "Do not sync" }}</code></td>
+      <td>A boolean derived from the Airtable supplier record after write. Parent workflows can use it to decide whether supplier-invoice sync should continue.</td>
+    </tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Confirmed downstream use:</strong> the uploaded <strong>Supplier Invoice Component</strong> calls this workflow, then immediately branches on <code>should_sync</code>. If the value is true, it continues writing the invoice. If false, it exits early instead of syncing that supplier invoice.
+  </div>
+
+  <div class="observed">
+    <h3>What this means in practice</h3>
+    <p>The supplier component is not just a mirror flow. It also acts as the <strong>policy checkpoint</strong> that exposes whether this supplier is currently allowed into the supplier-invoice sync path.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>Why this is likely placed here</h3>
+    <p>This is a sensible location for the gate because the supplier record is the authoritative home of <code>Internal Status</code>. Once the component has ensured the supplier exists in Airtable, returning the gate decision alongside the supplier id avoids a second lookup in the parent workflow.</p>
+  </div>
+
+  <h2 id="s6">6. Tables Touched by One Run</h2>
+  <table>
+    <tr><th>Table</th><th>Direct or indirect</th><th>Expected action</th></tr>
+    <tr>
+      <td><strong>FortnoxSupplier</strong></td>
+      <td>Direct</td>
+      <td>Create or update one supplier master record.</td>
+    </tr>
+    <tr>
+      <td><strong>FortnoxSupplierInvoice</strong></td>
+      <td>Not written directly</td>
+      <td>Not touched by this workflow itself, but dependent workflows later use the returned supplier id when writing supplier invoices.</td>
+    </tr>
+    <tr>
+      <td><strong>Platform supplier records inside FortnoxSupplier</strong></td>
+      <td>Not created here</td>
+      <td>Manual platform-only supplier records are outside this workflow's scope because they do not originate from a Fortnox supplier API response.</td>
+    </tr>
+    <tr>
+      <td><strong>Supplier-linked rollups / lookups</strong></td>
+      <td>Indirect</td>
+      <td>Supplier-level invoice counts, latest invoice fields, and related rollups refresh automatically later when linked supplier invoices are written elsewhere.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Important boundary:</strong> this workflow does not fetch supplier invoices, does not create file-link connections, does not write allocation mappings, and does not manage platform import suppliers.
+    Its responsibility is narrower: keep the <strong>FortnoxSupplier</strong> mirror record available so downstream supplier-invoice automation can link to it and apply the sync gate.
+  </div>
+
+  <h2 id="s7">7. Confirmed Quirks and Unresolved Questions</h2>
+
+  <div class="observed">
+    <h3>7.1 The export is inactive, but the component is still referenced elsewhere</h3>
+    <p>The uploaded JSON proves <code>"active": false</code>. Separately, the broader source set shows workflow <code>112</code> referenced by the Downloader, the WebSocket Handler, and the Supplier Invoice Component. That means the component remains part of the documented dependency graph even though this export was disabled when captured.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.2 The component performs very little normalization</h3>
+    <p>Compared with other child components, this one is sparse. The visible normalization logic only handles <code>WorkPlace</code> by forcing empty values to <code>null</code>. Everything else appears to pass through from the Fortnox supplier object into Airtable without additional type coercion in this component.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.3 There is no explicit Fortnox-error fallback branch</h3>
+    <p>Unlike the Customer Component, this workflow shows no separate recovery path when the Fortnox HTTP request fails. No <code>continueErrorOutput</code> rescue branch is visible in the uploaded export. If the supplier fetch fails, the workflow appears more likely to fail hard instead of returning a cached Airtable supplier id.</p>
+  </div>
+
+  <div class="observed">
+    <h3>7.4 The sync gate is computed from Airtable, not from the Fortnox payload</h3>
+    <p>The returned <code>should_sync</code> value is based on the Airtable field <code>Internal Status</code>, which the field audit describes as a manual operational field controlled by staff. This is important because it means the decision to continue supplier-invoice syncing is an Airtable-side policy decision, not a Fortnox-side one.</p>
+  </div>
+
+  <div class="bad-box">
+    <strong>Still unresolved:</strong> the available sources leave one subtle ambiguity. The field audit says suppliers with <code>Internal Status = "Do not sync"</code> <em>or with no status set</em> are skipped by invoice sync. But the component's actual expression is only <code>Internal Status !== "Do not sync"</code>, which would evaluate to <strong>true</strong> for blank or missing values. The current source set does not prove whether live supplier records always have a populated status, whether another upstream condition prevents blank records from reaching this point, or whether the field-audit summary is slightly stricter than the current n8n logic.
+  </div>
+
+  <div class="observed">
+    <h3>7.5 This workflow is only for Fortnox-backed suppliers</h3>
+    <p>The field audit documents a second supplier type: manual platform suppliers marked <code>Supplier type = "Platform - Not Fortnox"</code>. This workflow cannot be the creator of those records, because it always begins by fetching a Fortnox supplier endpoint. So the mixed FortnoxSupplier table should not be mistaken for evidence that this component manages all supplier records in the table.</p>
+  </div>
+
+  <div class="inferred">
+    <h3>7.6 Why the component returns <code>should_sync</code> instead of making the final decision itself</h3>
+    <p>The most plausible reason is composability. The supplier component's job is to resolve the supplier master record and expose supplier policy. The Supplier Invoice Component then decides whether to continue or exit. That keeps the supplier master-data flow reusable while letting the invoice flow own the final branch structure.</p>
+  </div>
+
+  <h2 id="s8">8. Plain-English Verdict</h2>
+  <p><strong>This workflow is the supplier mirror-and-gate child flow for Fortnox suppliers.</strong></p>
+
+  <p>Its core job is simple: fetch one supplier from Fortnox, upsert the matching <strong>FortnoxSupplier</strong> record in Airtable, and return the Airtable supplier id. But it also does one strategically important extra thing: it returns a <code>should_sync</code> flag derived from the supplier's Airtable <code>Internal Status</code>, which downstream invoice logic uses as the go / no-go gate for supplier-invoice syncing.</p>
+
+  <p>So, in practical terms, this is not just a passive mirror. It is the place where supplier identity becomes available in Airtable and where the supplier-side sync policy gets exposed to the rest of the Fortnox workflow graph.</p>
+
+  <hr>
+  <p class="subtitle">End of document.</p>
+</div>
+</body>
+</html>
