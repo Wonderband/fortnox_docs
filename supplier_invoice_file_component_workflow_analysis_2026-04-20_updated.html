@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adgrabber Fortnox Supplier Invoice File Component — Workflow Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1a1a2e; background: #f8f9fa; line-height: 1.65; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 40px 48px; background: #fff; }
+  h1 { font-size: 26px; color: #0f3460; border-bottom: 3px solid #0f3460; padding-bottom: 12px; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 19px; color: #16213e; margin: 34px 0 14px 0; border-left: 5px solid #0f3460; padding-left: 12px; }
+  h3 { font-size: 15px; color: #0f3460; margin: 22px 0 8px 0; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 16px 22px; }
+  li { margin-bottom: 5px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 22px 0; font-size: 13px; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code { background: #f1f5f9; color: #0f3460; padding: 1px 6px; border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+  pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 18px; border-radius: 6px; font-size: 12.5px; overflow-x: auto; margin: 12px 0 18px 0; line-height: 1.7; white-space: pre-wrap; }
+  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .warn-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .bad-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 4px; margin: 14px 0; font-size: 13px; }
+  .source-box { background: #faf5ff; border-left: 4px solid #7c3aed; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4c1d95; }
+  .observed { background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .observed h3 { color: #5b21b6; margin-top: 0; }
+  .inferred { background: #fff8f0; border: 2px dashed #f97316; padding: 18px 20px; border-radius: 6px; margin: 14px 0; }
+  .inferred h3 { color: #9a3412; margin-top: 0; }
+  .flow-wrap { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin: 16px 0 22px 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; margin: 10px 0; }
+  .flow-num { background: #0f3460; color: #fff; border-radius: 50%; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; flex-shrink: 0; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-gray   { background: #f1f5f9; color: #475569; }
+  .toc { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 24px; margin: 20px 0 36px 0; }
+  .toc h3 { margin-top: 0; margin-bottom: 10px; color: #0f3460; }
+  .toc ol { margin-left: 18px; }
+  .toc li { margin-bottom: 3px; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { padding: 20px; max-width: 100%; }
+    pre { font-size: 11px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Adgrabber Fortnox Supplier Invoice File Component — Workflow Analysis</h1>
+  <p class="subtitle">
+    Workflow export reviewed: <strong>Adgrabber Fortnox Supplier Invoice File Component v1.0.0</strong> &nbsp;|&nbsp;
+    Analysis date: <strong>2026-04-20</strong> &nbsp;|&nbsp;
+    Revised after follow-up review: <strong>2026-04-20</strong> &nbsp;|&nbsp;
+    Workflow ID: <code>120</code>
+  </p>
+
+  <div class="warn-box">
+    <strong>Revision note.</strong> This updated version clarifies one important point raised during later review:
+    the current source set proves <strong>local binary download</strong>, <strong>local file write</strong>, and
+    <strong>Airtable attachment-field update by URL payload</strong>. It does <strong>not</strong> prove a direct raw-binary upload into Airtable.
+  </div>
+
+  <div class="info-box">
+    <strong>Scope of this note.</strong> This document summarizes the uploaded workflow
+    <strong>Adgrabber Fortnox Supplier Invoice File Component v1.0.0</strong>, explains how it locates and downloads a Fortnox supplier-invoice file,
+    updates an existing Airtable supplier-invoice record, and separates directly observed behavior from unresolved infrastructure questions.
+  </div>
+
+  <div class="source-box">
+    <strong>Primary inspected sources:</strong>
+    <code>Adgrabber_Fortnox_Supplier_Invoice_File_Component_v1_0_0.json</code>,
+    <code>Adgrabber_Fortnox_Supplier_Invoice_Component_v1_0_0.json</code>,
+    <code>supplier_invoice_field_audit.html</code>,
+    <code>supplier_invoice_flows.html</code>, and related Fortnox architecture notes.
+  </div>
+
+  <div class="info-box">
+    <strong>How to read this note.</strong>
+    <ul>
+      <li><strong>Confirmed from workflow JSON:</strong> directly visible in the uploaded n8n export.</li>
+      <li><strong>Confirmed from related docs:</strong> Airtable table roles and field semantics described in the uploaded audits.</li>
+      <li><strong>Inference:</strong> plausible operational interpretation that is not explicitly implemented in the visible workflow export.</li>
+    </ul>
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">Workflow identity</a></li>
+      <li><a href="#s2">Architectural role and dependencies</a></li>
+      <li><a href="#s3">Observed execution path</a></li>
+      <li><a href="#s4">What the file branch actually writes</a></li>
+      <li><a href="#s5">What is proven vs. unresolved</a></li>
+      <li><a href="#s6">No-file and existing-record boundaries</a></li>
+      <li><a href="#s7">Tables and stores touched by one run</a></li>
+      <li><a href="#s8">Confirmed quirks and open questions</a></li>
+      <li><a href="#s9">Plain-English verdict</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1">1. Workflow Identity</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Name</td><td><strong>Adgrabber Fortnox Supplier Invoice File Component v1.0.0</strong></td></tr>
+    <tr><td>Workflow ID in original export</td><td><code>120</code></td></tr>
+    <tr><td>Status in uploaded JSON</td><td><span class="badge badge-gray">Inactive</span> <span class="badge badge-blue">Proven from export</span></td></tr>
+    <tr><td>Timezone</td><td><code>Europe/Stockholm</code></td></tr>
+    <tr><td>Main purpose</td><td>Find the Fortnox file connection for one supplier invoice, download the first matching archived file, and update the existing Airtable <strong>FortnoxSupplierInvoice</strong> record with an <strong>Invoice PDF</strong> field value.</td></tr>
+    <tr><td>Direction of sync</td><td><strong>Fortnox -&gt; Airtable</strong> for this helper component's runtime behavior.</td></tr>
+    <tr><td>Workflow shape</td><td>Child helper, not a top-level downloader. It does not create supplier invoices; it only enriches an already-existing header record with file-related data.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Key architectural fact:</strong> workflow <code>120</code> is the dedicated supplier-invoice file helper.
+    The parent supplier-invoice component writes the invoice header first, then optionally delegates the PDF/attachment step to this workflow.
+  </div>
+
+  <div class="warn-box">
+    <strong>Important boundary:</strong> this workflow does <strong>not</strong> create or update invoice accounting fields such as totals, VAT, dates, vouchers, or supplier linkage.
+    Its job starts only after a supplier-invoice header already exists in Airtable.
+  </div>
+
+  <h2 id="s2">2. Architectural Role and Dependencies</h2>
+  <p>This workflow is narrow and late-stage in the supplier-invoice branch. It is effectively a file-enrichment helper that runs after the parent supplier-invoice component has already mirrored the Fortnox invoice header.</p>
+
+  <table>
+    <tr><th>Direction</th><th>Workflow / system</th><th>Payload</th><th>Purpose</th></tr>
+    <tr>
+      <td>Parent -&gt; this component</td>
+      <td>Supplier Invoice Component (workflow 113)</td>
+      <td><code>{ id: &lt;GivenNumber&gt; }</code></td>
+      <td>Tells the helper which Fortnox supplier invoice number to search for inside the Fortnox file-connection list.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; Credentials</td>
+      <td>Workflow 109</td>
+      <td>No business payload</td>
+      <td>Loads shared config such as Airtable base id, supplier-invoice table id, and the Fortnox ratelimit proxy id.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; Fortnox API</td>
+      <td><code>/3/supplierinvoicefileconnections</code> and <code>/3/archive/{FileId}</code></td>
+      <td>GivenNumber-derived filter and resolved <code>FileId</code></td>
+      <td>Discovers the file connection and downloads the actual archive file stream.</td>
+    </tr>
+    <tr>
+      <td>This component -&gt; Airtable</td>
+      <td><strong>FortnoxSupplierInvoice</strong> table</td>
+      <td><code>Invoice PDF</code> field value</td>
+      <td>Updates the already-existing Airtable supplier invoice record after the file branch completes.</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Role relative to the parent component:</strong> workflow <code>113</code> decides whether file sync should run at all.
+    Workflow <code>120</code> does not repeat the supplier-status gate; it assumes the parent has already decided that file sync is allowed for this run.
+  </div>
+
+  <h2 id="s3">3. Observed Execution Path</h2>
+  <p>The workflow has two phases: <strong>discover the relevant file connection</strong>, then <strong>download and attach the file branch result to the existing Airtable invoice record</strong>.</p>
+
+  <pre>Parent sends one supplier invoice number (GivenNumber)
+  -&gt; Credentials (workflow 109)
+  -&gt; initialize paging state { CurrentPage, Data[] }
+  -&gt; GET /3/supplierinvoicefileconnections?page=n via ratelimit proxy
+  -&gt; filter current page where SupplierInvoiceNumber == Start.id
+  -&gt; accumulate matches into Data[]
+  -&gt; if more pages remain: loop
+  -&gt; after last page: pick Data[0] or {}
+  -&gt; branch on "Has file"
+       - false -&gt; return { finished: true } and stop
+       - true  -&gt; continue
+  -&gt; call httpbin with OAuth credential to echo back live Authorization header
+  -&gt; GET /3/archive/{FileId} as binary stream
+  -&gt; write binary file to /home/ubuntu/files/invoice.pdf
+  -&gt; find Airtable supplier invoice by GivenNumber
+  -&gt; if Airtable record exists: build Invoice PDF payload
+  -&gt; update Airtable record
+  -&gt; return { downloaded: true }</pre>
+
+  <div class="flow-wrap">
+    <div class="flow-step"><div class="flow-num">1</div><div><strong>Load shared config and initialize the paging loop</strong><br>The workflow starts by calling the shared credentials workflow, then the first <code>Code</code> node creates a small paging state object containing <code>CurrentPage</code> and an accumulator array called <code>Data</code>.</div></div>
+    <div class="flow-step"><div class="flow-num">2</div><div><strong>Scan the Fortnox supplier-invoice file-connection endpoint</strong><br>Each pass calls <code>GET /3/supplierinvoicefileconnections?page=n</code> through the shared ratelimit proxy.</div></div>
+    <div class="flow-step"><div class="flow-num">3</div><div><strong>Filter for the one supplier invoice number passed in by the parent</strong><br><code>Code1</code> filters the current page down to rows where <code>SupplierInvoiceNumber === Start.id</code>, then appends the matches into the running <code>Data</code> array.</div></div>
+    <div class="flow-step"><div class="flow-num">4</div><div><strong>Loop until the last page, then keep only the first match</strong><br><code>Not Last Page</code> controls the paging loop. After the last page, <code>JSONPlus</code> converts <code>Data[0] ?? {}</code> into the working object for the rest of the flow.</div></div>
+    <div class="flow-step"><div class="flow-num">5</div><div><strong>Obtain a live Authorization header for the custom archive request</strong><br>The workflow sends one request to <code>https://httpbin.org/anything</code> using the attached Fortnox OAuth credential, then reads the echoed <code>Authorization</code> header back inside custom code.</div></div>
+    <div class="flow-step"><div class="flow-num">6</div><div><strong>Download the archive file as binary</strong><br><code>Code4</code> performs a direct request to <code>/3/archive/{FileId}</code> using that live Authorization header and stores the response in <code>binary.data</code>.</div></div>
+    <div class="flow-step"><div class="flow-num">7</div><div><strong>Write the binary locally on the n8n host</strong><br><code>Write Binary File</code> writes the stream to the local filesystem path <code>/home/ubuntu/files/invoice.pdf</code>. This is server-side storage on the machine or container running n8n.</div></div>
+    <div class="flow-step"><div class="flow-num">8</div><div><strong>Update the Airtable invoice record with a payload</strong><br>The workflow finds the existing Airtable supplier invoice by <code>GivenNumber</code>, builds an <code>Invoice PDF</code> field value in <code>Code2</code>, and updates that existing record.</div></div>
+    <div class="flow-step"><div class="flow-num">9</div><div><strong>Return a small status object</strong><br>The success path returns <code>{ downloaded: true }</code>. The no-file path returns <code>{ finished: true }</code>.</div></div>
+  </div>
+
+  <h2 id="s4">4. What the File Branch Actually Writes</h2>
+  <p>The most important clarification from the later review is that this workflow performs <strong>two different writes</strong>, and they are not the same thing.</p>
+
+  <table>
+    <tr><th>Write target</th><th>Observed node</th><th>What is written</th><th>Meaning</th></tr>
+    <tr><td>Local filesystem on the n8n host</td><td><code>Write Binary File</code></td><td><code>/home/ubuntu/files/invoice.pdf</code></td><td>The downloaded Fortnox archive stream is materialized as a local server file.</td></tr>
+    <tr><td>Airtable supplier invoice record</td><td><code>Code2</code> -&gt; <code>Airtable Update</code></td><td><code>Invoice PDF = [{ filename, url }]</code></td><td>The Airtable record is updated with an attachment-style field payload, not with the raw binary bytes.</td></tr>
+  </table>
+
+  <div class="observed">
+    <h3>What the payload looks like</h3>
+    <pre>{
+  "Invoice PDF": [
+    {
+      "filename": "&lt;invoice file name&gt;.pdf",
+      "url": "https://automation.offertizer.com/webhook/...?...file=invoice.pdf&t=&lt;timestamp&gt;"
+    }
+  ]
+}</pre>
+    <p>This is the structured field value written into Airtable. The workflow does <strong>not</strong> pass <code>binary.data</code> directly into the Airtable node.</p>
+  </div>
+
+  <div class="info-box">
+    <strong>Meaning of the local path:</strong> <code>/home/ubuntu/files/invoice.pdf</code> is a file path on the server or container where the n8n workflow runs.
+    It is not Airtable storage and it is not Fortnox storage.
+  </div>
+
+  <div class="warn-box">
+    <strong>Important correction:</strong> the earlier artifact wording could be read as if workflow 120 directly “uploaded binary into Airtable”.
+    The visible export does not prove that. What it proves is: <strong>Fortnox binary -&gt; local file write -&gt; Airtable update by URL payload</strong>.
+  </div>
+
+  <h2 id="s5">5. What Is Proven vs. Unresolved</h2>
+
+  <div class="observed">
+    <h3>5.1 Proven from the workflow export</h3>
+    <ul>
+      <li><strong>Fortnox archive download happens in custom code.</strong> The code requests <code>/3/archive/{FileId}</code> and stores the response as binary.</li>
+      <li><strong>The binary is written locally.</strong> The file is written to <code>/home/ubuntu/files/invoice.pdf</code>.</li>
+      <li><strong>The target Airtable record is found by <code>GivenNumber</code>.</strong> This helper assumes the supplier-invoice header already exists.</li>
+      <li><strong>The value written into Airtable is an attachment-style payload.</strong> <code>Code2</code> builds <code>Invoice PDF = [{ filename, url }]</code>.</li>
+      <li><strong>The URL in that payload is external.</strong> It points to <code>automation.offertizer.com/webhook/...</code>, not directly to a Fortnox archive URL.</li>
+      <li><strong>The workflow uses httpbin as a token-echo workaround.</strong> It obtains the live OAuth <code>Authorization</code> header there and reuses it in custom code.</li>
+    </ul>
+  </div>
+
+  <div class="inferred">
+    <h3>5.2 Not proven yet / still unresolved</h3>
+    <ul>
+      <li><strong>The exact webhook implementation is not shown.</strong> The source set does not include the backend or workflow that serves the file behind the <code>automation.offertizer.com/webhook/...</code> URL.</li>
+      <li><strong>Direct raw-binary upload into Airtable is not visible.</strong> No node in this export sends <code>binary.data</code> directly into Airtable.</li>
+      <li><strong>The last mile of file delivery to Airtable remains unresolved.</strong> The export strongly suggests that Airtable is given a URL and later fetches the file through that URL, but the current source set does not show how that URL is implemented.</li>
+      <li><strong>It is not proven whether the webhook serves the exact local file directly.</strong> It may map to the local file path, or it may proxy another service or storage layer.</li>
+    </ul>
+  </div>
+
+  <div class="ok-box">
+    <strong>Current conclusion:</strong> we have proved local binary download, local file write, and Airtable attachment-field update by URL payload;
+    we have <strong>not yet proved</strong> the exact mechanism by which Airtable receives the actual binary bytes behind that URL.
+  </div>
+
+  <h2 id="s6">6. No-File and Existing-Record Boundaries</h2>
+  <p>This helper contains two separate stop conditions that matter operationally.</p>
+
+  <table>
+    <tr><th>Boundary</th><th>Observed node(s)</th><th>Meaning</th></tr>
+    <tr><td>No matching file connection</td><td><strong>JSONPlus</strong> -&gt; <strong>Has file</strong> -&gt; <strong>Exit</strong></td><td>If the paged Fortnox scan finds no matching connection, the workflow returns <code>{ finished: true }</code> and stops cleanly.</td></tr>
+    <tr><td>No Airtable header record</td><td><strong>Airtable Find</strong> -&gt; <strong>Airtable Exist</strong></td><td>The flow only has a true branch from <strong>Airtable Exist</strong>. If the invoice record is missing in Airtable, there is no create path and no explicit fallback branch visible in the export.</td></tr>
+    <tr><td>Success path</td><td><strong>Airtable Update</strong> -&gt; <strong>Set2</strong></td><td>When a file exists and the Airtable header exists, the workflow returns <code>{ downloaded: true }</code>.</td></tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Confirmed behavior:</strong> this workflow is deliberately <strong>non-creative</strong> with respect to Airtable records.
+    It only updates an invoice that must already exist.
+  </div>
+
+  <div class="warn-box">
+    <strong>Operational implication:</strong> the parent supplier-invoice component must run first and must have already written the header record.
+    If workflow <code>120</code> is called in isolation, it may download a file but still fail to attach it because the Airtable header lookup has no visible create fallback.
+  </div>
+
+  <h2 id="s7">7. Tables and Stores Touched by One Run</h2>
+  <table>
+    <tr><th>Table / store</th><th>Direct or indirect</th><th>Expected action</th></tr>
+    <tr><td><strong>FortnoxSupplierInvoice</strong></td><td>Direct</td><td>Find one existing Airtable supplier invoice by <code>GivenNumber</code> and update its <code>Invoice PDF</code> field.</td></tr>
+    <tr><td><strong>Fortnox supplier-invoice file connection list</strong></td><td>Direct</td><td>Read all pages until the relevant <code>SupplierInvoiceNumber</code> match is found or all pages are exhausted.</td></tr>
+    <tr><td><strong>Fortnox archive endpoint</strong></td><td>Direct</td><td>Download one binary file stream by <code>FileId</code>.</td></tr>
+    <tr><td><strong>Local filesystem</strong></td><td>Direct</td><td>Write the downloaded file to <code>/home/ubuntu/files/invoice.pdf</code> before the Airtable update step.</td></tr>
+    <tr><td><strong>Webhook URL on automation.offertizer.com</strong></td><td>Indirect / referenced</td><td>Used as the external URL placed into the Airtable <code>Invoice PDF</code> payload. Implementation not shown in this export.</td></tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Important boundary:</strong> this helper does not touch <strong>FortnoxSupplier</strong>, does not edit supplier-invoice financial fields, and does not participate in allocation or platform-import logic.
+    It is tightly scoped to file discovery and attachment enrichment.
+  </div>
+
+  <h2 id="s8">8. Confirmed Quirks and Open Questions</h2>
+
+  <div class="observed">
+    <h3>8.1 The export is inactive, but the helper is still referenced by workflow 113</h3>
+    <p>The uploaded JSON proves <code>"active": false</code>. Separately, the supplier-invoice component still references workflow <code>120</code> as <code>component_supplier_invoice_file</code>. That means the helper remains part of the documented dependency graph even though this captured export was inactive.</p>
+  </div>
+
+  <div class="observed">
+    <h3>8.2 The workflow scans the entire connection list and only keeps the first match</h3>
+    <p>The paging loop accumulates all matching connection rows into <code>Data</code>, but <code>JSONPlus</code> only uses <code>Data[0]</code>. If multiple Fortnox file connections exist for the same supplier invoice, the current export processes only the first one.</p>
+  </div>
+
+  <div class="observed">
+    <h3>8.3 The helper uses httpbin as a token-extraction workaround</h3>
+    <p>The workflow calls <code>https://httpbin.org/anything</code> with the Fortnox OAuth credential so the returned response includes the live <code>Authorization</code> header. The next code node reuses that header for the direct archive request. The shared workflow <code>109</code> provides config values such as ids and table names; it does not visibly expose the live Fortnox bearer token itself.</p>
+  </div>
+
+  <div class="observed">
+    <h3>8.4 The helper writes to a fixed local filename before building the Airtable payload</h3>
+    <p>The binary is always written to <code>/home/ubuntu/files/invoice.pdf</code>, while the later field payload uses a webhook URL with a cache-busting timestamp. The export proves this exact path and payload shape; it does not prove how concurrency, cleanup, or file serving are handled around that fixed filename.</p>
+  </div>
+
+  <div class="observed">
+    <h3>8.5 The helper updates only when the Airtable header already exists</h3>
+    <p>There is no visible create branch after <strong>Airtable Exist</strong>. So the file helper is structurally downstream of the header-sync workflow and cannot stand on its own as a complete supplier-invoice importer.</p>
+  </div>
+
+  <div class="bad-box">
+    <strong>Still unresolved:</strong> the exact mechanism that makes the binary reachable to Airtable is outside the current source set.
+    The workflow clearly writes a URL-based payload into the <code>Invoice PDF</code> field, but the webhook/backend that serves the file behind that URL is not included here.
+  </div>
+
+  <div class="inferred">
+    <h3>8.6 Why the helper is split into its own workflow</h3>
+    <p>Keeping file-download logic in a separate child workflow probably reduces complexity inside the main supplier-invoice component and makes file sync easy to suppress with the parent workflow's <code>sync_files</code> flag. The split is consistent with the broader componentized design of this Fortnox integration, although that rationale is inferred rather than explicitly documented inside the export.</p>
+  </div>
+
+  <h2 id="s9">9. Plain-English Verdict</h2>
+  <p><strong>This workflow is the PDF/file-enrichment helper for Fortnox-synced supplier invoices.</strong></p>
+
+  <ul>
+    <li>It receives one supplier invoice number from the parent supplier-invoice component.</li>
+    <li>It scans Fortnox file-connection pages until it finds a matching file connection for that invoice.</li>
+    <li>It downloads the first matching archive file and writes it to the n8n host filesystem.</li>
+    <li>It then looks up the already-existing Airtable supplier invoice by <code>GivenNumber</code>.</li>
+    <li>If that Airtable record exists, it updates the <code>Invoice PDF</code> field using a URL-based attachment payload and returns <code>{ downloaded: true }</code>.</li>
+    <li>If no file exists, it exits cleanly with <code>{ finished: true }</code>.</li>
+  </ul>
+
+  <div class="ok-box">
+    <strong>Bottom line:</strong> the uploaded export proves that workflow <code>120</code> is a <strong>Fortnox -&gt; Airtable file helper</strong>, not a full invoice-sync workflow.
+    It exists to enrich a previously created <strong>FortnoxSupplierInvoice</strong> header with an invoice PDF field update.
+    <br><br>
+    <strong>Most important clarified conclusion:</strong> the current sources prove <strong>local binary download</strong>, <strong>local file write</strong>, and <strong>Airtable update by attachment-style URL payload</strong>.
+    They do <strong>not yet prove</strong> the exact webhook/backend mechanism by which Airtable ultimately receives the actual file bytes.
+  </div>
+
+  <hr>
+  <p class="subtitle">End of revised workflow note.</p>
+</div>
+</body>
+</html>
