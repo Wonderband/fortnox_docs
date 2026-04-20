@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortnox Rate Limiter — How It Works & Migration Guide</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --text: #e2e4f0;
+    --muted: #7b82a8;
+    --green: #22c55e;
+    --green-bg: #052e16;
+    --amber: #f59e0b;
+    --amber-bg: #1c1403;
+    --red: #ef4444;
+    --red-bg: #1c0404;
+    --blue: #60a5fa;
+    --blue-bg: #0c1829;
+    --purple: #a78bfa;
+    --purple-bg: #1a0f35;
+    --code-bg: #12141f;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.7; }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header { margin-bottom: 40px; padding-bottom: 24px; border-bottom: 2px solid var(--border); }
+  header h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  header p  { color: var(--muted); font-size: 13px; }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 44px; }
+  .section-label {
+    display: inline-block;
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 3px; margin-bottom: 10px;
+  }
+  h2 { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+  h3 { font-size: 14px; font-weight: 700; color: var(--blue); margin: 18px 0 6px; }
+  p  { color: var(--text); margin-bottom: 10px; }
+  ul, ol { padding-left: 20px; margin-bottom: 10px; }
+  li { margin-bottom: 5px; color: var(--text); }
+  strong { color: #fff; }
+
+  /* ── CALLOUT BOXES ── */
+  .box { border-radius: 8px; padding: 14px 18px; margin: 14px 0; border-left: 4px solid; }
+  .box-blue   { background: var(--blue-bg);   border-color: var(--blue);   }
+  .box-green  { background: var(--green-bg);  border-color: var(--green);  }
+  .box-amber  { background: var(--amber-bg);  border-color: var(--amber);  }
+  .box-red    { background: var(--red-bg);    border-color: var(--red);    }
+  .box-purple { background: var(--purple-bg); border-color: var(--purple); }
+  .box-title  { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .box-blue   .box-title { color: var(--blue); }
+  .box-green  .box-title { color: var(--green); }
+  .box-amber  .box-title { color: var(--amber); }
+  .box-red    .box-title { color: var(--red); }
+  .box-purple .box-title { color: var(--purple); }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: 'Cascadia Code', 'Consolas', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    margin: 12px 0;
+  }
+  .code-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); background: var(--surface2); border: 1px solid var(--border);
+    border-bottom: none; border-radius: 6px 6px 0 0;
+    display: inline-block; padding: 4px 12px; margin-bottom: -1px; position: relative;
+  }
+  code { background: var(--surface2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 12px; color: #93c5fd; }
+
+  .kw  { color: #c084fc; }   /* keyword */
+  .fn  { color: #60a5fa; }   /* function */
+  .str { color: #86efac; }   /* string */
+  .cm  { color: #4b5563; font-style: italic; }  /* comment */
+  .nm  { color: #fde68a; }   /* number */
+  .vr  { color: #f9a8d4; }   /* variable */
+
+  /* ── DIAGRAM (pure CSS/HTML flow) ── */
+  .flow-diagram { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 16px 0; }
+  .flow-box {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.5; text-align: center; min-width: 130px;
+  }
+  .flow-box.highlight { background: var(--blue-bg); border-color: var(--blue); }
+  .flow-box.warn      { background: var(--amber-bg); border-color: var(--amber); }
+  .flow-box.good      { background: var(--green-bg); border-color: var(--green); }
+  .flow-box small { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .flow-arrow { padding: 0 8px; color: var(--muted); font-size: 18px; align-self: center; }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+  th { background: var(--surface2); color: var(--muted); text-align: left; padding: 9px 12px; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  td { padding: 9px 12px; border: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: #13151e; }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+  .tag-red    { background: var(--red-bg);    color: var(--red);    border: 1px solid #7f1d1d; }
+  .tag-amber  { background: var(--amber-bg);  color: var(--amber);  border: 1px solid #78350f; }
+  .tag-green  { background: var(--green-bg);  color: var(--green);  border: 1px solid #14532d; }
+  .tag-blue   { background: var(--blue-bg);   color: var(--blue);   border: 1px solid #1e3a5f; }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li { padding: 7px 0 7px 32px; position: relative; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before { content: '☐'; position: absolute; left: 6px; font-size: 15px; color: var(--muted); }
+  .checklist .group { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); padding: 12px 0 4px; border-bottom: none; }
+  .checklist .group::before { content: ''; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <h1>Fortnox Rate Limiter — Reference Guide</h1>
+  <p>How it works on Offertizer today · How to replicate it on any server · Full migration checklist · Created 2026-04-20</p>
+</header>
+
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 1 — WHY
+════════════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#0c1829;color:#60a5fa">1 — Why It Exists</span>
+  <h2>Why a Rate Limiter Is Needed</h2>
+
+  <p>Fortnox enforces a hard limit of <strong>4 API requests per second</strong> per account. If you exceed it, Fortnox returns <code>HTTP 429 Too Many Requests</code> and the flow fails.</p>
+
+  <p>Your automation easily hits this limit because multiple flows run <strong>at the same time</strong>, and each entity can trigger several sub-calls:</p>
+
+  <div class="box box-amber">
+    <div class="box-title">Example: one invoice sync triggers 4+ API calls</div>
+    Downloader fires → Invoice Component → calls Customer Component → calls Order Component → calls Article Component (×N rows)<br>
+    <strong>Meanwhile:</strong> WebSocket Handler also receives events and fires its own calls to the same Fortnox account.
+  </div>
+
+  <p>Without a shared throttle, those concurrent calls stack up and exceed the 4/sec limit within seconds during any bulk sync.</p>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 2 — HOW IT WORKS NOW
+════════════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#0c1829;color:#60a5fa">2 — Current Setup</span>
+  <h2>How It Works on Offertizer Today</h2>
+
+  <p>Offertizer provides a <strong>reverse proxy</strong> at <code>ratelimit.offertizer.com</code>. Every Fortnox API call in every flow is routed through it instead of calling Fortnox directly.</p>
+
+  <h3>The URL pattern used in every flow</h3>
+
+  <div class="flow-diagram">
+    <div class="flow-box highlight">N8N Flow<br><small>any component or downloader</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box warn"><strong>ratelimit.offertizer.com</strong><br><small>/{ratelimit_id}?url={fortnox_url}</small></div>
+    <div class="flow-arrow">→ queued →</div>
+    <div class="flow-box good">api.fortnox.se<br><small>max 4 req/sec</small></div>
+  </div>
+
+  <div class="code-label">actual URL in every HTTP node</div>
+  <pre>https://ratelimit.offertizer.com/<span class="vr">fb7db917-6e2f-4743-bec1-682161b56d24</span>
+  ?url=https://api.fortnox.se/3/articles/1234
+  Authorization: Bearer <span class="str">{fortnox_oauth_token}</span></pre>
+
+  <p>The <code>ratelimit_id</code> UUID (<code>fb7db917...</code>) is your account identifier on the proxy — it tells the proxy which queue and rate-limit budget to use. It comes from the <strong>Credentials flow #109</strong> so every flow inherits it automatically.</p>
+
+  <h3>What the proxy does step by step</h3>
+  <ol>
+    <li>Receives the request from N8N (with the real Fortnox URL in <code>?url=</code>)</li>
+    <li>Puts it into a <strong>shared queue</strong> for your account</li>
+    <li>Sends requests out of the queue one at a time, with a minimum gap of ~250ms between them</li>
+    <li>Forwards the Fortnox OAuth token along with the request to Fortnox</li>
+    <li>Returns the Fortnox response back to N8N — N8N sees a normal HTTP response</li>
+  </ol>
+
+  <div class="box box-blue">
+    <div class="box-title">Key point</div>
+    The queue is <strong>shared across all flows</strong>. So when Downloader and WebSocket Handler both fire calls at the same moment, they both enter the same queue and exit at a controlled rate — Fortnox never sees more than 4 per second regardless of how many flows run concurrently.
+  </div>
+
+  <h3>All places where Offertizer is referenced in your flows</h3>
+
+  <table>
+    <thead>
+      <tr><th>URL</th><th>Used In</th><th>Purpose</th><th>Must Change On Migration</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ratelimit.offertizer.com/{id}?url=...</code></td>
+        <td>Downloader (#118) ×6<br>All 7 component flows</td>
+        <td>Rate-limited proxy to Fortnox API</td>
+        <td><span class="tag tag-red">Yes</span></td>
+      </tr>
+      <tr>
+        <td><code>ratelimit.offertizer.com/b8afb117-...</code></td>
+        <td>Refresh Credentials (#107)</td>
+        <td>Same proxy, different hardcoded ID</td>
+        <td><span class="tag tag-red">Yes</span></td>
+      </tr>
+      <tr>
+        <td><code>automation.offertizer.com/api/v1/executions</code></td>
+        <td>Watchdog flow</td>
+        <td>N8N REST API — check Downloader last run</td>
+        <td><span class="tag tag-red">Yes</span></td>
+      </tr>
+      <tr>
+        <td><code>automation.offertizer.com/webhook/daa58b95-...</code></td>
+        <td>SI File Component (#120)</td>
+        <td>Webhook that serves PDF file to Airtable</td>
+        <td><span class="tag tag-red">Yes</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 3 — HOW TO IMPLEMENT
+════════════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#052e16;color:#22c55e">3 — Implementation</span>
+  <h2>How to Implement the Rate Limiter on Any Server</h2>
+
+  <div class="box box-green">
+    <div class="box-title">Recommended approach</div>
+    Run a <strong>small Node.js proxy service</strong> on the same server as N8N. All flows call <code>http://localhost:3333</code> instead of <code>ratelimit.offertizer.com</code>. One shared queue — identical behaviour to today.
+  </div>
+
+  <h3>Step 1 — Create the proxy file</h3>
+  <p>Create this file on your server, in any folder (e.g. <code>/opt/fortnox-proxy/proxy.js</code>):</p>
+
+  <div class="code-label">proxy.js</div>
+  <pre><span class="kw">const</span> <span class="vr">express</span>    = <span class="fn">require</span>(<span class="str">'express'</span>);
+<span class="kw">const</span> <span class="vr">axios</span>       = <span class="fn">require</span>(<span class="str">'axios'</span>);
+<span class="kw">const</span> <span class="vr">Bottleneck</span>  = <span class="fn">require</span>(<span class="str">'bottleneck'</span>);
+
+<span class="kw">const</span> <span class="vr">app</span> = <span class="fn">express</span>();
+<span class="vr">app</span>.<span class="fn">use</span>(<span class="vr">express</span>.<span class="fn">json</span>());
+
+<span class="cm">// Fortnox hard limit = 4 req/sec.
+// We use 3.5/sec (one per 285ms) as a safety margin.</span>
+<span class="kw">const</span> <span class="vr">limiter</span> = <span class="kw">new</span> <span class="fn">Bottleneck</span>({
+  maxConcurrent: <span class="nm">1</span>,    <span class="cm">// one Fortnox request at a time</span>
+  minTime:       <span class="nm">285</span>   <span class="cm">// minimum 285ms between requests (~3.5/sec)</span>
+});
+
+<span class="cm">// Accept any path — the /:ratelimitId segment is ignored,
+// it's just there so the URL format from N8N still works.</span>
+<span class="vr">app</span>.<span class="fn">use</span>(<span class="str">'*'</span>, <span class="kw">async</span> (<span class="vr">req</span>, <span class="vr">res</span>) => {
+
+  <span class="kw">const</span> <span class="vr">targetUrl</span> = <span class="vr">req</span>.query.url;
+
+  <span class="kw">if</span> (!<span class="vr">targetUrl</span> || !<span class="vr">targetUrl</span>.<span class="fn">startsWith</span>(<span class="str">'https://api.fortnox.se'</span>)) {
+    <span class="kw">return</span> <span class="vr">res</span>.<span class="fn">status</span>(<span class="nm">400</span>).<span class="fn">json</span>({ error: <span class="str">'Missing or invalid ?url= parameter'</span> });
+  }
+
+  <span class="cm">// Forward all query params except 'url' itself (e.g. page=2)</span>
+  <span class="kw">const</span> <span class="vr">params</span> = { ...<span class="vr">req</span>.query };
+  <span class="kw">delete</span> <span class="vr">params</span>.url;
+
+  <span class="cm">// Forward all headers except 'host'</span>
+  <span class="kw">const</span> <span class="vr">headers</span> = { ...<span class="vr">req</span>.headers };
+  <span class="kw">delete</span> <span class="vr">headers</span>[<span class="str">'host'</span>];
+  <span class="kw">delete</span> <span class="vr">headers</span>[<span class="str">'content-length'</span>];
+
+  <span class="kw">try</span> {
+    <span class="kw">const</span> <span class="vr">response</span> = <span class="kw">await</span> <span class="vr">limiter</span>.<span class="fn">schedule</span>(() => <span class="fn">axios</span>({
+      method:         <span class="vr">req</span>.method,
+      url:            <span class="vr">targetUrl</span>,
+      headers:        <span class="vr">headers</span>,
+      params:         <span class="vr">params</span>,
+      data:           [<span class="str">'POST'</span>,<span class="str">'PUT'</span>,<span class="str">'PATCH'</span>].<span class="fn">includes</span>(<span class="vr">req</span>.method) ? <span class="vr">req</span>.body : <span class="kw">undefined</span>,
+      validateStatus: () => <span class="kw">true</span>  <span class="cm">// pass Fortnox errors through unchanged</span>
+    }));
+
+    <span class="vr">res</span>.<span class="fn">status</span>(<span class="vr">response</span>.status).<span class="fn">json</span>(<span class="vr">response</span>.data);
+
+  } <span class="kw">catch</span> (<span class="vr">err</span>) {
+    <span class="vr">res</span>.<span class="fn">status</span>(<span class="nm">502</span>).<span class="fn">json</span>({ error: <span class="str">'Proxy error'</span>, detail: <span class="vr">err</span>.message });
+  }
+});
+
+<span class="kw">const</span> <span class="vr">PORT</span> = <span class="vr">process</span>.env.<span class="vr">PROXY_PORT</span> || <span class="nm">3333</span>;
+<span class="vr">app</span>.<span class="fn">listen</span>(<span class="vr">PORT</span>, <span class="str">'127.0.0.1'</span>, () => {
+  console.<span class="fn">log</span>(<span class="str">`Fortnox rate-limit proxy running on localhost:<span class="vr">${PORT}</span>`</span>);
+  console.<span class="fn">log</span>(<span class="str">`Rate: 1 request per 285ms (max ~3.5/sec)`</span>);
+});
+</pre>
+
+  <h3>Step 2 — Install dependencies and start</h3>
+
+  <div class="code-label">terminal — run once</div>
+  <pre><span class="cm"># Go to your proxy folder</span>
+mkdir -p /opt/fortnox-proxy && cd /opt/fortnox-proxy
+cp proxy.js .
+
+<span class="cm"># Install packages</span>
+npm init -y
+npm install express axios bottleneck
+
+<span class="cm"># Install PM2 — keeps the proxy alive after server restarts</span>
+npm install -g pm2
+
+<span class="cm"># Start the proxy</span>
+pm2 start proxy.js --name fortnox-proxy
+
+<span class="cm"># Save process list and enable auto-start on reboot</span>
+pm2 save
+pm2 startup   <span class="cm"># follow the instruction it prints</span></pre>
+
+  <div class="box box-blue">
+    <div class="box-title">Verify it's running</div>
+    <code>pm2 status</code> — should show <strong>fortnox-proxy</strong> as <em>online</em><br>
+    <code>curl "http://localhost:3333/test?url=https://api.fortnox.se/3/invoices" -H "Authorization: Bearer YOUR_TOKEN"</code> — should return a Fortnox response
+  </div>
+
+  <h3>Step 3 — Update the flow URLs (before importing JSON files)</h3>
+
+  <p>Run this <strong>once</strong> on your exported JSON files before importing them into the new N8N. It replaces the Offertizer proxy domain with your local proxy in all flows at once:</p>
+
+  <div class="code-label">terminal — run in your json_flows folder</div>
+  <pre><span class="cm"># On Linux / Mac</span>
+sed -i <span class="str">'s|https://ratelimit.offertizer.com|http://localhost:3333|g'</span> *.json
+
+<span class="cm"># On Windows (PowerShell)</span>
+Get-ChildItem *.json | ForEach-Object {
+  (Get-Content $_.FullName) -replace <span class="str">'https://ratelimit\.offertizer\.com'</span>, <span class="str">'http://localhost:3333'</span> |
+  Set-Content $_.FullName
+}</pre>
+
+  <p>After this, every HTTP node that was calling <code>ratelimit.offertizer.com</code> will call <code>localhost:3333</code> instead. The <code>ratelimit_id</code> UUID in the Credentials flow can stay exactly the same — your proxy accepts any path and ignores it.</p>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 4 — OTHER CHANGES ON MIGRATION
+════════════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#1c1403;color:#f59e0b">4 — Other URLs to Update</span>
+  <h2>Other Offertizer References to Fix After Migration</h2>
+
+  <p>Beyond the rate limiter, two more flows reference Offertizer's server address directly. These need manual changes <strong>inside N8N</strong> after importing.</p>
+
+  <h3>Watchdog flow — N8N API URL</h3>
+  <p>The Watchdog checks whether the Downloader is stale by calling the N8N REST API:</p>
+  <div class="code-label">current (Offertizer)</div>
+  <pre>GET https://automation.offertizer.com/api/v1/executions?workflowId=118&limit=1</pre>
+  <div class="code-label">change to (your new server)</div>
+  <pre>GET http://localhost:<span class="nm">5678</span>/api/v1/executions?workflowId=<span class="vr">118</span>&limit=<span class="nm">1</span>
+X-N8N-API-KEY: <span class="str">your-n8n-api-key</span></pre>
+
+  <div class="box box-amber">
+    <div class="box-title">You also need an N8N API key</div>
+    In your new N8N: go to <strong>Settings → API → Create API Key</strong>. Add it as a header <code>X-N8N-API-KEY</code> in the Watchdog's HTTP node. Without it, the call will be rejected with 401.
+  </div>
+
+  <h3>SI File Component (#120) — PDF webhook URL</h3>
+  <p>After downloading a PDF, this flow gives Airtable a URL to fetch the file from. Currently it points to a webhook on Offertizer's server:</p>
+  <div class="code-label">current (Offertizer)</div>
+  <pre>https://automation.offertizer.com/webhook/daa58b95-f6e5-42ea-b5c9-0efe21eb590d?file=invoice.pdf&t=...</pre>
+  <div class="code-label">change to (your new server)</div>
+  <pre>https://<span class="vr">your-domain-or-ip</span>:<span class="nm">5678</span>/webhook/<span class="str">NEW-WEBHOOK-UUID</span>?file=invoice.pdf&t=...</pre>
+
+  <div class="box box-amber">
+    <div class="box-title">How to get your new webhook UUID</div>
+    When you import the SI File Component flow into your new N8N, the Webhook node inside it will be assigned a new UUID automatically. Copy that UUID from the node and paste it into the Code node that builds the Airtable attachment URL. Also — your new server <strong>must be reachable from the internet</strong> so Airtable can fetch the PDF.
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">Ongoing race condition risk (exists today too)</div>
+    The PDF is saved to a hardcoded path: <code>/home/ubuntu/files/invoice.pdf</code>. If two supplier invoices are processed close together, the second file overwrites the first before Airtable has fetched it. This is a pre-existing issue — not introduced by migration — but worth fixing eventually by using a unique filename per invoice (e.g. <code>/home/ubuntu/files/{GivenNumber}.pdf</code>).
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 5 — CHECKLIST
+════════════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#1a0f35;color:#a78bfa">5 — Migration Checklist</span>
+  <h2>Step-by-Step Migration Checklist</h2>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px 18px 12px;">
+    <ul class="checklist">
+      <li class="group">Before you touch the new server</li>
+      <li>Run the <code>sed</code> / PowerShell find-and-replace on all JSON flow files to swap <code>ratelimit.offertizer.com</code> → <code>http://localhost:3333</code></li>
+      <li>Note which flows are currently ACTIVE on Offertizer — you will need to re-activate them after import</li>
+      <li>Export all 15 flow JSON files from Offertizer N8N (if not already done)</li>
+
+      <li class="group">Set up the new server</li>
+      <li>Install N8N on the new server (Docker recommended: <code>docker run -d --name n8n -p 5678:5678 n8nio/n8n</code>)</li>
+      <li>Create the proxy folder: <code>mkdir -p /opt/fortnox-proxy</code></li>
+      <li>Copy <code>proxy.js</code> to <code>/opt/fortnox-proxy/</code></li>
+      <li>Run <code>npm install express axios bottleneck</code> in that folder</li>
+      <li>Install PM2: <code>npm install -g pm2</code></li>
+      <li>Start proxy: <code>pm2 start proxy.js --name fortnox-proxy && pm2 save && pm2 startup</code></li>
+      <li>Verify proxy is running: <code>pm2 status</code></li>
+
+      <li class="group">Import flows into new N8N</li>
+      <li>Import all 15 modified JSON files into the new N8N instance</li>
+      <li>Re-enter <strong>Fortnox OAuth2</strong> credentials (production) — they do not export with the JSON</li>
+      <li>Re-enter <strong>Fortnox Sandbox OAuth2</strong> credentials (for Uploader #119)</li>
+      <li>Re-enter <strong>Airtable token</strong> credential</li>
+      <li>Re-enter <strong>Google Drive</strong> credential (used by Refresh Credentials #107)</li>
+
+      <li class="group">Fix the three manual URL changes in N8N</li>
+      <li>Watchdog flow: change <code>automation.offertizer.com/api/v1/executions</code> → <code>localhost:5678/api/v1/executions</code></li>
+      <li>Watchdog flow: generate N8N API key (Settings → API) and add as <code>X-N8N-API-KEY</code> header</li>
+      <li>Watchdog flow: confirm workflow IDs for Downloader and WebSocket Handler — they may change on re-import</li>
+      <li>SI File Component: copy new webhook UUID from the Webhook node and update the Code node URL</li>
+      <li>Ensure new server is accessible from the internet on port 5678 (or whichever port N8N runs on) so Airtable can reach the PDF webhook</li>
+
+      <li class="group">Activate and verify</li>
+      <li>Activate: Downloader #118, WebSocket Handler #116, Watchdog, Refresh Credentials #107</li>
+      <li>Trigger one manual run of Article Component — check it calls <code>localhost:3333</code> and gets a Fortnox response</li>
+      <li>Check proxy logs: <code>pm2 logs fortnox-proxy</code> — you should see requests being queued and forwarded</li>
+      <li>Run a small bulk sync (set Download Articles = true in Settings) — monitor that no 429 errors appear</li>
+      <li>Trigger a WebSocket event by making a change in Fortnox — confirm it syncs to Airtable</li>
+      <li>Test a supplier invoice that has a PDF — confirm the file appears in Airtable</li>
+      <li>Deactivate all flows on the old Offertizer server</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 6 — QUICK REFERENCE
+════════════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#0c1829;color:#60a5fa">6 — Quick Reference</span>
+  <h2>Quick Reference</h2>
+
+  <div class="two-col">
+    <div>
+      <h3>Proxy: key settings</h3>
+      <table>
+        <tr><td>Port</td><td><code>3333</code> (configurable via <code>PROXY_PORT</code> env var)</td></tr>
+        <tr><td>Listens on</td><td><code>127.0.0.1</code> only (not exposed to internet)</td></tr>
+        <tr><td>Rate</td><td>1 request per 285ms ≈ 3.5/sec</td></tr>
+        <tr><td>Queue</td><td>Unlimited — requests wait, never dropped</td></tr>
+        <tr><td>Concurrency</td><td>1 (all flows share one queue)</td></tr>
+        <tr><td>Process manager</td><td>PM2</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Offertizer → new server mapping</h3>
+      <table>
+        <tr><td>Rate proxy URL</td><td><code>ratelimit.offertizer.com</code> → <code>localhost:3333</code></td></tr>
+        <tr><td>N8N API URL</td><td><code>automation.offertizer.com</code> → <code>localhost:5678</code></td></tr>
+        <tr><td>PDF webhook</td><td>Old UUID → new UUID from N8N</td></tr>
+        <tr><td>ratelimit_id</td><td>Keep same UUID — proxy ignores it</td></tr>
+        <tr><td>PDF file path</td><td><code>/home/ubuntu/files/invoice.pdf</code> — unchanged if Ubuntu</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>Useful PM2 commands</h3>
+  <div class="code-label">terminal</div>
+  <pre>pm2 status                    <span class="cm"># see if proxy is running</span>
+pm2 logs fortnox-proxy        <span class="cm"># watch live proxy logs</span>
+pm2 restart fortnox-proxy     <span class="cm"># restart after changing proxy.js</span>
+pm2 stop fortnox-proxy        <span class="cm"># stop the proxy</span></pre>
+
+  <div class="box box-blue">
+    <div class="box-title">No cloud service needed</div>
+    AWS, Cloudflare, and similar services throttle <em>inbound</em> traffic to your APIs. They do not help throttle <em>outbound</em> calls from your server to Fortnox. The self-hosted proxy above is the right tool for this job — it is the same pattern that Offertizer used, running directly on your new server.
+  </div>
+</div>
+
+</div><!-- /page -->
+</body>
+</html>

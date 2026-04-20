@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortnox ↔ Airtable Automation Ecosystem</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --text: #e2e4f0;
+    --text-muted: #7b82a8;
+    --green: #22c55e;
+    --green-dim: #16a34a22;
+    --amber: #f59e0b;
+    --amber-dim: #92400e22;
+    --red: #ef4444;
+    --red-dim: #7f1d1d22;
+    --blue: #60a5fa;
+    --blue-dim: #1e3a5f22;
+    --purple: #a78bfa;
+    --gray: #6b7280;
+    --gray-dim: #374151;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.6; }
+
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 24px 32px; }
+  header h1 { font-size: 22px; font-weight: 700; color: #fff; }
+  header p { color: var(--text-muted); margin-top: 4px; font-size: 13px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+  .badge-active   { background: var(--green-dim);  color: var(--green); }
+  .badge-inactive { background: var(--gray-dim);   color: var(--gray); }
+  .badge-issues   { background: var(--amber-dim);  color: var(--amber); }
+  .badge-config   { background: var(--blue-dim);   color: var(--blue); }
+
+  nav { display: flex; gap: 2px; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; }
+  nav button { background: none; border: none; color: var(--text-muted); padding: 14px 20px; cursor: pointer; font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  .tab { display: none; padding: 32px; }
+  .tab.active { display: block; }
+
+  /* DIAGRAM */
+  .diagram-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; overflow-x: auto; }
+  .diagram-wrap .mermaid { min-width: 900px; }
+  .diagram-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* TABLES */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--surface2); color: var(--text-muted); text-align: left; padding: 10px 12px; border: 1px solid var(--border); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+  td { padding: 10px 12px; border: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: #161920; }
+  tr:hover td { background: var(--surface2); }
+
+  .tag { display: inline-block; background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); padding: 1px 6px; border-radius: 3px; font-size: 11px; margin: 1px; white-space: nowrap; }
+  .tag-flow { background: var(--blue-dim); border-color: #1e3a5f; color: var(--blue); }
+  .tag-table { background: #1a1f2e; border-color: #2a3050; color: #93c5fd; }
+
+  .issue-cell { background: var(--amber-dim) !important; }
+  .issue-text { color: var(--amber); }
+  .none-text { color: var(--text-muted); font-style: italic; }
+
+  /* DETAIL CARDS */
+  .cards-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  details { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  details[open] { border-color: #3a4080; }
+  summary { padding: 14px 18px; cursor: pointer; display: flex; align-items: center; gap: 12px; list-style: none; user-select: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: '▶'; font-size: 10px; color: var(--text-muted); transition: transform 0.15s; flex-shrink: 0; }
+  details[open] summary::before { transform: rotate(90deg); }
+  .summary-id { font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--surface2); padding: 2px 6px; border-radius: 3px; min-width: 28px; text-align: center; }
+  .summary-name { font-weight: 600; flex: 1; }
+  .summary-badges { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .card-body { padding: 0 18px 18px; border-top: 1px solid var(--border); }
+  .card-section { margin-top: 14px; }
+  .card-section h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+  .card-section p, .card-section li { color: var(--text); margin-bottom: 3px; }
+  .card-section ul { padding-left: 18px; }
+  .card-section ol { padding-left: 18px; }
+
+  .warning-box { background: var(--amber-dim); border: 1px solid #78350f; border-radius: 6px; padding: 10px 14px; margin-top: 10px; }
+  .warning-box h4 { color: var(--amber); }
+  .warning-box li { color: #fcd34d; }
+
+  code { background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 3px; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 12px; color: #93c5fd; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  .flow-arrow { font-size: 18px; color: var(--border); }
+
+  /* SECTION HEADINGS */
+  .section-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .section-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  /* DIAGRAM SECTIONS */
+  .diag-section { border: 2px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 36px; }
+  .diag-header { padding: 13px 20px; font-size: 14px; font-weight: 600; letter-spacing: 0.2px; }
+  .diag-desc { padding: 12px 20px; font-size: 13px; color: var(--text-muted); background: #13151e; border-bottom: 1px solid var(--border); line-height: 1.7; }
+  .diag-desc code { font-size: 11px; }
+  .diagram-wrap { background: var(--surface); padding: 24px 16px; overflow-x: auto; }
+  .diagram-wrap .mermaid { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Fortnox ↔ Airtable Automation Ecosystem</h1>
+  <p>15 N8N flows · Fortnox ERP synchronization · Airtable data warehouse · Real-time + batch · Generated 2026-04-20</p>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('diagram', this)">Architecture Diagram</button>
+  <button onclick="showTab('table', this)">Master Flow Table</button>
+  <button onclick="showTab('details', this)">Flow Detail Cards</button>
+</nav>
+
+<!-- ═══════════════════════════════════════════════ TAB: DIAGRAM ═══ -->
+<div id="tab-diagram" class="tab active">
+
+  <div class="diagram-legend" style="margin-bottom:20px">
+    <div class="legend-item"><div class="legend-dot" style="background:#16a34a;border-radius:3px;width:14px;height:14px"></div> ACTIVE flow</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#374151;border-radius:3px;width:14px;height:14px"></div> INACTIVE flow</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#92400e;border-radius:3px;width:14px;height:14px"></div> Has issues / unclear</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1e3a5f;border-radius:3px;width:14px;height:14px"></div> Config / support</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4a1d96;border-radius:3px;width:14px;height:14px"></div> External data store</div>
+    <div class="legend-item" style="margin-left:16px">─── call with data &nbsp;·&nbsp; - - - conditional/error path</div>
+  </div>
+
+  <!-- ── DIAGRAM 1 ──────────────────────────────────── -->
+  <div class="diag-section" style="border-color:#3b82f6">
+    <div class="diag-header" style="background:#1e3a5f;color:#93c5fd">
+      Diagram 1 of 5 &nbsp;·&nbsp; <strong>Full Ecosystem — Layers Overview</strong>
+    </div>
+    <div class="diag-desc">All 15 flows arranged in four layers: Triggers → Orchestrators &amp; Support → Component Flows → Data Stores. Use this to understand the overall shape before drilling into any single area.</div>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+%%{init:{"theme":"dark","themeVariables":{"primaryColor":"#1e293b","primaryTextColor":"#e2e4f0","primaryBorderColor":"#334155","lineColor":"#60a5fa","fontSize":"15px"}}}%%
+graph LR
+    classDef trig  fill:#292524,stroke:#d97706,color:#fde68a,font-size:13px
+    classDef act   fill:#14532d,stroke:#22c55e,color:#bbf7d0,font-size:13px
+    classDef inact fill:#1f2937,stroke:#4b5563,color:#9ca3af,font-size:13px
+    classDef cfg   fill:#1e3a5f,stroke:#3b82f6,color:#bfdbfe,font-size:13px
+    classDef comp  fill:#1a2744,stroke:#6366f1,color:#c7d2fe,font-size:13px
+    classDef warn  fill:#451a03,stroke:#f97316,color:#fed7aa,font-size:13px
+    classDef store fill:#2e1065,stroke:#7c3aed,color:#ddd6fe,font-size:13px
+
+    subgraph L1["  ⚡ TRIGGERS  "]
+        direction TB
+        T1["Airtable Settings Poll\nevery 1 min"]
+        T2["Fortnox WebSocket\nreal-time events"]
+        T3["Airtable Order Trigger\n⏸ INACTIVE"]
+        T4["Schedule — 50 min\nOAuth keep-alive"]
+        T6["Schedule — 1 hour\nWatchdog"]
+        T5["Error Trigger\nDownloader failures"]
+    end
+
+    subgraph L2["  🎯 ORCHESTRATORS + SUPPORT  "]
+        direction TB
+        DL["Downloader  #118  ✅\nBatch Fortnox → Airtable\n6 entity families"]
+        WS["WebSocket Handler  #116  ✅\nReal-time Fortnox → Airtable\nAll entity topics"]
+        UP["Uploader  #119  ⏸\nAirtable → Fortnox (orders)\n⚠️ Sandbox creds!"]
+        WD["Watchdog / Reload  ✅\nHourly: restart #116\nConditional: restart #118"]
+        RC["Refresh Credentials  #107  ✅\nKeeps OAuth tokens alive"]
+        EH["Error Handler  #117  ⏸\nResets Settings on crash"]
+        CR["Credentials  #109  ⚙️\nCentral config hub\nAll table + workflow IDs"]
+    end
+
+    subgraph L3["  🔧 COMPONENT FLOWS  "]
+        direction TB
+        C6["Invoice  #115\nFetches invoice + rows"]
+        C5["Order  #114\nFetches order + rows"]
+        C2["Customer  #111\nFetches customer"]
+        C1["Article  #110\nFetches article"]
+        C4["Supplier Invoice  #113\nFetches inv + optional file"]
+        C3["Supplier  #112\nFetches supplier"]
+        C7["SI File  #120  ⚠️\nDownloads PDF to local disk"]
+    end
+
+    subgraph L4["  💾 DATA  "]
+        direction TB
+        AT[("Airtable\nBase appk463NGeDy17j9T\n9 tables")]
+        FX[("Fortnox API v3\n+ WebSocket\nvia Offertizer proxy")]
+    end
+
+    T1 --> DL
+    T2 --> WS
+    T3 --> UP
+    T4 --> RC
+    T6 --> WD
+    T5 --> EH
+
+    WD -->|"always bounce"| WS
+    WD -->|"if stale > 2h"| DL
+    DL -.->|"on error"| EH
+
+    DL --> C6 & C5 & C2 & C1 & C3 & C4
+    WS --> C6 & C5 & C2 & C1 & C3 & C4
+
+    CR -.->|"config"| DL & WS & UP & C6 & C5 & C2 & C1 & C3 & C4 & C7
+
+    C6 & C5 & C2 & C1 & C3 & C4 & C7 --> AT & FX
+    UP --> AT & FX
+    RC --> FX
+    DL -->|"page state"| AT
+
+    class T1,T2,T3,T4,T5,T6 trig
+    class DL,WS,RC,WD,C6,C5,C2,C1,C3,C4 act
+    class UP,EH inact
+    class CR cfg
+    class C7 warn
+    class AT,FX store
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DIAGRAM 2 ──────────────────────────────────── -->
+  <div class="diag-section" style="border-color:#22c55e">
+    <div class="diag-header" style="background:#14532d;color:#bbf7d0">
+      Diagram 2 of 5 &nbsp;·&nbsp; <strong>Downloader #118 — Batch Sync (Fortnox → Airtable)</strong>
+    </div>
+    <div class="diag-desc">The Downloader runs every minute (triggered by Airtable Settings changes). It cycles through 6 entity families, fetching paginated lists from Fortnox and passing each ID to its dedicated component. Page counters are persisted in the Settings table so the download survives restarts. NOTE: passes <code>sync_files: "no"</code> to Supplier Invoice — PDFs are NOT downloaded during batch sync.</div>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+%%{init:{"theme":"dark","themeVariables":{"primaryColor":"#1e293b","primaryTextColor":"#e2e4f0","primaryBorderColor":"#334155","lineColor":"#22c55e","fontSize":"15px"}}}%%
+graph LR
+    classDef orch fill:#14532d,stroke:#22c55e,color:#bbf7d0,font-size:14px
+    classDef comp fill:#1a2744,stroke:#6366f1,color:#c7d2fe,font-size:14px
+    classDef store fill:#2e1065,stroke:#7c3aed,color:#ddd6fe,font-size:14px
+    classDef state fill:#1c1917,stroke:#a16207,color:#fde68a,font-size:14px
+    classDef warn  fill:#451a03,stroke:#f97316,color:#fed7aa,font-size:14px
+    classDef err   fill:#1f2937,stroke:#4b5563,color:#9ca3af,font-size:14px
+
+    SETT["Airtable Settings\n──────────\nDownload flags\nPage counters\nIdle state"]
+    DL["Downloader\n#118 ✅"]
+    EH["Error Handler\n#117 ⏸"]
+    FX[("Fortnox API v3\nGET /invoices?page=N\nGET /orders?page=N\netc.")]
+    AT[("Airtable\n9 tables")]
+    CR["Credentials #109\n(config)"]
+
+    C6["Invoice Component\n#115\nGET /invoices/{id}"]
+    C5["Order Component\n#114\nGET /orders/{id}"]
+    C2["Customer Component\n#111\nGET /customers/{id}"]
+    C1["Article Component\n#110\nGET /articles/{id}"]
+    C3["Supplier Component\n#112\nGET /suppliers/{id}"]
+    C4["Supplier Invoice\n#113\nGET /supplierinvoices/{id}\nsync_files: NO ⚠️"]
+
+    SETT -->|"LastModifiedTime change\ntriggers Downloader"| DL
+    CR -->|"table IDs\nworkflow IDs"| DL
+    DL -->|"update page counter\nafter each batch"| SETT
+    DL -.->|"on failure"| EH
+    DL -->|"paginated list fetch"| FX
+
+    DL -->|"id: DocumentNumber"| C6
+    DL -->|"id: DocumentNumber"| C5
+    DL -->|"id: CustomerNumber"| C2
+    DL -->|"id: ArticleNumber"| C1
+    DL -->|"id: SupplierNumber"| C3
+    DL -->|"id: GivenNumber\nsync_files: no"| C4
+
+    C6 -->|"upsert"| AT
+    C5 -->|"upsert"| AT
+    C2 -->|"upsert"| AT
+    C1 -->|"upsert"| AT
+    C3 -->|"upsert"| AT
+    C4 -->|"upsert\nNO file download"| AT
+
+    C6 & C5 & C2 & C1 & C3 & C4 -->|"detail fetch"| FX
+
+    class DL orch
+    class C6,C5,C2,C1,C3 comp
+    class C4 warn
+    class AT,FX store
+    class SETT state
+    class CR cfg
+    class EH err
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DIAGRAM 3 ──────────────────────────────────── -->
+  <div class="diag-section" style="border-color:#38bdf8">
+    <div class="diag-header" style="background:#0c4a6e;color:#bae6fd">
+      Diagram 3 of 5 &nbsp;·&nbsp; <strong>WebSocket Handler #116 — Real-time Sync</strong>
+    </div>
+    <div class="diag-desc">The WebSocket Handler stays permanently connected to Fortnox. When an entity changes in Fortnox, the event arrives here within seconds. The handler routes each event to the right component by topic. KEY DIFFERENCE vs Downloader: passes <code>sync_files: "yes"</code> to Supplier Invoice — so PDFs ARE downloaded for real-time events. Invoice payment events use a different field (<code>payload.invoiceId</code>) than all other events (<code>entityId</code>).</div>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+%%{init:{"theme":"dark","themeVariables":{"primaryColor":"#1e293b","primaryTextColor":"#e2e4f0","primaryBorderColor":"#334155","lineColor":"#38bdf8","fontSize":"15px"}}}%%
+graph LR
+    classDef orch fill:#0c4a6e,stroke:#38bdf8,color:#bae6fd,font-size:14px
+    classDef comp fill:#1a2744,stroke:#6366f1,color:#c7d2fe,font-size:14px
+    classDef store fill:#2e1065,stroke:#7c3aed,color:#ddd6fe,font-size:14px
+    classDef event fill:#1c1917,stroke:#a16207,color:#fde68a,font-size:13px
+    classDef good  fill:#14532d,stroke:#22c55e,color:#bbf7d0,font-size:14px
+
+    WS["WebSocket Handler\n#116 ✅\nwss://ws.fortnox.se"]
+    CR["Credentials #109"]
+    AT[("Airtable\n9 tables")]
+    FX[("Fortnox API v3")]
+
+    E1["topic: articles\nentityId = ArticleNumber"]
+    E2["topic: invoices\n(regular change)\nentityId = DocumentNumber"]
+    E3["topic: invoices\n(payment event)\npayload.invoiceId"]
+    E4["topic: orders\nentityId = DocumentNumber"]
+    E5["topic: customers\nentityId = CustomerNumber"]
+    E6["topic: suppliers\nentityId = SupplierNumber"]
+    E7["topic: supplier-invoices\nentityId = GivenNumber"]
+
+    C1["Article Component\n#110"]
+    C6a["Invoice Component\n#115"]
+    C6b["Invoice Component\n#115"]
+    C5["Order Component\n#114"]
+    C2["Customer Component\n#111"]
+    C3["Supplier Component\n#112"]
+    C4["Supplier Invoice\n#113\nsync_files: YES ✅"]
+
+    WS --> E1 & E2 & E3 & E4 & E5 & E6 & E7
+    CR -->|"config"| WS
+
+    E1 --> C1
+    E2 --> C6a
+    E3 --> C6b
+    E4 --> C5
+    E5 --> C2
+    E6 --> C3
+    E7 --> C4
+
+    C1 & C6a & C6b & C5 & C2 & C3 & C4 --> FX
+    C1 & C6a & C6b & C5 & C2 & C3 & C4 --> AT
+
+    class WS orch
+    class C1,C6a,C6b,C5,C2,C3 comp
+    class C4 good
+    class AT,FX store
+    class E1,E2,E3,E4,E5,E6,E7 event
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DIAGRAM 4 ──────────────────────────────────── -->
+  <div class="diag-section" style="border-color:#a78bfa">
+    <div class="diag-header" style="background:#2e1065;color:#ddd6fe">
+      Diagram 4 of 5 &nbsp;·&nbsp; <strong>Component Call Chain — Who Calls Whom</strong>
+    </div>
+    <div class="diag-desc">Component flows are not independent — several call other components to ensure linked records exist before they write. This diagram shows only the component-to-component calls (not the parent orchestrators). Every component also calls Credentials #109 on startup (not shown here to keep the diagram clean).</div>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+%%{init:{"theme":"dark","themeVariables":{"primaryColor":"#1e293b","primaryTextColor":"#e2e4f0","primaryBorderColor":"#334155","lineColor":"#a78bfa","fontSize":"15px"}}}%%
+graph TB
+    classDef comp fill:#1a2744,stroke:#6366f1,color:#c7d2fe,font-size:14px
+    classDef shared fill:#1e3a5f,stroke:#38bdf8,color:#bae6fd,font-size:14px
+    classDef warn  fill:#451a03,stroke:#f97316,color:#fed7aa,font-size:14px
+
+    INV["Invoice Component\n#115\nInput: DocumentNumber"]
+    ORD["Order Component\n#114\nInput: DocumentNumber"]
+    SUI["Supplier Invoice\n#113\nInput: GivenNumber"]
+
+    CUS["Customer Component\n#111\nInput: CustomerNumber\n← called by multiple flows"]
+    ART["Article Component\n#110\nInput: ArticleNumber\n← called by multiple flows"]
+    SUP["Supplier Component\n#112\nInput: SupplierNumber"]
+    SIF["SI File Component\n#120\n⚠️ PDF to local disk only\nNo binary in Airtable"]
+
+    INV -->|"ensure customer exists\nbefore writing invoice"| CUS
+    INV -->|"if OrderReference ≠ 0\nensure order exists"| ORD
+    INV -->|"for each InvoiceRow\nwith ArticleNumber"| ART
+
+    ORD -->|"ensure customer exists\nbefore writing order"| CUS
+    ORD -->|"for each OrderRow\nwith ArticleNumber"| ART
+
+    SUI -->|"ensure supplier exists\nbefore writing invoice"| SUP
+    SUI -->|"only when\nsync_files = yes"| SIF
+
+    class INV,ORD,SUI comp
+    class CUS,ART,SUP shared
+    class SIF warn
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DIAGRAM 5 ──────────────────────────────────── -->
+  <div class="diag-section" style="border-color:#f97316">
+    <div class="diag-header" style="background:#431407;color:#fed7aa">
+      Diagram 5 of 5 &nbsp;·&nbsp; <strong>Uploader #119 + Watchdog — Standalone Flows</strong>
+    </div>
+    <div class="diag-desc">Two flows that operate independently from the main Downloader/WebSocket pair. <strong>Uploader</strong> is the only flow that writes back to Fortnox — currently INACTIVE and pointed at Sandbox. <strong>Watchdog</strong> is an ops supervisor that keeps the two core flows alive by bouncing them hourly/conditionally.</div>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+%%{init:{"theme":"dark","themeVariables":{"primaryColor":"#1e293b","primaryTextColor":"#e2e4f0","primaryBorderColor":"#334155","lineColor":"#f97316","fontSize":"15px"}}}%%
+graph TB
+    classDef act   fill:#14532d,stroke:#22c55e,color:#bbf7d0,font-size:14px
+    classDef inact fill:#1f2937,stroke:#4b5563,color:#9ca3af,font-size:13px
+    classDef warn  fill:#451a03,stroke:#f97316,color:#fed7aa,font-size:14px
+    classDef store fill:#2e1065,stroke:#7c3aed,color:#ddd6fe,font-size:14px
+    classDef cfg   fill:#1e3a5f,stroke:#3b82f6,color:#bfdbfe,font-size:14px
+    classDef api   fill:#1c1917,stroke:#a16207,color:#fde68a,font-size:13px
+
+    subgraph UPLOAD["  ⏸ UPLOADER  #119  (INACTIVE)  "]
+        direction LR
+        TU["Airtable Order Trigger\nSync Fortnox = 'To sync'\nAND CustomerNumber != ''"]
+        UP["Uploader #119\n⚠️ Uses SANDBOX Fortnox creds\nProduction Airtable base"]
+        CRU["Credentials #109"]
+        AT_R["Airtable\nOrders table — READ\nOrderRows table — READ\nline items for payload"]
+        FNX["Fortnox SANDBOX API\nPOST /orders  (if new)\nPUT /orders/{id}  (if update)"]
+        AT_W["Airtable\nOrders table — WRITE\nDocumentNumber back\nclear Sync Fortnox flag"]
+
+        TU -->|"order record"| UP
+        UP --> CRU
+        UP -->|"fetch line items"| AT_R
+        AT_R -->|"build order payload"| UP
+        UP -->|"create or update"| FNX
+        FNX -->|"return DocumentNumber"| UP
+        UP -->|"update status"| AT_W
+    end
+
+    subgraph WATCH["  ✅ WATCHDOG / RELOAD  (ACTIVE)  "]
+        direction LR
+        TW["Schedule Trigger\nevery 1 hour"]
+        WD["Watchdog Flow\n✅ ACTIVE"]
+
+        subgraph BA["  Branch A — ALWAYS  "]
+            direction TB
+            DA["Deactivate\n#116 WebSocket"]
+            WA["Wait 10 sec"]
+            AA["Activate\n#116 WebSocket"]
+            RA{"HTTP 200?\n(retry loop)"}
+            DA --> WA --> AA --> RA
+            RA -->|"not 200\nretry"| WA
+        end
+
+        subgraph BB["  Branch B — CONDITIONAL  "]
+            direction TB
+            QB["GET latest execution\n#118 Downloader"]
+            CB{"stoppedAt\n> 2 hours ago?"}
+            DB["Deactivate #118"]
+            WB["Wait 10 sec"]
+            AB["Activate #118\n(no retry — fire &amp; forget)"]
+            QB --> CB
+            CB -->|"YES — stale"| DB --> WB --> AB
+            CB -->|"NO — healthy"| SKIP["do nothing"]
+        end
+
+        TW --> WD
+        WD --> BA
+        WD --> BB
+    end
+
+    class UP,TU warn
+    class WD,TW act
+    class CRU cfg
+    class AT_R,AT_W store
+    class FNX api
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB: TABLE ═══ -->
+<div id="tab-table" class="tab">
+  <div class="section-title">Master Flow Reference Table</div>
+  <div class="section-sub">All 15 flows at a glance. ⚠️ = open questions or known issues.</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Flow Name</th>
+          <th>ID</th>
+          <th>Status</th>
+          <th>Direction</th>
+          <th>Trigger</th>
+          <th>Calls (children)</th>
+          <th>Called By (parents)</th>
+          <th>Airtable Tables</th>
+          <th>Fortnox Endpoints</th>
+          <th>⚠️ Issues / Unclear</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td>1</td>
+          <td><strong>Credentials</strong></td>
+          <td><code>109</code></td>
+          <td><span class="badge badge-config">Config</span></td>
+          <td>—</td>
+          <td><code>executeWorkflow</code> trigger (called by others)</td>
+          <td class="none-text">None</td>
+          <td>
+            <span class="tag tag-flow">#118</span>
+            <span class="tag tag-flow">#116</span>
+            <span class="tag tag-flow">#110–115</span>
+            <span class="tag tag-flow">#120</span>
+            <span class="tag tag-flow">#117</span>
+          </td>
+          <td><span class="tag tag-table">Settings tblPFPEG2Iu3M00FF</span></td>
+          <td class="none-text">None (returns static config)</td>
+          <td class="none-text">None</td>
+        </tr>
+
+        <tr>
+          <td>2</td>
+          <td><strong>Article Component</strong></td>
+          <td><code>110</code></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>Fortnox → Airtable</td>
+          <td><code>executeWorkflow</code> (called by #114, #115, #118, #116)</td>
+          <td><span class="tag tag-flow">#109 Credentials</span></td>
+          <td>
+            <span class="tag tag-flow">#114</span>
+            <span class="tag tag-flow">#115</span>
+            <span class="tag tag-flow">#118</span>
+            <span class="tag tag-flow">#116</span>
+          </td>
+          <td><span class="tag tag-table">Articles tbllLCePTMAsMqF3A</span></td>
+          <td><code>GET /3/articles/{ArticleNumber}</code></td>
+          <td class="none-text">None identified</td>
+        </tr>
+
+        <tr>
+          <td>3</td>
+          <td><strong>Customer Component</strong></td>
+          <td><code>111</code></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>Fortnox → Airtable</td>
+          <td><code>executeWorkflow</code> (called by #114, #115, #118, #116)</td>
+          <td><span class="tag tag-flow">#109 Credentials</span></td>
+          <td>
+            <span class="tag tag-flow">#114</span>
+            <span class="tag tag-flow">#115</span>
+            <span class="tag tag-flow">#118</span>
+            <span class="tag tag-flow">#116</span>
+          </td>
+          <td><span class="tag tag-table">Customers tblDF3Ff0KJ3pN6aG</span></td>
+          <td><code>GET /3/customers/{CustomerNumber}</code></td>
+          <td>HTTP request has <code>onError: continueErrorOutput</code> — customer fetch errors are silently swallowed</td>
+        </tr>
+
+        <tr>
+          <td>4</td>
+          <td><strong>Supplier Component</strong></td>
+          <td><code>112</code></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>Fortnox → Airtable</td>
+          <td><code>executeWorkflow</code> (called by #113, #118, #116)</td>
+          <td><span class="tag tag-flow">#109 Credentials</span></td>
+          <td>
+            <span class="tag tag-flow">#113</span>
+            <span class="tag tag-flow">#118</span>
+            <span class="tag tag-flow">#116</span>
+          </td>
+          <td><span class="tag tag-table">Suppliers tblSFdN7U9Bri8zwr</span></td>
+          <td><code>GET /3/suppliers/{SupplierNumber}</code></td>
+          <td>Checks <code>Internal Status</code> field — records with certain statuses skip sync. Logic for what "should sync" means is not documented.</td>
+        </tr>
+
+        <tr>
+          <td>5</td>
+          <td><strong>Supplier Invoice Component</strong></td>
+          <td><code>113</code></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>Fortnox → Airtable</td>
+          <td><code>executeWorkflow</code> (called by #118, #116)</td>
+          <td>
+            <span class="tag tag-flow">#109 Credentials</span>
+            <span class="tag tag-flow">#112 Supplier</span>
+            <span class="tag tag-flow">#120 SI File (conditional)</span>
+          </td>
+          <td>
+            <span class="tag tag-flow">#118 Downloader</span>
+            <span class="tag tag-flow">#116 WebSocket</span>
+          </td>
+          <td><span class="tag tag-table">SupplierInvoices tblYERBn2P6wrHEzl</span></td>
+          <td><code>GET /3/supplierinvoices/{GivenNumber}</code></td>
+          <td class="issue-cell">
+            <span class="issue-text">Downloader passes <code>sync_files: "no"</code> → files never downloaded in batch mode. WebSocket passes <code>sync_files: "yes"</code> → files only downloaded on real-time events. Bulk historical invoices will never have their PDFs synced.</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>6</td>
+          <td><strong>Order Component</strong></td>
+          <td><code>114</code></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>Fortnox → Airtable</td>
+          <td><code>executeWorkflow</code> (called by #115, #118, #116)</td>
+          <td>
+            <span class="tag tag-flow">#109 Credentials</span>
+            <span class="tag tag-flow">#111 Customer</span>
+            <span class="tag tag-flow">#110 Article</span>
+          </td>
+          <td>
+            <span class="tag tag-flow">#115 Invoice</span>
+            <span class="tag tag-flow">#118 Downloader</span>
+            <span class="tag tag-flow">#116 WebSocket</span>
+          </td>
+          <td>
+            <span class="tag tag-table">Orders tblhNdAzxbWeNgEgW</span>
+            <span class="tag tag-table">OrderRows tbl4kQjfGdqF1TWkS</span>
+          </td>
+          <td>
+            <code>GET /3/orders/{DocumentNumber}</code>
+          </td>
+          <td>When called by Invoice Component (#115) with an OrderReference, the customer_id is passed to avoid a redundant Customer fetch — but the Order Component also independently fetches the customer if no customer_id is provided. Dual-path logic may cause inconsistencies.</td>
+        </tr>
+
+        <tr>
+          <td>7</td>
+          <td><strong>Invoice Component</strong></td>
+          <td><code>115</code></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>Fortnox → Airtable</td>
+          <td><code>executeWorkflow</code> (called by #118, #116)</td>
+          <td>
+            <span class="tag tag-flow">#109 Credentials</span>
+            <span class="tag tag-flow">#111 Customer</span>
+            <span class="tag tag-flow">#114 Order (if ref exists)</span>
+            <span class="tag tag-flow">#110 Article (per row)</span>
+          </td>
+          <td>
+            <span class="tag tag-flow">#118 Downloader</span>
+            <span class="tag tag-flow">#116 WebSocket</span>
+          </td>
+          <td>
+            <span class="tag tag-table">Invoices tblOLaZyIaVJP6h6V</span>
+            <span class="tag tag-table">InvoiceRows tblDkNRTKMTpMTLK3</span>
+          </td>
+          <td>
+            <code>GET /3/invoices/{DocumentNumber}</code>
+          </td>
+          <td class="issue-cell">
+            <span class="issue-text">⚠️ Flow is designed to write individual rows to <code>InvoiceRow</code> table, but this table is reportedly empty in production. InvoiceRows are also serialized as a JSON string in the parent invoice record — unclear if the row-table sync path is broken or intentionally disabled. Needs investigation.</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>8</td>
+          <td><strong>WebSocket Handler</strong></td>
+          <td><code>116</code></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>Fortnox → Airtable (real-time)</td>
+          <td>WebSocket <code>wss://ws.fortnox.se/topics-v1</code></td>
+          <td>
+            <span class="tag tag-flow">#109 Credentials</span>
+            <span class="tag tag-flow">#110 Article</span>
+            <span class="tag tag-flow">#111 Customer</span>
+            <span class="tag tag-flow">#112 Supplier</span>
+            <span class="tag tag-flow">#113 Supplier Invoice</span>
+            <span class="tag tag-flow">#114 Order</span>
+            <span class="tag tag-flow">#115 Invoice</span>
+          </td>
+          <td class="none-text">Not called by other flows</td>
+          <td class="none-text">None directly (via components)</td>
+          <td>
+            Topics: <code>articles</code>, <code>invoices</code>, <code>orders</code>, <code>customers</code>, <code>suppliers</code>, <code>supplier-invoices</code>
+          </td>
+          <td>Payment events (<code>invoicepayment-bookkeep-v1</code>) use <code>payload.invoiceId</code> while all other events use <code>entityId</code> — different paths for the same downstream flow.</td>
+        </tr>
+
+        <tr>
+          <td>9</td>
+          <td><strong>Error Handler</strong></td>
+          <td><code>117</code></td>
+          <td><span class="badge badge-inactive">Inactive</span></td>
+          <td>—</td>
+          <td>Error Trigger (from Downloader #118)</td>
+          <td><span class="tag tag-flow">#109 Credentials</span></td>
+          <td>
+            <span class="tag tag-flow">#118 (implicit — error source)</span>
+          </td>
+          <td><span class="tag tag-table">Settings tblPFPEG2Iu3M00FF</span></td>
+          <td class="none-text">None</td>
+          <td class="issue-cell">
+            <span class="issue-text">⚠️ Marked INACTIVE in N8N but is referenced as <code>errorWorkflow: "117"</code> in Downloader. If truly inactive, errors from Downloader are silently lost. If it is active but the export shows inactive — unclear. Needs verification in the running N8N instance.</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>10</td>
+          <td><strong>Downloader V3</strong></td>
+          <td><code>118</code></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>Fortnox → Airtable (batch)</td>
+          <td>Airtable Settings polling (1 min) + disabled daily schedule</td>
+          <td>
+            <span class="tag tag-flow">#109 Credentials</span>
+            <span class="tag tag-flow">#110 Article</span>
+            <span class="tag tag-flow">#111 Customer</span>
+            <span class="tag tag-flow">#112 Supplier</span>
+            <span class="tag tag-flow">#113 Supplier Invoice</span>
+            <span class="tag tag-flow">#114 Order</span>
+            <span class="tag tag-flow">#115 Invoice</span>
+          </td>
+          <td class="none-text">Not called by other flows</td>
+          <td><span class="tag tag-table">Settings tblPFPEG2Iu3M00FF</span></td>
+          <td>
+            <code>GET /3/invoices?page=N</code><br>
+            <code>GET /3/orders?page=N</code><br>
+            <code>GET /3/customers?page=N</code><br>
+            <code>GET /3/articles?page=N</code><br>
+            <code>GET /3/suppliers?page=N</code><br>
+            <code>GET /3/supplierinvoices/?page=N</code>
+          </td>
+          <td>Passes <code>sync_files: "no"</code> to Supplier Invoice Component — means PDFs are never downloaded during bulk sync. Only downloaded via WebSocket (real-time). Historical invoices without a WebSocket event will never have files.</td>
+        </tr>
+
+        <tr>
+          <td>11</td>
+          <td><strong>Uploader V3</strong></td>
+          <td><code>119</code></td>
+          <td><span class="badge badge-inactive">Inactive</span></td>
+          <td>Airtable → Fortnox</td>
+          <td>Airtable Order table trigger (<code>Sync Fortnox = "To sync"</code>)</td>
+          <td><span class="tag tag-flow">#109 Credentials</span></td>
+          <td class="none-text">Not called by other flows</td>
+          <td>
+            <span class="tag tag-table">Orders tblhNdAzxbWeNgEgW</span>
+            <span class="tag tag-table">OrderRows tbl4kQjfGdqF1TWkS</span>
+          </td>
+          <td>
+            <code>POST /3/orders/</code> (create)<br>
+            <code>PUT /3/orders/{id}</code> (update)
+          </td>
+          <td class="issue-cell">
+            <span class="issue-text">⚠️ Uses Fortnox <strong>Sandbox</strong> OAuth2 credentials (ID 31) but reads from <strong>Production</strong> Airtable base. This is an environment mismatch — either intentional (testing) or a bug. Also: no other flow calls this; it is triggered only by Airtable changes. It is currently INACTIVE.</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>12</td>
+          <td><strong>Supplier Invoice File Component</strong></td>
+          <td><code>120</code></td>
+          <td><span class="badge badge-issues">Issues</span></td>
+          <td>Fortnox → Local Disk (partial)</td>
+          <td><code>executeWorkflow</code> (called by #113 when <code>sync_files=yes</code>)</td>
+          <td><span class="tag tag-flow">#109 Credentials</span></td>
+          <td><span class="tag tag-flow">#113 Supplier Invoice</span></td>
+          <td><span class="tag tag-table">SupplierInvoices tblYERBn2P6wrHEzl</span></td>
+          <td>
+            <code>GET /3/supplierinvoicefileconnections?page=N</code><br>
+            <code>GET /3/archive/{fileId}</code> (PDF download)
+          </td>
+          <td class="issue-cell">
+            <span class="issue-text">⚠️ <strong>Critical gap:</strong> PDF binary is written to local path <code>/home/ubuntu/files/invoice.pdf</code> (hardcoded). Only the <em>URL or metadata</em> is written back to Airtable — the binary PDF is NOT uploaded as an Airtable attachment. The file is temporarily stored on the N8N host disk. No binary data in Airtable.</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>13</td>
+          <td><strong>Refresh Credentials</strong></td>
+          <td><code>107</code></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>—</td>
+          <td>Schedule (every 50 minutes)</td>
+          <td class="none-text">None (direct HTTP)</td>
+          <td class="none-text">Not called by other flows</td>
+          <td class="none-text">None</td>
+          <td><code>GET /3/invoices</code> (token keep-alive)</td>
+          <td>Makes a Google Drive API call — purpose is unclear. May be an artifact from a previous credential architecture or a secondary OAuth token refresh mechanism.</td>
+        </tr>
+
+        <tr>
+          <td>14</td>
+          <td><strong>Upplupna Calculation</strong></td>
+          <td><em>separate</em></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>Internal Airtable calculations</td>
+          <td>Webhook endpoint</td>
+          <td class="none-text">None (direct Airtable queries)</td>
+          <td class="none-text">Not called by other flows</td>
+          <td>
+            <span class="tag tag-table">Upplupna Automation</span>
+            <span class="tag tag-table">FakturaMapping</span>
+            <span class="tag tag-table">OrderAllocationMapping</span>
+          </td>
+          <td class="none-text">None (no Fortnox calls)</td>
+          <td class="issue-cell">
+            <span class="issue-text">⚠️ This flow operates on different Airtable tables (FakturaMapping, OrderAllocationMapping) and has no direct connection to the 14 Fortnox sync flows. It reads invoice/order data from Airtable (synced by other flows) and performs Swedish accrual (upplupna) calculations. Integration point is the Airtable data, not N8N flow calls.</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>15</td>
+          <td><strong>WebSocket/Downloader Reload (Watchdog)</strong></td>
+          <td><em>unlisted</em></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td>Ops / lifecycle control only</td>
+          <td>Schedule Trigger — <strong>every hour</strong></td>
+          <td>N8N REST API calls to activate/deactivate <span class="tag tag-flow">#116</span> and <span class="tag tag-flow">#118</span></td>
+          <td class="none-text">Not called by any other flow</td>
+          <td class="none-text">None</td>
+          <td class="none-text">None (no Fortnox/Airtable calls)</td>
+          <td>
+            Node named <em>"If Last Execution Hour Ago"</em> actually uses a <strong>2-hour</strong> threshold (label mismatch).<br>
+            #118 restart path has no retry logic after activation (fire-and-forget), unlike #116 which retries until HTTP 200.
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-title">Airtable Tables Summary</div>
+  <div class="section-sub">Which table is used by which flows.</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Table Name</th>
+          <th>Table ID</th>
+          <th>READ by</th>
+          <th>WRITTEN by</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Articles</td>
+          <td><code>tbllLCePTMAsMqF3A</code></td>
+          <td>#110, #114, #115</td>
+          <td>#110</td>
+          <td>Lookup by ArticleNumber, upsert</td>
+        </tr>
+        <tr>
+          <td>Customers</td>
+          <td><code>tblDF3Ff0KJ3pN6aG</code></td>
+          <td>#111, #114, #115</td>
+          <td>#111</td>
+          <td>Booleans and complex objects serialized as strings</td>
+        </tr>
+        <tr>
+          <td>Invoices</td>
+          <td><code>tblOLaZyIaVJP6h6V</code></td>
+          <td>#115</td>
+          <td>#115</td>
+          <td>InvoiceRows stored as JSON string in the record; linked to Customer + Order</td>
+        </tr>
+        <tr>
+          <td>InvoiceRows</td>
+          <td><code>tblDkNRTKMTpMTLK3</code></td>
+          <td>#115</td>
+          <td>#115 ⚠️</td>
+          <td><strong>Reportedly empty in production</strong>. Flow is coded to write rows here but it does not appear to be working.</td>
+        </tr>
+        <tr>
+          <td>Orders</td>
+          <td><code>tblhNdAzxbWeNgEgW</code></td>
+          <td>#114, #119</td>
+          <td>#114, #119</td>
+          <td>#119 reads "To sync" records and pushes to Fortnox (INACTIVE)</td>
+        </tr>
+        <tr>
+          <td>OrderRows</td>
+          <td><code>tbl4kQjfGdqF1TWkS</code></td>
+          <td>#114, #119</td>
+          <td>#114</td>
+          <td>Existing rows marked Deleted on re-sync; rebuilt from Fortnox data</td>
+        </tr>
+        <tr>
+          <td>Settings</td>
+          <td><code>tblPFPEG2Iu3M00FF</code></td>
+          <td>#109, #117, #118</td>
+          <td>#117, #118</td>
+          <td>State machine: page counters + download flags + Idle flag</td>
+        </tr>
+        <tr>
+          <td>Suppliers</td>
+          <td><code>tblSFdN7U9Bri8zwr</code></td>
+          <td>#112, #113</td>
+          <td>#112</td>
+          <td>Checks Internal Status field for sync gate</td>
+        </tr>
+        <tr>
+          <td>SupplierInvoices</td>
+          <td><code>tblYERBn2P6wrHEzl</code></td>
+          <td>#113</td>
+          <td>#113, #120 (URL only)</td>
+          <td>#120 writes file URL/metadata but NOT binary attachment</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB: DETAILS ═══ -->
+<div id="tab-details" class="tab">
+  <div class="section-title">Flow Detail Cards</div>
+  <div class="section-sub">Click any flow to expand full details. ⚠️ = open questions.</div>
+
+  <div class="cards-grid">
+
+    <!-- 109 Credentials -->
+    <details>
+      <summary>
+        <span class="summary-id">109</span>
+        <span class="summary-name">Fortnox Adgrabber Credentials</span>
+        <span class="summary-badges">
+          <span class="badge badge-config">Config Hub</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>Central configuration provider for all other flows. Returns all Airtable base/table IDs and component workflow IDs so no flow hard-codes these values.</p>
+          </div>
+          <div class="card-section">
+            <h4>Trigger</h4>
+            <p><code>Execute Workflow Trigger</code> — called via <code>executeWorkflow</code> by every other major flow at startup.</p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Output (returned to caller)</h4>
+          <ul>
+            <li><code>airtable_base</code>: <code>appk463NGeDy17j9T</code></li>
+            <li><code>airtable_article_table</code>, <code>airtable_customer_table</code>, <code>airtable_invoice_table</code>, <code>airtable_invoice_row_table</code>, <code>airtable_order_table</code>, <code>airtable_order_row_table</code>, <code>airtable_settings_table</code>, <code>airtable_supplier_table</code>, <code>airtable_supplier_invoice_table</code></li>
+            <li><code>component_article</code>: <code>"110"</code>, <code>component_customer</code>: <code>"111"</code>, <code>component_invoice</code>: <code>"115"</code>, <code>component_order</code>: <code>"114"</code>, <code>component_supplier</code>: <code>"112"</code>, <code>component_supplier_invoice</code>: <code>"113"</code>, <code>component_supplier_invoice_file</code>: <code>"120"</code></li>
+            <li><code>ratelimit_id</code>: <code>fb7db917-6e2f-4743-bec1-682161b56d24</code></li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <!-- 110 Article -->
+    <details>
+      <summary>
+        <span class="summary-id">110</span>
+        <span class="summary-name">Article Component v1.0.0</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>Fetches a single article from Fortnox and upserts it into the Airtable Articles table.</p>
+          </div>
+          <div class="card-section">
+            <h4>Input</h4>
+            <p><code>{ id: ArticleNumber }</code></p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Step-by-step</h4>
+          <ol>
+            <li>Call Credentials (#109) to get config</li>
+            <li><code>GET /3/articles/{id}</code> via Offertizer rate-limit proxy</li>
+            <li>Search Airtable Articles for matching <code>ArticleNumber</code></li>
+            <li>If found → UPDATE record; if not → CREATE record</li>
+            <li>Return Airtable record ID</li>
+          </ol>
+        </div>
+        <div class="card-section">
+          <h4>Output</h4>
+          <p><code>{ airtable_id: "recXXXX" }</code></p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 111 Customer -->
+    <details>
+      <summary>
+        <span class="summary-id">111</span>
+        <span class="summary-name">Customer Component v1.0.0</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+          <span class="badge badge-issues">Note</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>Fetches a customer from Fortnox and upserts into Airtable Customers table. Called by Invoice, Order, Downloader, WebSocket.</p>
+          </div>
+          <div class="card-section">
+            <h4>Input</h4>
+            <p><code>{ id: CustomerNumber }</code></p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Data Transformations</h4>
+          <ul>
+            <li>Boolean fields (<code>Active</code>, <code>ShowPriceVATIncluded</code>) → stored as strings (<code>"true"</code>/<code>"false"</code>)</li>
+            <li>Complex objects (<code>DefaultDeliveryTypes</code>, <code>DefaultTemplates</code>) → JSON-serialized strings</li>
+          </ul>
+        </div>
+        <div class="warning-box">
+          <h4>⚠️ Silent error handling</h4>
+          <ul>
+            <li>The HTTP Fortnox request has <code>onError: continueErrorOutput</code>. If Fortnox returns an error (e.g., customer not found), the flow continues without failing. The downstream Airtable write may receive empty data.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <!-- 112 Supplier -->
+    <details>
+      <summary>
+        <span class="summary-id">112</span>
+        <span class="summary-name">Supplier Component v1.0.0</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>Fetches a supplier from Fortnox and upserts into Airtable Suppliers table. Returns a <code>should_sync</code> flag used by Supplier Invoice Component.</p>
+          </div>
+          <div class="card-section">
+            <h4>Input</h4>
+            <p><code>{ id: SupplierNumber }</code></p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Special Logic</h4>
+          <p>Reads the <code>Internal Status</code> field on the Airtable supplier record. Returns <code>should_sync: true/false</code> based on this field. The Supplier Invoice Component (#113) uses this to decide whether to proceed with invoice sync for that supplier.</p>
+        </div>
+        <div class="card-section">
+          <h4>Output</h4>
+          <p><code>{ airtable_id: "recXXXX", should_sync: true }</code></p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 113 Supplier Invoice -->
+    <details>
+      <summary>
+        <span class="summary-id">113</span>
+        <span class="summary-name">Supplier Invoice Component v1.0.0</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+          <span class="badge badge-issues">Issues</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>Fetches a supplier invoice from Fortnox, ensures the supplier exists in Airtable, and conditionally triggers PDF file download.</p>
+          </div>
+          <div class="card-section">
+            <h4>Input</h4>
+            <p><code>{ id: GivenNumber, sync_files: "yes" | "no" }</code></p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Step-by-step</h4>
+          <ol>
+            <li>Call Credentials (#109)</li>
+            <li><code>GET /3/supplierinvoices/{GivenNumber}</code></li>
+            <li>Call Supplier Component (#112) → get <code>should_sync</code> flag</li>
+            <li>If <code>should_sync = false</code>: skip and return</li>
+            <li>Upsert supplier invoice in Airtable</li>
+            <li>If <code>sync_files = "yes"</code>: call Supplier Invoice File Component (#120)</li>
+          </ol>
+        </div>
+        <div class="card-section">
+          <h4>Data Transformations</h4>
+          <ul>
+            <li><code>Balance</code> → string</li>
+            <li><code>Total</code>, <code>VAT</code> → parsed as floats (stripped of "SEK" currency)</li>
+            <li><code>SupplierInvoiceRows</code>, <code>Vouchers</code> → JSON-serialized strings</li>
+          </ul>
+        </div>
+        <div class="warning-box">
+          <h4>⚠️ File sync only on real-time events</h4>
+          <ul>
+            <li>Downloader (#118) calls with <code>sync_files: "no"</code></li>
+            <li>WebSocket Handler (#116) calls with <code>sync_files: "yes"</code></li>
+            <li>Result: PDFs are only downloaded for invoices that trigger a WebSocket event. Historical bulk-synced invoices will never have their files downloaded.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <!-- 114 Order -->
+    <details>
+      <summary>
+        <span class="summary-id">114</span>
+        <span class="summary-name">Order Component v1.0.0</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>Fetches a complete order (header + all rows) from Fortnox. Ensures customer and articles exist in Airtable. Rebuilds order rows on every sync.</p>
+          </div>
+          <div class="card-section">
+            <h4>Input</h4>
+            <p><code>{ id: DocumentNumber, customer_id?: "recXXXX" }</code></p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Row Sync Logic</h4>
+          <ul>
+            <li>Fetches all existing Airtable OrderRows for this order</li>
+            <li>Marks ALL existing rows as <code>Deleted</code></li>
+            <li>Then creates/updates rows from fresh Fortnox data</li>
+            <li>This means rows are logically "rebuilt" on each sync — old rows get the Deleted flag rather than being physically deleted</li>
+          </ul>
+        </div>
+        <div class="card-section">
+          <h4>Internal Status Gate</h4>
+          <p>Reads <code>Internal Status</code> field on the Airtable order record. If set to "Do not sync", the flow skips row processing.</p>
+        </div>
+        <div class="card-section">
+          <h4>Output</h4>
+          <p><code>{ airtable_id: "recXXXX" }</code></p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 115 Invoice -->
+    <details>
+      <summary>
+        <span class="summary-id">115</span>
+        <span class="summary-name">Invoice Component v1.0.0</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+          <span class="badge badge-issues">Issues</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>The most complex component. Syncs an invoice with all linked entities (customer, order, article rows) to Airtable.</p>
+          </div>
+          <div class="card-section">
+            <h4>Input</h4>
+            <p><code>{ id: DocumentNumber }</code></p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Step-by-step</h4>
+          <ol>
+            <li>Call Credentials (#109)</li>
+            <li><code>GET /3/invoices/{DocumentNumber}</code></li>
+            <li>Call Customer Component (#111) with invoice's <code>CustomerNumber</code></li>
+            <li>If <code>OrderReference ≠ 0</code>: call Order Component (#114)</li>
+            <li>Upsert invoice in Airtable Invoices table (linked to customer + order)</li>
+            <li>For each row with an <code>ArticleNumber</code>: call Article Component (#110)</li>
+            <li>Upsert each row in Airtable InvoiceRows table</li>
+          </ol>
+        </div>
+        <div class="card-section">
+          <h4>Data Transformations</h4>
+          <ul>
+            <li>Boolean fields → strings</li>
+            <li><code>InvoiceRows</code>, <code>EmailInformation</code>, <code>EDIInformation</code>, <code>Labels</code> → JSON-serialized strings stored on the parent invoice record</li>
+          </ul>
+        </div>
+        <div class="warning-box">
+          <h4>⚠️ Invoice Row Table Empty in Production</h4>
+          <ul>
+            <li>The flow is coded to write individual rows to the <code>InvoiceRow</code> table (<code>tblDkNRTKMTpMTLK3</code>)</li>
+            <li>In production, this table is reportedly empty</li>
+            <li>InvoiceRows ARE stored as a JSON string within the parent invoice record</li>
+            <li>Possible causes: (a) a branch condition prevents row writes, (b) all invoices have rows with no ArticleNumber (triggering the "Has No Article" skip path), (c) the Airtable write step has a bug, (d) the row table was never populated and is a planned-but-unfinished feature</li>
+            <li><strong>Needs direct investigation in the running N8N instance.</strong></li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <!-- 116 WebSocket -->
+    <details>
+      <summary>
+        <span class="summary-id">116</span>
+        <span class="summary-name">WebSocket Handler v3.0.0</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>Listens on the Fortnox WebSocket for real-time entity change events and routes each event to the correct component flow.</p>
+          </div>
+          <div class="card-section">
+            <h4>Topics Subscribed</h4>
+            <ul>
+              <li><code>articles</code></li>
+              <li><code>invoices</code> (incl. payment events)</li>
+              <li><code>orders</code></li>
+              <li><code>customers</code></li>
+              <li><code>suppliers</code></li>
+              <li><code>supplier-invoices</code></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Event Routing</h4>
+          <ul>
+            <li>Regular events: use <code>message.entityId</code> as the entity ID</li>
+            <li>Payment events (<code>invoicepayment-bookkeep-v1</code>): use <code>message.payload.invoiceId</code></li>
+            <li>Routes to: #110 (articles), #111 (customers), #112 (suppliers), #113 (supplier-invoices, sync_files=yes), #114 (orders), #115 (invoices)</li>
+          </ul>
+        </div>
+        <div class="card-section">
+          <h4>Key Difference vs Downloader</h4>
+          <p>Passes <code>sync_files: "yes"</code> to Supplier Invoice Component — meaning PDFs ARE downloaded for real-time events but NOT for batch downloads.</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 117 Error Handler -->
+    <details>
+      <summary>
+        <span class="summary-id">117</span>
+        <span class="summary-name">Error Handler</span>
+        <span class="summary-badges">
+          <span class="badge badge-inactive">Inactive</span>
+          <span class="badge badge-issues">Issues</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="card-section">
+          <h4>Purpose</h4>
+          <p>Catches errors from the Downloader flow (#118). Waits 5 minutes, then resets the Settings state so the Downloader can safely retry.</p>
+        </div>
+        <div class="card-section">
+          <h4>Step-by-step</h4>
+          <ol>
+            <li>Error Trigger fires (linked to Downloader #118)</li>
+            <li>Wait 5 minutes</li>
+            <li>Call Credentials (#109)</li>
+            <li>Read Settings table</li>
+            <li>Reset <code>Temp Field</code> and conditionally reset <code>Download Invoices</code> flag if <code>Idle = 1</code></li>
+          </ol>
+        </div>
+        <div class="warning-box">
+          <h4>⚠️ Marked INACTIVE but linked in Downloader</h4>
+          <ul>
+            <li>Downloader JSON contains <code>errorWorkflow: "117"</code></li>
+            <li>If this flow is truly inactive in N8N, errors from Downloader are silently swallowed with no recovery</li>
+            <li>If it was accidentally deactivated, the Settings state machine may get stuck on errors, causing the Downloader to stop cycling</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <!-- 118 Downloader -->
+    <details>
+      <summary>
+        <span class="summary-id">118</span>
+        <span class="summary-name">Downloader V3.0.0</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="card-section">
+          <h4>Purpose</h4>
+          <p>Main batch orchestrator. Cycles through 6 Fortnox entity families (invoices, orders, customers, articles, suppliers, supplier invoices), fetches paginated lists, and delegates each item to its component flow.</p>
+        </div>
+        <div class="card-section">
+          <h4>State Machine (Airtable Settings table)</h4>
+          <p>Uses the Settings table as a persistent state machine:</p>
+          <ul>
+            <li><code>Download Invoices</code> / <code>Download Orders</code> / etc. — boolean flags to enable each family</li>
+            <li><code>Invoices Downloader Page</code> / <code>Orders Downloader Page</code> / <code>Supplier Invoices Downloader Page</code> — persisted page counters (survive restarts)</li>
+            <li>Customers, Articles, Suppliers: in-memory loop (no persistent page counter)</li>
+          </ul>
+        </div>
+        <div class="card-section">
+          <h4>Pagination Logic</h4>
+          <ol>
+            <li>Read current page from Settings</li>
+            <li>Fetch one page from Fortnox API</li>
+            <li>For each item on the page: call component (batchSize=1)</li>
+            <li>If last page: reset page counter to 1</li>
+            <li>Else: increment page counter in Settings</li>
+            <li>Settings update triggers the next Downloader run (1-minute poll)</li>
+          </ol>
+        </div>
+        <div class="card-section">
+          <h4>Key Parameters Passed to Components</h4>
+          <ul>
+            <li>Invoices → #115: <code>{ id: DocumentNumber }</code></li>
+            <li>Orders → #114: <code>{ id: DocumentNumber }</code></li>
+            <li>Customers → #111: <code>{ id: CustomerNumber }</code></li>
+            <li>Articles → #110: <code>{ id: ArticleNumber }</code></li>
+            <li>Suppliers → #112: <code>{ id: SupplierNumber }</code></li>
+            <li>Supplier Invoices → #113: <code>{ id: GivenNumber, sync_files: "no" }</code></li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <!-- 119 Uploader -->
+    <details>
+      <summary>
+        <span class="summary-id">119</span>
+        <span class="summary-name">Uploader V3.0.0</span>
+        <span class="summary-badges">
+          <span class="badge badge-inactive">Inactive</span>
+          <span class="badge badge-issues">Issues</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>The only flow that writes data back to Fortnox. Watches Airtable for orders marked "To sync" and creates or updates them in Fortnox.</p>
+          </div>
+          <div class="card-section">
+            <h4>Trigger</h4>
+            <p>Airtable Orders table, filter: <code>AND(CustomerNumber != "", {Sync Fortnox} = "To sync")</code></p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Payload Construction</h4>
+          <ul>
+            <li>Header: <code>CustomerNumber</code>, <code>Remarks</code> (from "Final Order Notes"), <code>OrderDate</code>, <code>DeliveryDate</code>, <code>CopyRemarks: true</code></li>
+            <li>Rows: for each linked Line Item → <code>ArticleNumber</code>, <code>Description</code> (from "ProductName"), <code>Price</code> (from "Custom Price"), <code>OrderedQuantity</code> (from "Quantity")</li>
+            <li>If <code>DocumentNumber</code> is empty → <code>POST /3/orders/</code></li>
+            <li>If <code>DocumentNumber</code> has value → <code>PUT /3/orders/{DocumentNumber}</code></li>
+          </ul>
+        </div>
+        <div class="warning-box">
+          <h4>⚠️ Environment Mismatch</h4>
+          <ul>
+            <li>Uses <strong>Fortnox Sandbox</strong> OAuth2 credentials (credential ID 31)</li>
+            <li>Reads from <strong>Production</strong> Airtable base (<code>appk463NGeDy17j9T</code>)</li>
+            <li>Currently INACTIVE — any order marked "To sync" in production will not be processed</li>
+            <li>No other flow calls this — it runs standalone triggered by Airtable changes only</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <!-- 120 Supplier Invoice File -->
+    <details>
+      <summary>
+        <span class="summary-id">120</span>
+        <span class="summary-name">Supplier Invoice File Component v1.0.0</span>
+        <span class="summary-badges">
+          <span class="badge badge-issues">Critical Issues</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>Downloads PDF files attached to a supplier invoice in Fortnox. Paginates through file connections and downloads each PDF from the Fortnox Archive API.</p>
+          </div>
+          <div class="card-section">
+            <h4>Input</h4>
+            <p><code>{ id: GivenNumber }</code> (from Supplier Invoice Component)</p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Step-by-step</h4>
+          <ol>
+            <li>Call Credentials (#109)</li>
+            <li>Paginate <code>GET /3/supplierinvoicefileconnections?page=N</code> to find file connections for this invoice</li>
+            <li>For each file connection: <code>GET /3/archive/{fileId}</code> → download PDF binary</li>
+            <li>Write PDF to <code>/home/ubuntu/files/invoice.pdf</code> (hardcoded local path)</li>
+            <li>Update Airtable SupplierInvoices record with file URL/metadata</li>
+          </ol>
+        </div>
+        <div class="warning-box">
+          <h4>⚠️ Binary Data NOT in Airtable</h4>
+          <ul>
+            <li>The PDF is downloaded to the <strong>N8N host server disk</strong> at a <strong>hardcoded path</strong> (<code>/home/ubuntu/files/invoice.pdf</code>)</li>
+            <li>Only a <strong>URL or metadata reference</strong> is written to Airtable — <strong>not the binary PDF content</strong></li>
+            <li>This means the PDF is not accessible directly from Airtable as an attachment</li>
+            <li>The hardcoded path will be overwritten each time a new file is downloaded (no unique filenames per invoice)</li>
+            <li>If the N8N server restarts or disk is cleared, all downloaded files are lost</li>
+            <li>The URL written to Airtable may point to the Fortnox Archive API — which requires authentication to access</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <!-- 107 Refresh Credentials -->
+    <details>
+      <summary>
+        <span class="summary-id">107</span>
+        <span class="summary-name">Refresh Credentials</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="card-section">
+          <h4>Purpose</h4>
+          <p>Keeps the Fortnox OAuth2 token alive by making a lightweight API call every 50 minutes (before the token expires).</p>
+        </div>
+        <div class="card-section">
+          <h4>Steps</h4>
+          <ol>
+            <li>Schedule trigger fires every 50 minutes</li>
+            <li><code>GET /3/invoices</code> using production Fortnox OAuth2 credentials (ID 25)</li>
+            <li>Google Drive list operation (purpose unclear)</li>
+          </ol>
+        </div>
+        <div class="card-section">
+          <h4>⚠️ Google Drive usage</h4>
+          <p>Makes a Google Drive API call as part of the credential refresh cycle. It's unclear whether this is to refresh a Google OAuth token, log something, or is a leftover from a previous architecture. No other flow uses Google Drive.</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- Upplupna -->
+    <details>
+      <summary>
+        <span class="summary-id">—</span>
+        <span class="summary-name">Upplupna Calculation</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+          <span class="badge badge-issues">Separate System</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>Swedish accounting accrual calculation. Computes "upplupna intäkter" (accrued revenue) from media/production records and invoice/order mapping tables.</p>
+          </div>
+          <div class="card-section">
+            <h4>Trigger</h4>
+            <p>Webhook endpoint (called externally, not from other N8N flows)</p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Logic</h4>
+          <ul>
+            <li>Finds Media/Prod records by status</li>
+            <li>Queries <code>FakturaMapping</code> table by date range</li>
+            <li>Queries <code>OrderAllocationMapping</code> for invoiced orders</li>
+            <li>Calculates accrual totals</li>
+            <li>Updates Media/Prod records with calculated values</li>
+            <li>Status lifecycle: Start → In progress → Finished / Error</li>
+          </ul>
+        </div>
+        <div class="card-section">
+          <h4>Connection to the 14 Fortnox Flows</h4>
+          <p>No direct N8N flow connection. This flow consumes data from Airtable tables (FakturaMapping, OrderAllocationMapping) that are likely populated or linked to data synced by the Fortnox flows. The integration point is the Airtable data layer, not N8N workflow calls.</p>
+        </div>
+        <div class="warning-box">
+          <h4>⚠️ Unclear integration</h4>
+          <ul>
+            <li>The exact Airtable tables it uses (<code>FakturaMapping</code>, <code>OrderAllocationMapping</code>, <code>Upplupna Automation</code>) are not among the 9 tables in the Credentials flow</li>
+            <li>This suggests a separate Airtable base or additional tables not covered by the Fortnox sync credentials</li>
+            <li>The relationship between FakturaMapping and the Invoices table (tblOLaZyIaVJP6h6V) is not defined in any flow</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <!-- 15th flow -->
+    <details>
+      <summary>
+        <span class="summary-id">—</span>
+        <span class="summary-name">WebSocket/Downloader Reload (Watchdog)</span>
+        <span class="summary-badges">
+          <span class="badge badge-active">Active</span>
+        </span>
+      </summary>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="card-section">
+            <h4>Purpose</h4>
+            <p>An <strong>ops watchdog</strong> flow — not a data sync flow. It does not touch Fortnox business data or Airtable directly. It keeps the two core long-running flows alive by cycling them via the N8N REST API.</p>
+          </div>
+          <div class="card-section">
+            <h4>Trigger</h4>
+            <p>Schedule Trigger — fires <strong>every hour</strong>. Timezone: <code>Europe/Stockholm</code>. Immediately splits into two parallel branches on each fire.</p>
+          </div>
+        </div>
+        <div class="card-section">
+          <h4>Branch A — Unconditional restart of WebSocket Handler (#116)</h4>
+          <ol>
+            <li>POST <code>/api/v1/workflows/116/deactivate</code></li>
+            <li>Wait <strong>10 seconds</strong></li>
+            <li>POST <code>/api/v1/workflows/116/activate</code></li>
+            <li>Check response: if <code>statusCode ≠ 200</code> → loop back to Wait and retry activation until 200</li>
+            <li>On success: set <code>Done = true</code></li>
+          </ol>
+          <p style="margin-top:6px;color:var(--text-muted);font-size:12px;">Rationale (inferred): WebSocket long-lived connections can silently stale — forcing a reconnect every hour keeps the Fortnox event stream fresh.</p>
+        </div>
+        <div class="card-section">
+          <h4>Branch B — Conditional restart of Downloader (#118)</h4>
+          <ol>
+            <li>GET <code>/api/v1/executions?workflowId=118&amp;limit=1</code> — fetch latest execution</li>
+            <li>Check: is <code>stoppedAt</code> older than <code>now − 2 hours</code>?</li>
+            <li>If <strong>yes</strong> (stale): POST deactivate → wait 10 s → POST activate (no retry logic)</li>
+            <li>If <strong>no</strong> (healthy): do nothing</li>
+          </ol>
+          <p style="margin-top:6px;color:var(--text-muted);font-size:12px;">Rationale (inferred): if the Downloader's Settings-driven state machine gets stuck, this flow detects staleness and kicks it back to life.</p>
+        </div>
+        <div class="card-section">
+          <h4>Asymmetry between the two branches</h4>
+          <table style="font-size:12px;margin-top:4px;">
+            <thead><tr><th>Property</th><th>Branch A — #116 WebSocket</th><th>Branch B — #118 Downloader</th></tr></thead>
+            <tbody>
+              <tr><td>Restart condition</td><td>Always (unconditional)</td><td>Only if stoppedAt &gt; 2 hours ago</td></tr>
+              <tr><td>Activation retry</td><td>Yes — loops until HTTP 200</td><td>No — fire-and-forget</td></tr>
+              <tr><td>Deactivation check</td><td>Not checked</td><td>Not checked</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="warning-box">
+          <h4>⚠️ Known issues</h4>
+          <ul>
+            <li>Node is named <em>"If Last Execution Hour Ago"</em> but the actual expression uses <code>$now.minus({ hours: 2 })</code> — <strong>2-hour threshold, not 1 hour</strong>. Label is misleading for anyone reading the canvas.</li>
+            <li>Branch B activation has no retry: if <code>/activate</code> returns non-200, the restart silently fails.</li>
+            <li>Health check for #118 uses only <code>stoppedAt</code> age — does not inspect execution status or detect a currently running (but possibly frozen) instance.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+  </div><!-- /cards-grid -->
+
+  <hr class="divider">
+
+  <div class="section-title">Summary: Open Issues &amp; Items to Investigate</div>
+  <div class="section-sub">Collected across all flows — items that need further investigation before the system can be considered fully understood.</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Priority</th>
+          <th>Flow(s)</th>
+          <th>Issue</th>
+          <th>Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span style="color:#ef4444">🔴 High</span></td>
+          <td>#120</td>
+          <td>Supplier Invoice PDFs written to local disk only (<code>/home/ubuntu/files/invoice.pdf</code> hardcoded). Binary NOT in Airtable. File is overwritten on each download.</td>
+          <td>Invoice files are not accessible from Airtable. Historical files may be lost if disk is cleared.</td>
+        </tr>
+        <tr>
+          <td><span style="color:#ef4444">🔴 High</span></td>
+          <td>#115</td>
+          <td>Invoice Row table (<code>tblDkNRTKMTpMTLK3</code>) is empty in production despite #115 being coded to write rows there.</td>
+          <td>Invoice line-item data is only accessible as a JSON blob inside the invoice record, not as individually queryable rows.</td>
+        </tr>
+        <tr>
+          <td><span style="color:#f59e0b">🟡 Medium</span></td>
+          <td>#113 + #118</td>
+          <td>Downloader passes <code>sync_files: "no"</code> → PDF files never downloaded during bulk sync. Only WebSocket (real-time) events trigger file downloads.</td>
+          <td>Any supplier invoice synced via bulk download (historical backfill) will have no PDF file attached.</td>
+        </tr>
+        <tr>
+          <td><span style="color:#f59e0b">🟡 Medium</span></td>
+          <td>#119</td>
+          <td>Uploader uses Fortnox <strong>Sandbox</strong> credentials with Production Airtable data.</td>
+          <td>Orders marked "To sync" in production would be sent to the Sandbox Fortnox environment, not production. Currently inactive so no active harm.</td>
+        </tr>
+        <tr>
+          <td><span style="color:#f59e0b">🟡 Medium</span></td>
+          <td>#117</td>
+          <td>Error Handler is INACTIVE in N8N but is referenced as <code>errorWorkflow</code> in Downloader.</td>
+          <td>Downloader errors may be silently lost. If the Settings state machine gets stuck, the Downloader stops cycling and manual intervention is required.</td>
+        </tr>
+        <tr>
+          <td><span style="color:#22c55e">🟢 Low</span></td>
+          <td>#107</td>
+          <td>Google Drive API call in Refresh Credentials flow — purpose not documented.</td>
+          <td>Unclear whether this is load-bearing. If the Google Drive credential expires, this flow will fail and Fortnox OAuth may also stop refreshing.</td>
+        </tr>
+        <tr>
+          <td><span style="color:#22c55e">🟢 Low</span></td>
+          <td>#111</td>
+          <td>Customer HTTP fetch has <code>onError: continueErrorOutput</code> — failures are silently swallowed.</td>
+          <td>Customer sync errors won't surface as failures. Invoices/orders linked to a broken customer will still attempt to sync.</td>
+        </tr>
+        <tr>
+          <td><span style="color:#22c55e">🟢 Low</span></td>
+          <td>Upplupna</td>
+          <td>Operates on Airtable tables not in the Credentials config (FakturaMapping, OrderAllocationMapping). Relationship to Fortnox sync data is indirect.</td>
+          <td>If the Airtable base structure changes, this flow may break independently without it being visible from the Fortnox sync flows.</td>
+        </tr>
+        <tr>
+          <td><span style="color:#22c55e">🟢 Low</span></td>
+          <td>Watchdog</td>
+          <td>Node named <em>"If Last Execution Hour Ago"</em> uses a <strong>2-hour</strong> threshold in its actual expression. Label is wrong on the canvas.</td>
+          <td>Misleads anyone reading or maintaining the flow. The real recovery window for the Downloader is 2 hours, not 1.</td>
+        </tr>
+        <tr>
+          <td><span style="color:#22c55e">🟢 Low</span></td>
+          <td>Watchdog</td>
+          <td>Downloader (#118) restart path has no activation retry — fire-and-forget after <code>POST /activate</code>. WebSocket (#116) has full retry-until-200 loop.</td>
+          <td>If the Downloader fails to reactivate, the watchdog silently moves on with no alert or retry.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /tab-details -->
+
+<script>
+mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+
+function showTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
