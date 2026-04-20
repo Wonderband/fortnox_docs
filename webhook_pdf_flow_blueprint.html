@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Webhook Flow — Build Guide</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --text: #e2e4f0;
+    --muted: #7b82a8;
+    --green: #22c55e;
+    --green-bg: #052e16;
+    --green-border: #14532d;
+    --amber: #f59e0b;
+    --amber-bg: #1c1403;
+    --amber-border: #78350f;
+    --red: #ef4444;
+    --red-bg: #1c0404;
+    --blue: #60a5fa;
+    --blue-bg: #0c1829;
+    --blue-border: #1e3a5f;
+    --purple: #a78bfa;
+    --purple-bg: #1a0f35;
+    --purple-border: #4c1d95;
+    --code-bg: #0d0f18;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.75; }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* HEADER */
+  header { margin-bottom: 44px; }
+  header h1 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .subtitle { color: var(--muted); font-size: 13px; }
+
+  /* SECTION */
+  .section { margin-bottom: 48px; }
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 3px; display: inline-block; margin-bottom: 10px;
+  }
+  h2 { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 12px; }
+  h3 { font-size: 13px; font-weight: 700; color: var(--blue); margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  p  { color: var(--text); margin-bottom: 10px; }
+  ul, ol { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 6px; }
+  strong { color: #fff; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* CALLOUT */
+  .box { border-radius: 8px; padding: 14px 18px; margin: 16px 0; border-left: 4px solid; }
+  .box-blue   { background: var(--blue-bg);   border-color: var(--blue); }
+  .box-green  { background: var(--green-bg);  border-color: var(--green); }
+  .box-amber  { background: var(--amber-bg);  border-color: var(--amber); }
+  .box-red    { background: var(--red-bg);    border-color: var(--red); }
+  .box-purple { background: var(--purple-bg); border-color: var(--purple); }
+  .box-title  { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .box-blue   .box-title { color: var(--blue); }
+  .box-green  .box-title { color: var(--green); }
+  .box-amber  .box-title { color: var(--amber); }
+  .box-red    .box-title { color: var(--red); }
+  .box-purple .box-title { color: var(--purple); }
+
+  /* CODE */
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 0 8px 8px 8px;
+    padding: 18px 20px; overflow-x: auto;
+    font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 12.5px; line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .code-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted); background: var(--surface2); border: 1px solid var(--border);
+    border-bottom: none; border-radius: 6px 6px 0 0;
+    display: inline-block; padding: 4px 12px;
+  }
+  code { background: var(--surface2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; font-family: 'Cascadia Code','Consolas',monospace; font-size: 12px; color: #93c5fd; }
+
+  .c-kw  { color: #c084fc; }
+  .c-fn  { color: #60a5fa; }
+  .c-str { color: #86efac; }
+  .c-cm  { color: #3d4a6b; font-style: italic; }
+  .c-nm  { color: #fde68a; }
+  .c-vr  { color: #f9a8d4; }
+  .c-key { color: #7dd3fc; }
+
+  /* NODES */
+  .node-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; margin-bottom: 20px;
+  }
+  .node-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+  }
+  .node-number {
+    width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;
+  }
+  .node-title { font-weight: 700; font-size: 15px; color: #fff; }
+  .node-type  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .node-body  { padding: 16px 18px; }
+
+  /* SETTINGS TABLE */
+  .settings { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .settings tr { border-bottom: 1px solid var(--border); }
+  .settings tr:last-child { border-bottom: none; }
+  .settings td { padding: 9px 12px; vertical-align: top; }
+  .settings td:first-child { color: var(--muted); width: 38%; font-size: 12px; white-space: nowrap; }
+  .settings td:last-child  { color: var(--text); }
+
+  /* FLOW DIAGRAM */
+  .flow { display: flex; align-items: stretch; gap: 0; margin: 20px 0; flex-wrap: wrap; }
+  .flow-node {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 16px; text-align: center; font-size: 12px; line-height: 1.5; min-width: 140px;
+  }
+  .flow-node b { display: block; font-size: 13px; color: #fff; margin-bottom: 3px; }
+  .flow-node small { color: var(--muted); font-size: 11px; }
+  .flow-node.n1 { background: var(--purple-bg); border-color: var(--purple-border); }
+  .flow-node.n2 { background: var(--blue-bg);   border-color: var(--blue-border); }
+  .flow-node.n3 { background: var(--green-bg);  border-color: var(--green-border); }
+  .flow-arrow {
+    display: flex; align-items: center; padding: 0 10px;
+    color: var(--muted); font-size: 20px; flex-shrink: 0;
+  }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    padding: 8px 0 8px 34px; position: relative;
+    border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before {
+    content: '☐'; position: absolute; left: 6px; font-size: 16px; color: var(--muted); line-height: 1.5;
+  }
+  .checklist .sub { font-size: 11px; color: var(--muted); margin-top: 2px; display: block; }
+
+  /* TAG */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+  .tag-green  { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green-border); }
+  .tag-amber  { background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--amber-border); }
+  .tag-blue   { background: var(--blue-bg);   color: var(--blue);   border: 1px solid var(--blue-border); }
+  .tag-purple { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+
+  /* COMPARE TABLE */
+  .compare { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .compare th { background: var(--surface2); color: var(--muted); padding: 9px 14px; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; }
+  .compare td { padding: 9px 14px; border: 1px solid var(--border); vertical-align: top; }
+  .compare tr:nth-child(even) td { background: #13151e; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } .flow { flex-direction: column; } .flow-arrow { transform: rotate(90deg); align-self: center; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <h1>Missing Flow Blueprint — PDF Webhook Server</h1>
+  <p class="subtitle">How to build the 16th N8N flow that serves PDF files from disk to Airtable · Reference guide for migration</p>
+</header>
+
+
+<!-- ══════════════════════════════════════════════════
+     WHY THIS FLOW EXISTS
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#0c1829;color:#60a5fa">Context</span>
+  <h2>Why This Flow Exists</h2>
+
+  <p>When the <strong>SI File Component (#120)</strong> downloads a supplier invoice PDF from Fortnox, it cannot upload binary data directly to Airtable. Instead it does this:</p>
+
+  <ol>
+    <li>Saves the PDF to disk: <code>/home/ubuntu/files/invoice.pdf</code></li>
+    <li>Tells Airtable: <em>"here is a URL where you can fetch the file"</em></li>
+    <li>Airtable's server makes its own HTTP GET request to that URL</li>
+    <li>Whatever answers that URL must return the PDF binary</li>
+    <li>Airtable stores the binary permanently as a proper attachment</li>
+  </ol>
+
+  <p><strong>This webhook flow is the thing that answers step 4.</strong> Without it, Airtable's GET request returns 404, the attachment field stays empty, and the PDF is silently lost.</p>
+
+  <div class="box box-amber">
+    <div class="box-title">Why it is missing from your exports</div>
+    This flow likely exists on the Offertizer server but was never exported together with the 15 main flows. It is a short utility flow — easy to overlook. It must be recreated on any new server before PDF attachments will work.
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════
+     THE FLOW — OVERVIEW
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#052e16;color:#22c55e">The Flow</span>
+  <h2>Flow Overview — 3 Nodes</h2>
+
+  <div class="flow">
+    <div class="flow-node n1">
+      <b>① Webhook</b>
+      <small>Trigger<br>Listens for GET from Airtable</small>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node n2">
+      <b>② Read Binary File</b>
+      <small>Reads PDF from disk<br>/home/ubuntu/files/…</small>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node n3">
+      <b>③ Respond to Webhook</b>
+      <small>Sends PDF binary<br>back to Airtable</small>
+    </div>
+  </div>
+
+  <p>That is the entire flow. Airtable calls it, gets the PDF, stores it. Nothing else happens here.</p>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════
+     NODE 1
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#1a0f35;color:#a78bfa">Node 1 of 3</span>
+  <h2>Webhook — the trigger</h2>
+
+  <div class="node-card">
+    <div class="node-header">
+      <div class="node-number" style="background:#2e1065;color:#a78bfa">①</div>
+      <div>
+        <div class="node-title">Webhook</div>
+        <div class="node-type">n8n-nodes-base.webhook</div>
+      </div>
+    </div>
+    <div class="node-body">
+      <table class="settings">
+        <tr><td>HTTP Method</td><td><code>GET</code></td></tr>
+        <tr><td>Path</td><td><code>serve-pdf</code> &nbsp;— or any name you choose. N8N generates the full UUID URL automatically after you save.</td></tr>
+        <tr><td>Response Mode</td><td><strong>Using "Respond to Webhook" Node</strong><br><span style="color:var(--muted);font-size:12px">This is critical — it tells N8N to wait for Node 3 before sending a response, so the binary can be included.</span></td></tr>
+        <tr><td>Binary Data</td><td>Leave default (off). The binary is handled by Node 3.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="box box-purple">
+    <div class="box-title">After saving Node 1 — do this immediately</div>
+    N8N will display the webhook URL. It looks like:<br><br>
+    <code>https://your-server:5678/webhook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code><br><br>
+    <strong>Copy this UUID.</strong> You will paste it into the SI File Component (#120) and into the rate limiter migration guide. This UUID is unique to your N8N instance and cannot be predicted in advance.
+  </div>
+
+  <h3>What the incoming request looks like</h3>
+  <p>When Airtable calls this webhook it sends:</p>
+  <div class="code-label">incoming request from Airtable</div>
+  <pre>GET /webhook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    ?<span class="c-key">file</span>=<span class="c-str">invoice.pdf</span>
+    &<span class="c-key">t</span>=<span class="c-nm">1713612345678</span>   <span class="c-cm">← cache-buster timestamp, can be ignored</span></pre>
+
+  <p>The <code>?file=</code> query parameter tells the flow which filename to read from disk. Node 2 reads this value dynamically.</p>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════
+     NODE 2
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#0c1829;color:#60a5fa">Node 2 of 3</span>
+  <h2>Read Binary File — load PDF from disk</h2>
+
+  <div class="node-card">
+    <div class="node-header">
+      <div class="node-number" style="background:#0c1829;color:#60a5fa">②</div>
+      <div>
+        <div class="node-title">Read Binary File</div>
+        <div class="node-type">n8n-nodes-base.readBinaryFile</div>
+      </div>
+    </div>
+    <div class="node-body">
+      <table class="settings">
+        <tr>
+          <td>File Path</td>
+          <td>
+            <code>/home/ubuntu/files/{{ $json.query.file }}</code><br>
+            <span style="color:var(--muted);font-size:12px;margin-top:4px;display:block">
+              <code>$json.query.file</code> reads the <code>?file=</code> value from the incoming request.<br>
+              So if Airtable calls <code>?file=invoice.pdf</code> this resolves to <code>/home/ubuntu/files/invoice.pdf</code>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>Property Name</td>
+          <td><code>data</code><br><span style="color:var(--muted);font-size:12px">The binary will be stored under this key. Node 3 reads it by this name.</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="box box-blue">
+    <div class="box-title">Why use a dynamic path instead of hardcoding invoice.pdf</div>
+    The original Offertizer flow always writes to <code>invoice.pdf</code> — one fixed filename. If two supplier invoices are processed within seconds of each other, the second PDF overwrites the first before Airtable has fetched it. By reading the filename from <code>?file=</code> you open the door to fix this with unique filenames per invoice (e.g. <code>?file=12345.pdf</code>). The dynamic path costs nothing here and makes the future fix trivial.
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════
+     NODE 3
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#052e16;color:#22c55e">Node 3 of 3</span>
+  <h2>Respond to Webhook — send the PDF back</h2>
+
+  <div class="node-card">
+    <div class="node-header">
+      <div class="node-number" style="background:#052e16;color:#22c55e">③</div>
+      <div>
+        <div class="node-title">Respond to Webhook</div>
+        <div class="node-type">n8n-nodes-base.respondToWebhook</div>
+      </div>
+    </div>
+    <div class="node-body">
+      <table class="settings">
+        <tr><td>Respond With</td><td><strong>Binary</strong></td></tr>
+        <tr><td>Binary Property</td><td><code>data</code> &nbsp;— must match the Property Name set in Node 2</td></tr>
+        <tr><td>Response Code</td><td><code>200</code></td></tr>
+        <tr>
+          <td>Response Headers</td>
+          <td>
+            Add one header:<br>
+            <code>Content-Type</code> = <code>application/pdf</code><br>
+            <span style="color:var(--muted);font-size:12px">This tells Airtable the response is a PDF, not plain text or JSON.</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="box box-green">
+    <div class="box-title">What happens after this node fires</div>
+    Airtable receives the binary PDF over HTTP. Airtable stores it permanently on its own servers and displays it as a native attachment in the supplier invoice record. The file on your server disk (<code>/home/ubuntu/files/invoice.pdf</code>) is no longer needed after this point — Airtable has its own copy.
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════
+     AFTER CREATING THE FLOW
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#1c1403;color:#f59e0b">After Creating the Flow</span>
+  <h2>What to Update in SI File Component (#120)</h2>
+
+  <p>Open the <strong>Code2 node</strong> inside SI File Component. Find the line that builds the Airtable attachment URL and replace the old Offertizer webhook URL with your new one:</p>
+
+  <div class="code-label">Code2 node — before (old Offertizer URL)</div>
+  <pre><span class="c-kw">return</span> [{
+  <span class="c-key">'Invoice PDF'</span>: [{
+    <span class="c-key">filename</span>: jsonPlus.Name,
+    <span class="c-key">url</span>: <span class="c-str">'https://automation.offertizer.com/webhook/daa58b95-f6e5-42ea-b5c9-0efe21eb590d'</span>
+         + <span class="c-str">'?file=invoice.pdf&t='</span> + <span class="c-fn">Date</span>.<span class="c-fn">now</span>()
+  }]
+}]</pre>
+
+  <div class="code-label">Code2 node — after (your new server)</div>
+  <pre><span class="c-kw">return</span> [{
+  <span class="c-key">'Invoice PDF'</span>: [{
+    <span class="c-key">filename</span>: jsonPlus.Name,
+    <span class="c-key">url</span>: <span class="c-str">'https://YOUR-SERVER-DOMAIN:5678/webhook/YOUR-NEW-UUID'</span>
+         + <span class="c-str">'?file=invoice.pdf&t='</span> + <span class="c-fn">Date</span>.<span class="c-fn">now</span>()
+  }]
+}]</pre>
+
+  <div class="box box-amber">
+    <div class="box-title">Two things to substitute</div>
+    <strong>YOUR-SERVER-DOMAIN</strong> — the public hostname or IP of your new server. Must be reachable from the internet (Airtable's servers need to reach it). If N8N runs behind a reverse proxy (nginx/Caddy), use port 443 and your domain name instead of 5678.<br><br>
+    <strong>YOUR-NEW-UUID</strong> — the webhook UUID that N8N generated when you saved Node 1 of this flow.
+  </div>
+
+  <h3>Optional improvement — fix the race condition at the same time</h3>
+  <p>While you are editing Code2, also change the filename from the hardcoded <code>invoice.pdf</code> to the actual invoice number. This prevents two simultaneous downloads from overwriting each other.</p>
+
+  <div class="code-label">Code2 node — with race condition fix</div>
+  <pre><span class="c-kw">const</span> <span class="c-vr">invoiceId</span> = <span class="c-fn">$</span>(<span class="c-str">'Start'</span>).item.json.id  <span class="c-cm">// e.g. "12345"</span>
+
+<span class="c-kw">return</span> [{
+  <span class="c-key">'Invoice PDF'</span>: [{
+    <span class="c-key">filename</span>: jsonPlus.Name,
+    <span class="c-key">url</span>: <span class="c-str">'https://YOUR-SERVER-DOMAIN:5678/webhook/YOUR-NEW-UUID'</span>
+         + <span class="c-str">`?file=<span class="c-vr">${invoiceId}</span>.pdf&t=`</span> + <span class="c-fn">Date</span>.<span class="c-fn">now</span>()
+  }]
+}]</pre>
+
+  <p>And in the <strong>Write Binary File node</strong> of SI File Component, change the path from:</p>
+  <pre>/home/ubuntu/files/invoice.pdf</pre>
+  <p>to:</p>
+  <pre>/home/ubuntu/files/<span class="c-vr">{{ $('Start').item.json.id }}</span>.pdf</pre>
+
+  <div class="box box-green">
+    <div class="box-title">Node 2 of the webhook flow needs no change</div>
+    Because Node 2 already uses <code>{{ $json.query.file }}</code> dynamically, it will automatically read <code>12345.pdf</code> when Airtable calls <code>?file=12345.pdf</code>. No edit needed there.
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════
+     TESTING
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#052e16;color:#22c55e">Testing</span>
+  <h2>How to Test Before Relying On It</h2>
+
+  <h3>Step 1 — put a test PDF on disk</h3>
+  <div class="code-label">terminal</div>
+  <pre><span class="c-cm"># Any PDF will do — copy one you have, or create a dummy</span>
+mkdir -p /home/ubuntu/files
+cp /any/existing/file.pdf /home/ubuntu/files/invoice.pdf</pre>
+
+  <h3>Step 2 — activate the webhook flow in N8N</h3>
+  <p>Open the flow in N8N and click the <strong>Active</strong> toggle in the top right. An inactive flow will not respond to requests.</p>
+
+  <h3>Step 3 — call the webhook exactly like Airtable would</h3>
+  <div class="code-label">terminal</div>
+  <pre><span class="c-cm"># Replace with your actual server and UUID</span>
+curl -o /tmp/test_result.pdf \
+  <span class="c-str">"https://YOUR-SERVER:5678/webhook/YOUR-UUID?file=invoice.pdf"</span>
+
+<span class="c-cm"># Check the result is a real PDF</span>
+file /tmp/test_result.pdf</pre>
+
+  <p>Expected output:</p>
+  <pre>/tmp/test_result.pdf: <span class="c-str">PDF document, version 1.x</span></pre>
+
+  <div class="box box-red">
+    <div class="box-title">If curl returns HTML or an error instead of a PDF</div>
+    <ul style="margin:0;padding-left:18px">
+      <li>Check the webhook flow is <strong>Active</strong> in N8N (not just saved — it must be toggled on)</li>
+      <li>Check the UUID in your curl command matches exactly what N8N shows in the Webhook node</li>
+      <li>Check the file exists at the path: <code>ls -la /home/ubuntu/files/invoice.pdf</code></li>
+      <li>Check N8N logs for execution errors: <code>docker logs n8n</code> or <code>pm2 logs n8n</code></li>
+    </ul>
+  </div>
+
+  <h3>Step 4 — end-to-end test with a real supplier invoice</h3>
+  <p>Trigger the SI File Component (#120) manually for a supplier invoice that has a PDF attached in Fortnox. Then open that invoice record in Airtable and verify the <strong>Invoice PDF</strong> attachment field contains a downloadable PDF — not just a broken link.</p>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════
+     CHECKLIST
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#1a0f35;color:#a78bfa">Checklist</span>
+  <h2>Build Checklist</h2>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px 18px 12px;">
+    <ul class="checklist">
+      <li>Create new N8N flow — name it <em>"PDF Webhook Server"</em> or similar
+        <span class="sub">Any name — this is just for your reference in the N8N canvas</span>
+      </li>
+      <li>Add Node 1 — <strong>Webhook</strong> · Method: GET · Path: serve-pdf · Response Mode: Using "Respond to Webhook" Node</li>
+      <li>Save Node 1 and copy the generated webhook UUID
+        <span class="sub">Paste it somewhere safe — you need it for the next two steps</span>
+      </li>
+      <li>Add Node 2 — <strong>Read Binary File</strong> · Path: <code>/home/ubuntu/files/{{ $json.query.file }}</code> · Property: data</li>
+      <li>Add Node 3 — <strong>Respond to Webhook</strong> · Respond With: Binary · Binary Property: data · Header: Content-Type = application/pdf</li>
+      <li>Connect the nodes: Webhook → Read Binary File → Respond to Webhook</li>
+      <li>Activate the flow (toggle it ON in N8N)</li>
+      <li>Update <strong>Code2 node</strong> in SI File Component (#120) — replace the Offertizer webhook URL with your new UUID</li>
+      <li>Optionally fix the race condition — change <code>invoice.pdf</code> to <code>{{ $('Start').item.json.id }}.pdf</code> in both Code2 and Write Binary File nodes of #120</li>
+      <li>Run the curl test from terminal — confirm you receive a valid PDF binary</li>
+      <li>Run an end-to-end test — trigger #120 for a real invoice and check the Airtable attachment field</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════
+     SUMMARY TABLE
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <span class="section-label" style="background:#0c1829;color:#60a5fa">Summary</span>
+  <h2>At a Glance</h2>
+
+  <div class="two-col">
+    <div>
+      <h3>This flow in one sentence</h3>
+      <p>When Airtable makes a GET request with <code>?file=invoice.pdf</code>, this flow reads that file from disk and returns it as a binary PDF response so Airtable can store it as a real attachment.</p>
+
+      <h3>Nodes</h3>
+      <ul>
+        <li><span class="tag tag-purple">Webhook</span> — listens for GET from Airtable</li>
+        <li><span class="tag tag-blue">Read Binary File</span> — reads PDF from disk</li>
+        <li><span class="tag tag-green">Respond to Webhook</span> — sends PDF binary back</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Things to update after creation</h3>
+      <table class="compare">
+        <tr><th>Where</th><th>What to change</th></tr>
+        <tr><td>SI File Component #120<br><em>Code2 node</em></td><td>Replace Offertizer webhook URL with your new UUID</td></tr>
+        <tr><td>SI File Component #120<br><em>Write Binary File node</em></td><td>(Optional) Change filename to dynamic per-invoice name</td></tr>
+        <tr><td>New server firewall</td><td>Ensure port 5678 (or your N8N port) is open for inbound traffic from internet</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /page -->
+</body>
+</html>
