@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortnox Flows — Deployment Report</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222537;
+    --border: #2e3250;
+    --text: #e2e4f0;
+    --muted: #7b7f9e;
+    --accent: #6c8ef5;
+    --green: #4ade80;
+    --yellow: #facc15;
+    --red: #f87171;
+    --orange: #fb923c;
+    --code-bg: #12141e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 40px 20px;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1e2340 0%, #16192b 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(108,142,245,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .header h1 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .header .subtitle { color: var(--muted); font-size: 14px; }
+  .header .meta { display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap; }
+  .meta-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .meta-item .label { color: var(--muted); }
+  .meta-item .value { color: var(--accent); font-family: monospace; }
+
+  /* Status bar */
+  .status-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .status-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .status-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .status-card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .status-card .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .status-card.green .value { color: var(--green); }
+  .status-card.yellow .value { color: var(--yellow); }
+  .status-card.red .value { color: var(--red); }
+  .status-card.blue .value { color: var(--accent); }
+
+  /* Sections */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    background: var(--accent);
+    color: #fff;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+  .section h2 { font-size: 18px; font-weight: 600; }
+
+  /* Alert boxes */
+  .alert {
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    border-left: 4px solid;
+    font-size: 14px;
+  }
+  .alert.warning { background: rgba(250,204,21,0.08); border-color: var(--yellow); }
+  .alert.danger  { background: rgba(248,113,113,0.08); border-color: var(--red); }
+  .alert.success { background: rgba(74,222,128,0.08); border-color: var(--green); }
+  .alert.info    { background: rgba(108,142,245,0.08); border-color: var(--accent); }
+  .alert strong  { display: block; margin-bottom: 4px; }
+
+  /* Code */
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 13px;
+    color: #a8b4ff;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 16px 0;
+    color: #c9d1d9;
+  }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 16px 0; }
+  th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Badges */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge.green  { background: rgba(74,222,128,0.15);  color: var(--green); }
+  .badge.yellow { background: rgba(250,204,21,0.15);  color: var(--yellow); }
+  .badge.red    { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge.blue   { background: rgba(108,142,245,0.15); color: var(--accent); }
+  .badge.orange { background: rgba(251,146,60,0.15);  color: var(--orange); }
+
+  /* Checklist */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li { padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist .check { flex-shrink: 0; margin-top: 2px; }
+
+  /* Phase cards */
+  .phases { display: grid; gap: 16px; }
+  .phase-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .phase-header {
+    padding: 12px 18px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .phase-card.phase-a .phase-header { background: rgba(74,222,128,0.1); color: var(--green); }
+  .phase-card.phase-b .phase-header { background: rgba(108,142,245,0.1); color: var(--accent); }
+  .phase-card.phase-c .phase-header { background: rgba(250,204,21,0.1);  color: var(--yellow); }
+  .phase-card.phase-never .phase-header { background: rgba(248,113,113,0.1); color: var(--red); }
+  .phase-body { padding: 14px 18px; }
+  .phase-body table { margin: 0; }
+
+  /* Arch diagram */
+  .arch {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+
+  p { margin: 10px 0; color: var(--text); }
+  ul { padding-left: 20px; margin: 10px 0; }
+  li { margin: 6px 0; font-size: 14px; }
+  h3 { font-size: 15px; font-weight: 600; margin: 20px 0 10px; color: var(--text); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0 20px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Fortnox Flows — Deployment Report</h1>
+    <div class="subtitle">Corporate OVH VPS · n8n automation · Fortnox → Airtable sync</div>
+    <div class="meta">
+      <div class="meta-item"><span class="label">Server</span><span class="value">162.19.229.154</span></div>
+      <div class="meta-item"><span class="label">Directory</span><span class="value">/opt/fortnox-n8n/</span></div>
+      <div class="meta-item"><span class="label">n8n UI</span><span class="value">http://162.19.229.154:5678</span></div>
+      <div class="meta-item"><span class="label">Airtable Base</span><span class="value">appzk9s3tIowS1YUf</span></div>
+      <div class="meta-item"><span class="label">Last updated</span><span class="value">2026-04-22</span></div>
+    </div>
+  </div>
+
+  <!-- Status Cards -->
+  <div class="status-bar">
+    <div class="status-card green">
+      <div class="icon">✅</div>
+      <div class="label">Flows Deployed</div>
+      <div class="value">15 / 15</div>
+    </div>
+    <div class="status-card yellow">
+      <div class="icon">⏸️</div>
+      <div class="label">Active Flows</div>
+      <div class="value">0</div>
+    </div>
+    <div class="status-card green">
+      <div class="icon">🐳</div>
+      <div class="label">Containers</div>
+      <div class="value">2 / 2</div>
+    </div>
+    <div class="status-card red">
+      <div class="icon">🔧</div>
+      <div class="label">Blockers</div>
+      <div class="value">1</div>
+    </div>
+  </div>
+
+  <!-- Section 1: Architecture -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>System Architecture</h2>
+    </div>
+    <div class="arch">  Internet
+     │
+     ├─ Fortnox API (HTTPS)          ├─ Airtable API (HTTPS)
+     │                               │
+┌────▼───────────────────────────────▼────┐
+│             Docker Network               │
+│                                         │
+│  ┌──────────────────────────────────┐   │
+│  │        n8n  (port 5678)          │   │
+│  │  All Fortnox calls →             │   │
+│  │    http://ratelimit:3333/?url=…  │   │
+│  └─────────────────┬────────────────┘   │
+│                    │ internal only       │
+│  ┌─────────────────▼────────────────┐   │
+│  │  ratelimit proxy  (port 3333)    │   │
+│  │  Express + Bottleneck            │   │
+│  │  1 req / 285ms ≈ 3.5 req/sec    │   │
+│  └──────────────────────────────────┘   │
+│                                         │
+│  Volumes:                               │
+│    ./data  → /home/node/.n8n (SQLite)   │
+│    ./files → /home/ubuntu/files (PDFs)  │
+└─────────────────────────────────────────┘</div>
+    <h3>Flow call chain</h3>
+    <ul>
+      <li><strong>Downloader (#118)</strong> → calls Credentials (#109) → calls Component flows (#110–115, 120) → write to Airtable</li>
+      <li><strong>WebSocket Handler (#116)</strong> → reacts to Fortnox real-time push events → same component chain</li>
+      <li><strong>Watchdog (hourly)</strong> → deactivates/reactivates #116 and #118 via <code>http://localhost:5678/api/v1</code></li>
+    </ul>
+  </div>
+
+  <!-- Section 2: Infrastructure -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>Infrastructure</h2>
+    </div>
+    <div class="two-col">
+      <div>
+        <h3>Server</h3>
+        <table>
+          <tr><th>Item</th><th>Value</th></tr>
+          <tr><td>Provider</td><td>OVH VPS</td></tr>
+          <tr><td>IP</td><td><code>162.19.229.154</code></td></tr>
+          <tr><td>OS</td><td>Ubuntu</td></tr>
+          <tr><td>User</td><td><code>ubuntu</code></td></tr>
+          <tr><td>Project dir</td><td><code>/opt/fortnox-n8n/</code></td></tr>
+          <tr><td>n8n container</td><td><code>fortnox-n8n-n8n-1</code></td></tr>
+          <tr><td>Proxy container</td><td><code>fortnox-n8n-ratelimit-1</code></td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>Environment (.env.server)</h3>
+        <table>
+          <tr><th>Variable</th><th>Value</th></tr>
+          <tr><td><code>N8N_HOST</code></td><td><code>162.19.229.154</code></td></tr>
+          <tr><td><code>N8N_PROTOCOL</code></td><td><code>http</code></td></tr>
+          <tr><td><code>N8N_SECURE_COOKIE</code></td><td><code>false</code></td></tr>
+          <tr><td><code>GENERIC_TIMEZONE</code></td><td><code>Europe/Stockholm</code></td></tr>
+          <tr><td><code>N8N_ENCRYPTION_KEY</code></td><td><em>secret, gitignored</em></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <h3>Lessons Learned During Setup</h3>
+    <div class="alert warning">
+      <strong>⚠️ N8N crash loop on startup</strong>
+      Old <code>data/</code> folder from a local run had a SQLite DB encrypted with a different key. Fix: wipe <code>data/</code> contents before first server start.
+    </div>
+    <div class="alert warning">
+      <strong>⚠️ N8N_SECURE_COOKIE env var not forwarded</strong>
+      Variables in <code>.env.server</code> are NOT automatically passed to the container. They must also be listed explicitly in the <code>environment:</code> block of <code>docker-compose.yml</code>.
+    </div>
+    <div class="alert info">
+      <strong>ℹ️ Fortnox OAuth2 required ngrok HTTPS</strong>
+      Fortnox only accepts HTTPS redirect URIs. n8n generates the OAuth callback URL from the browser address bar — so you must open n8n via an ngrok HTTPS URL during OAuth setup. After OAuth completes, restore <code>WEBHOOK_URL</code> to the plain HTTP server address.
+    </div>
+  </div>
+
+  <!-- Section 3: Flows -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>All 15 Flows — Activation Plan</h2>
+    </div>
+    <div class="phases">
+
+      <div class="phase-card phase-a">
+        <div class="phase-header">🟢 Phase A — Smoke Test (activate first)</div>
+        <div class="phase-body">
+          <table>
+            <tr><th>ID</th><th>Flow</th><th>Notes</th></tr>
+            <tr><td><code>109</code></td><td>Fortnox Adgrabber Credentials</td><td>Required by all flows — activate before anything else</td></tr>
+            <tr><td><code>111</code></td><td>Customer Component</td><td>Simplest — no sub-calls to other components</td></tr>
+            <tr><td><code>118</code></td><td>Downloader V3</td><td>Only with <code>Download Customers = true</code> in Airtable Settings</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="phase-card phase-b">
+        <div class="phase-header">🔵 Phase B — Entity Components (after Phase A verified)</div>
+        <div class="phase-body">
+          <table>
+            <tr><th>ID</th><th>Flow</th><th>Notes</th></tr>
+            <tr><td><code>110</code></td><td>Article Component</td><td>No sub-calls</td></tr>
+            <tr><td><code>112</code></td><td>Supplier Component</td><td>No sub-calls</td></tr>
+            <tr><td><code>114</code></td><td>Order Component</td><td>Calls Customer Component</td></tr>
+            <tr><td><code>115</code></td><td>Invoice Component</td><td>Calls Customer + Article Components</td></tr>
+            <tr><td><code>113</code></td><td>Supplier Invoice Component</td><td>Complex — test last in this phase</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="phase-card phase-c">
+        <div class="phase-header">🟡 Phase C — Real-time + PDF (after Phase B verified)</div>
+        <div class="phase-body">
+          <div class="alert danger" style="margin-top:0">
+            <strong>🚨 Blocker: missing file-server webhook flow</strong>
+            Flow #120 hardcodes <code>automation.offertizer.com/webhook/daa58b95…</code> as the PDF URL sent to Airtable.
+            A webhook flow that serves the PDF from <code>/home/ubuntu/files/</code> must be built on the corporate server before activating #120.
+          </div>
+          <table>
+            <tr><th>ID</th><th>Flow</th><th>Notes</th></tr>
+            <tr><td><code>116</code></td><td>WebSocket Handler</td><td>Real-time Fortnox events via WSS — activate first in Phase C</td></tr>
+            <tr><td><code>blxY2Ed…</code></td><td>WebSocket/Downloader Reload (Watchdog)</td><td>Hourly restart of #116 — activate after #116</td></tr>
+            <tr><td><code>120</code></td><td>SI File Component</td><td>⚠️ Requires missing webhook flow + Code2 URL update first</td></tr>
+            <tr><td><code>dZJRdGR…</code></td><td>Upplupna Calculation</td><td>Activate if needed</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="phase-card phase-never">
+        <div class="phase-header">🔴 Never Activate on Corporate Server</div>
+        <div class="phase-body">
+          <table>
+            <tr><th>ID</th><th>Flow</th><th>Reason</th></tr>
+            <tr><td><code>119</code></td><td>Uploader V3</td><td>Writes orders TO Fortnox — could corrupt production data</td></tr>
+            <tr><td><code>107</code></td><td>Refresh Credentials</td><td>Redundant — OAuth token kept alive by Downloader + WebSocket</td></tr>
+            <tr><td><code>117</code></td><td>Error Handler</td><td>Optional, skip for now</td></tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 4: Community Nodes -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>Community Node: n8n-nodes-rhgroup</h2>
+    </div>
+    <div class="alert success">
+      <strong>✅ Installed on server</strong>
+      Via n8n UI → Settings → Community Nodes → <code>n8n-nodes-rhgroup</code>
+    </div>
+    <table>
+      <tr><th>Node</th><th>Type</th><th>Used in flows</th><th>Status</th></tr>
+      <tr>
+        <td>WebSocketTrigger</td>
+        <td><code>n8n-nodes-rhgroup.webSocketTrigger</code></td>
+        <td>WebSocket Handler (#116)</td>
+        <td><span class="badge green">✅ Working</span></td>
+      </tr>
+      <tr>
+        <td>JSONPlus</td>
+        <td><code>n8n-nodes-rhgroup.json-plus</code></td>
+        <td>Article, Customer, Downloader, Invoice, Order, Supplier, Supplier Invoice, SI File Component</td>
+        <td><span class="badge green">✅ Working</span></td>
+      </tr>
+      <tr>
+        <td>AirtablePlus</td>
+        <td><code>n8n-nodes-rhgroup.airtablePlus</code></td>
+        <td>Not used in current flows</td>
+        <td><span class="badge blue">Bundled</span></td>
+      </tr>
+    </table>
+    <div class="alert info" style="margin-top:16px">
+      <strong>ℹ️ Start nodes showing as "?"</strong>
+      8 subflows contain a deprecated <code>n8n-nodes-base.start</code> node (removed in modern n8n). This is harmless — subflows are triggered by their parent via Execute Workflow, not by the Start node. No fix needed.
+    </div>
+  </div>
+
+  <!-- Section 5: File Sync Status -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>File Sync Status</h2>
+    </div>
+    <div class="alert success">
+      <strong>✅ All 15 flows are in sync</strong>
+      Local <code>flows/</code> = Server <code>/opt/fortnox-n8n/flows/</code> = Live n8n database (verified 2026-04-22)
+    </div>
+    <h3>Fixes applied during sync</h3>
+    <table>
+      <tr><th>File</th><th>Issue</th><th>Resolution</th></tr>
+      <tr>
+        <td><code>Upplupna_Calculation.json</code></td>
+        <td>Local had corrupted UTF-8 Swedish characters (ä, ö etc.)</td>
+        <td>Pulled correct version from server</td>
+      </tr>
+      <tr>
+        <td><code>Fortnox_Adgrabber_Credentials.json</code></td>
+        <td>Server had <code>ratelimit_id = "test"</code> (changed during testing)</td>
+        <td>Pulled from server to local — both now say <code>"test"</code></td>
+      </tr>
+      <tr>
+        <td><code>WebSocket_Downloader_Reload.json</code></td>
+        <td>Server <code>flows/</code> folder still had <code>xxx</code> placeholder API keys and URLs</td>
+        <td>Uploaded correct local version (real JWT + localhost URLs)</td>
+      </tr>
+      <tr>
+        <td><code>.env.server</code> (server)</td>
+        <td>Had stale <code>N8N_EDITOR_BASE_URL</code> pointing to dead ngrok URL</td>
+        <td>Removed the line, restarted n8n</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Section 6: Verification -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>Verification Checklist</h2>
+    </div>
+    <ul class="checklist">
+      <li><span class="check"><span class="badge green">✅</span></span>n8n API reachable at <code>http://162.19.229.154:5678</code></li>
+      <li><span class="check"><span class="badge green">✅</span></span>All 15 flows present on server with correct IDs (107–120, blxY2Ed…, dZJRdGR…)</li>
+      <li><span class="check"><span class="badge green">✅</span></span>All flows inactive — safe, awaiting phased activation</li>
+      <li><span class="check"><span class="badge green">✅</span></span>Credentials flow — Airtable base <code>appzk9s3tIowS1YUf</code>, all 9 table IDs correct</li>
+      <li><span class="check"><span class="badge green">✅</span></span>Credentials flow — component IDs 110–115, 120 match server workflow IDs exactly</li>
+      <li><span class="check"><span class="badge green">✅</span></span>Watchdog — 5 HTTP nodes all point to <code>http://localhost:5678</code>, real JWT key populated</li>
+      <li><span class="check"><span class="badge green">✅</span></span>Fortnox OAuth2 credential — connected</li>
+      <li><span class="check"><span class="badge green">✅</span></span>Airtable PAT credential — added</li>
+      <li><span class="check"><span class="badge green">✅</span></span>Community node <code>n8n-nodes-rhgroup</code> installed, WebSocketTrigger + JSONPlus confirmed working</li>
+      <li><span class="check"><span class="badge green">✅</span></span>All flow JSONs synced — local = server = live DB</li>
+      <li><span class="check"><span class="badge yellow">⚠️</span></span>Fortnox OAuth2 token freshness — <strong>test before Phase A</strong></li>
+      <li><span class="check"><span class="badge yellow">⚠️</span></span>Airtable PAT credential — <strong>test before Phase A</strong></li>
+      <li><span class="check"><span class="badge red">❌</span></span>File-server webhook flow for #120 — <strong>must be built before Phase C</strong></li>
+    </ul>
+  </div>
+
+  <!-- Section 7: Before You Start -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>Steps Before Phase A Smoke Test</h2>
+    </div>
+    <ul class="checklist">
+      <li>
+        <span class="check"><span class="badge yellow">1</span></span>
+        <div><strong>Test Fortnox OAuth2 credential</strong><br>
+        <span style="color:var(--muted);font-size:13px">n8n UI → Credentials → Fortnox Oauth2 → Test. Token may have expired if unused for weeks.</span></div>
+      </li>
+      <li>
+        <span class="check"><span class="badge yellow">2</span></span>
+        <div><strong>Test Airtable PAT credential</strong><br>
+        <span style="color:var(--muted);font-size:13px">n8n UI → Credentials → Airtable Personal Access Token → Test.</span></div>
+      </li>
+      <li>
+        <span class="check"><span class="badge yellow">3</span></span>
+        <div><strong>Set Airtable Settings table flags</strong><br>
+        <span style="color:var(--muted);font-size:13px">Base <code>appzk9s3tIowS1YUf</code> → Table <code>tblPFPEG2Iu3M00FF</code>: set <code>Download Customers = true</code>, all other entity flags = <code>false</code>.</span></div>
+      </li>
+      <li>
+        <span class="check"><span class="badge yellow">4</span></span>
+        <div><strong>Activate flows in order</strong><br>
+        <span style="color:var(--muted);font-size:13px">Credentials (#109) → Customer Component (#111) → Downloader (#118)</span></div>
+      </li>
+      <li>
+        <span class="check"><span class="badge yellow">5</span></span>
+        <div><strong>Verify in Airtable</strong><br>
+        <span style="color:var(--muted);font-size:13px">Check that customers appear in base <code>appzk9s3tIowS1YUf</code> after the Downloader runs.</span></div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Section 8: Known Issues -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <h2>Known Issues & Technical Debt</h2>
+    </div>
+
+    <div class="alert danger">
+      <strong>🚨 Missing file-server webhook flow (Phase C blocker)</strong>
+      Flow #120 Code2 node has this hardcoded:<br>
+      <code style="display:block;margin-top:8px;word-break:break-all">https://automation.offertizer.com/webhook/daa58b95-f6e5-42ea-b5c9-0efe21eb590d?file=invoice.pdf</code>
+      <br>This URL is sent to Airtable as the PDF attachment. Airtable calls it to download the file. On offertizer a webhook flow serves the binary — <strong>no equivalent exists on the corporate server.</strong><br><br>
+      <strong>Fix needed:</strong> Build a new n8n webhook flow that reads <code>/home/ubuntu/files/invoice.pdf</code> and returns it as binary. Then update Code2 with the new corporate server URL.
+    </div>
+
+    <div class="alert warning">
+      <strong>⚠️ .env.server.example has wrong IP</strong>
+      Still shows <code>141.227.190.115</code> instead of <code>162.19.229.154</code>. Fix before any fresh deploy from the template.
+    </div>
+
+    <div class="alert warning">
+      <strong>⚠️ ratelimit_id is currently "test"</strong>
+      Changed from the original UUID during testing. The proxy ignores this value entirely (<code>app.use('*')</code>) so there is no functional impact. Can be left as-is or removed.
+    </div>
+
+    <div class="alert warning">
+      <strong>⚠️ N8N API key expires 2026-05-21</strong>
+      Regenerate in n8n UI and update the Watchdog flow (5 HTTP nodes) before that date.
+    </div>
+  </div>
+
+  <!-- Section 9: Security -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">9</div>
+      <h2>Security Checklist (before going live)</h2>
+    </div>
+    <ul class="checklist">
+      <li><span class="check"><span class="badge red">❌</span></span>Change server SSH password — currently a shared password</li>
+      <li><span class="check"><span class="badge red">❌</span></span>Rotate Airtable Personal Access Token</li>
+      <li><span class="check"><span class="badge red">❌</span></span>Regenerate N8N API key before <strong>2026-05-21</strong> expiry, update Watchdog flow</li>
+      <li><span class="check"><span class="badge red">❌</span></span>Fix <code>.env.server.example</code> wrong IP (<code>141.227.190.115</code> → <code>162.19.229.154</code>)</li>
+    </ul>
+  </div>
+
+  <div style="text-align:center;color:var(--muted);font-size:12px;padding:24px 0">
+    Generated 2026-04-22 · Fortnox Flows Corporate Deployment
+  </div>
+
+</div>
+</body>
+</html>
